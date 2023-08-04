@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Your Website</title>
+    <link rel="stylesheet" type="text/css" href="/style/styles.css" />
+    <link rel="stylesheet" type="text/css" href="/style/reset.css" />
+    <!-- <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9"
+      crossorigin="anonymous"
+    />
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm"
+      crossorigin="anonymous"
+    ></script> -->
+  </head>
+  
+
+  <body>
+    <main class="main-wrapper">
+        <header class="main-header">
+            <img src="./style/7b5fd9f074cf1ec3709271398dcf653a.jpg" alt="logo" class="logo-header">
+        <ul class="nav" >
+            <li class="nav-item" role="presentation">
+             Bags
+            </li>
+            <li class="nav-item" role="presentation">
+             Shoes
+            </li>
+            <li class="nav-item" role="presentation">
+             Watches
+            </li>
+          </ul>
+      </header>
+      <div class="main-info-products">
+        <div class="filter-section .drop-down">
+            <div class="dropdown">
+                <button onclick="myFunction()" class="dropbtn">Filter</button>
+                <div id="myDropdown" class="dropdown-content">
+                  <input type="text" placeholder="Search.." id="myInput" onkeyup="filterFunction()">
+                  
+                  <a href="#support">Color</a>
+                  <a href="#tools">Price</a>
+                </div>
+              </div>
+          </div>
+          <div class="list-items-sorting">
+           
+            <div class="sort">
+                <div class="category-info">
+                    <h3 class="category-info-title"> <span class="category-title-name">List category:</span></h3>
+                    <p class="category-description">  witch witch can going true all products </p>
+                </div>
+                <div class="dropdown-sort">
+                    <button onclick="myFunction()" class="dropbtn-sort">Sort</button>
+                    <div id="myDropdown" class="dropdown-content">
+                      <input type="text" placeholder="Search.." id="myInput" onkeyup="filterFunction()">
+                      <a href="#support">Alphabetical a-z</a>
+                      <a href="#support">Alphabetical z-a</a>
+                      <a href="#support">Price ascending.</a>
+                      <a href="#tools">Price descending.</a>
+                    </div>
+                  </div>
+              </div>
+            <div class="listed-items-page">
+                <h1 class="listed-items-title">
+                    Listed Items
+                </h1>
+                <ul class="listed-items-infos">
+                    <li class="listed-items-info">
+                        <img src="./images/listing 260px 146px.jpg" alt="item-image">
+                        <h5 class="listed-item-model">mercedes benz convertible</h5>
+                        <p class="listed-item-desc">
+                            C-Class Cabriolet
+                        </p>
+                        <div class="price-sellbtn">
+                            <span class="listed-item-price">
+                                $24,350
+                            </span>
+                            <span class="lister-item-price">
+                              buy it
+                            </span>
+                        </div>
+                    </li>
+                    <li class="listed-items-info">
+                        <img src="./images/listing 260px 146px.jpg" alt="item-image">
+                        <h5 class="listed-item-model">mercedes benz convertible</h5>
+                        <p class="listed-item-desc">
+                            C-Class Cabriolet
+                        </p>
+                        <div class="price-sellbtn">
+                            <span class="listed-item-price">
+                                $24,350
+                            </span>
+                            <span class="lister-item-price">
+                              buy it
+                            </span>
+                        </div>
+                    </li>
+                    <li class="listed-items-info">
+                        <img src="./images/listing 260px 146px.jpg" alt="item-image">
+                        <h5 class="listed-item-model">mercedes benz convertible</h5>
+                        <p class="listed-item-desc">
+                            C-Class Cabriolet
+                        </p>
+                        <div class="price-sellbtn">
+                            <span class="listed-item-price">
+                                $24,350
+                            </span>
+                            <span class="lister-item-price">
+                              buy it
+                            </span>
+                        </div>
+                    </li>
+                    <li class="listed-items-info">
+                        <img src="./images/listing 260px 146px.jpg" alt="item-image">
+                        <h5 class="listed-item-model">mercedes benz convertible</h5>
+                        <p class="listed-item-desc">
+                            C-Class Cabriolet
+                        </p>
+                        <div class="price-sellbtn">
+                            <span class="listed-item-price">
+                                $24,350
+                            </span>
+                            <span class="lister-item-price">
+                              buy it
+                            </span>
+                        </div>
+                    </li><li class="listed-items-info">
+                        <img src="./images/listing 260px 146px.jpg" alt="item-image">
+                        <h5 class="listed-item-model">mercedes benz convertible</h5>
+                        <p class="listed-item-desc">
+                            C-Class Cabriolet
+                        </p>
+                        <div class="price-sellbtn">
+                            <span class="listed-item-price">
+                                $24,350
+                            </span>
+                            <span class="lister-item-price">
+                              buy it
+                            </span>
+                        </div>
+                    </li>
+                    <li class="listed-items-info">
+                        <img src="./images/listing 260px 146px.jpg" alt="item-image">
+                        <h5 class="listed-item-model">mercedes benz convertible</h5>
+                        <p class="listed-item-desc">
+                            C-Class Cabriolet
+                        </p>
+                        <div class="price-sellbtn">
+                            <span class="listed-item-price">
+                                $24,350
+                            </span>
+                            <span class="lister-item-price">
+                              buy it
+                            </span>
+                        </div>
+                    </li>
+                  
+                    
+                </ul>
+                <div class="load-more-publications">
+                    <button class="load-more-pub">Load more....</button>
+                </div>
+            </div>
+          </div>
+        
+      </div>
+      
+        <footer class="footer">
+          <ul class="footer-links">
+            <li><a href="#">Terms &amp; Conditions</a></li>
+            <li><a href="#">Privacy Policy</a></li>
+            <li><a href="#">Contact Us</a></li>
+          </ul>
+        </footer>
+    
+    </main>
+    
+    <script src="script.js"></script>
+  </body>
+</html>

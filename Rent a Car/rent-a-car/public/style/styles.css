@@ -1,0 +1,561 @@
+body {
+    font-family: 'Montserrat', sans-serif;
+}
+.error {
+    color: red;
+}
+.main-wrapper{
+   max-width: 1920px;
+   width: 100%;
+}
+.nav-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0px 60px 0px;
+   width: 100%;
+   background-color: black;
+}
+
+.logo {
+    width: 265px;
+    height: 100px;
+}
+.nav-links {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+.nav-links > a:not(:last-child){
+    margin-right: 50px;
+    text-decoration: none;
+}
+.nav-links > a{
+  
+    text-decoration: none;
+}
+.home-link {
+    color: #f2b705 ;
+    font-weight: bolder;
+    text-transform: uppercase;
+}
+.buy-link, .sell-link, .login-link, .singup-link {
+    color: white;
+    font-weight: bolder;
+    text-transform: uppercase;
+}
+.login-link{
+    border: 2px solid white;
+    padding: 3px 25px;
+}
+.singup-link  {
+    background-color: #f2b705;
+    border: 2px solid  #f2b705;
+    overflow: hidden;
+    padding: 3px 25px;
+}
+.first-content{
+    background-image: url('/images//2023-07-13\ 14_17_33-Supreme\ Drive\ -\ 1080\ ×\ 1920px\ -\ Opera.png');
+    background-position: center;
+    background-size: cover;
+    width: 100%;
+    height: 652.6px;
+    display: flex;
+    flex-direction: column;
+}
+.main-info {
+    padding: 100px 110px 0px
+}
+.main-title {
+    color: #f2b705;
+    text-transform: uppercase
+}
+.secound-title  {
+    color: white;
+    text-transform: uppercase;
+}
+   
+.main-titles {
+    width: 100%;
+    height: 120px;
+}
+.title-content {
+    color: white;
+}
+.get-yours {
+    margin-top: 100px;
+    margin-top: 100px;
+    background-color: unset;
+    text-transform: uppercase;
+    border: 2px solid white;
+    padding: 5px 25px;
+    color: white;
+    cursor:pointer;
+}
+.suprime-services{
+    width: 100%;
+    height: 417px;
+    background-color: #f2eed8;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 20px
+}
+.supreme-title {
+    text-transform: capitalize;
+    margin-bottom: 30px;
+}
+.supreme-infos {
+    display: flex;
+    justify-content: center;
+    text-align: center;
+}
+.supreme-infos > li {
+width: 273px;
+height: 205px;
+display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0 25px;
+
+}
+.service-desc {
+    color: #f2b705;
+}
+.supreme-infos > li:nth-child(2) .service-desc{
+    color: white;
+}
+.supreme-infos > li:not(:last-child){
+    margin-right: 40px;
+}
+.supreme-infos > li:nth-child(2){
+    background-color: #f2b705;
+}
+
+.supreme-info{
+    background-color: white;
+}
+.hot-deals {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    height: 500px;
+    background-image: url('/images//2023-07-13\ 14_40_49-Supreme\ Drive\ -\ 1080\ ×\ 1920px\ -\ Opera.png');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    padding: 20px 50px;
+}
+.hot-deals-title {
+    text-transform: uppercase;
+}
+.hot-deals-title-cl{
+    color: #f2b705;
+    margin-right: 20px;
+}
+.hot-deals-infos {
+    display: flex;
+    
+}
+.hot-deals-infos > li {
+    width: 303px;
+    height: 305px;
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    text-transform: uppercase;
+}
+.hot-deal-model {
+    margin-top: 10px;
+}
+.hot-deal-price {
+    background: #f2b705;
+    width: 40%;
+    padding: 5px 15px;
+    text-align: center;
+    color: white;
+    cursor: pointer;
+}
+.hot-deal-desc {
+    margin: 15px 0;
+}
+.hot-deals-infos > li:not(:last-child) {
+    margin-right: 60px;
+}
+.main-footer {
+    display: flex;
+    padding: 20px 50px;
+    background-color: #f2eed8;
+}
+.footer-logos {
+    width: 50%;
+}
+.footer-social-logos{
+    display: flex;
+    align-items: center;
+    margin-top: 50px;
+}
+.footer-social-logos > i:not(:last-child) {
+    margin-right: 50px;
+}
+.footer-info{
+    display: flex;
+    text-align: start;
+    justify-content: flex-end;
+    width: 50%;
+   
+}
+
+.footer-info > ul:not(:last-child){
+    margin-right: 50px;
+}
+.footer-desc-title {
+    font-weight: bolder
+    
+}
+.footer-info > ul {
+    text-transform: uppercase;
+}
+
+.login-page{
+    display: flex;
+    width: 100%;
+    height: 90%;
+}
+.login-fields{
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 150px;
+    text-align: center;
+    justify-content: center;
+    background-color: rgb(246, 246, 246);
+}
+.image-login-page{
+    width: 50%;
+    height: 100%;
+    
+}
+.login-title, .login-title-secound {
+    text-transform: uppercase;
+    color: #f2b705;
+    font-weight: bolder;
+    white-space: normal;
+    letter-spacing: 2px;
+}
+.login-email {
+    background-color: rgb(246, 246, 246);
+    cursor: pointer;
+    border-radius: 20px;
+}
+.login-email, .login-password {
+    background-color: rgb(246, 246, 246);
+    cursor: auto;
+    border-radius: 20px;
+    width: 70%;
+    padding: 5px 15px;
+}
+.login-form{
+    width: 100%;
+}
+.login-submit-btn{
+    width: 70%;
+    cursor: pointer;
+    border-radius: 20px;
+    overflow: hidden;
+    background-color: #f2b705;
+    color: white;
+    border: transparent;
+    padding: 5px 0px;
+}
+.resiger-link {
+    color: #f2b705;
+    cursor: pointer;
+    margin-top: 12px
+}
+.register-page{
+    display: flex;
+    width: 100%;
+    height: 90%;
+}
+.register-fields{
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 150px;
+    text-align: center;
+    justify-content: center;
+    background-color: rgb(246, 246, 246);
+}
+.image-register-page{
+    width: 50%;
+    height: 100%;
+
+}
+.register-title, .register-title-secound {
+    text-transform: uppercase;
+    color: #f2b705;
+    font-weight: bolder;
+    white-space: normal;
+    letter-spacing: 2px;
+}
+.register-email {
+    background-color: rgb(246, 246, 246);
+    cursor: pointer;
+    border-radius: 20px;
+}
+.register-email, .register-password, .register-username , .register-re-password{
+    background-color: rgb(246, 246, 246);
+    cursor: auto;
+    border-radius: 20px;
+    width: 70%;
+    padding: 5px 15px;
+}
+.register-form{
+    width: 100%;
+}
+.register-submit-btn{
+    width: 70%;
+    cursor: pointer;
+    border-radius: 20px;
+    overflow: hidden;
+    background-color: #f2b705;
+    color: white;
+    border: transparent;
+    padding: 5px 0px;
+    text-transform: capitalize;
+}
+.add-car-personal-info {
+    display: flex;
+    
+}
+
+.create-page, .edit-car-page{
+    width: 100%;
+    height: 100%;
+    background-image: url('/images/create.jpg');
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0px -20px 198px 448px rgba(0,0,0,0.6);
+    padding: 27px;
+}
+.personal-details-form, .car-details-form {
+    color: #f2b705;
+    text-transform: uppercase;
+    margin-bottom: 10px
+
+}
+.add-car-title {
+    color: white;
+    text-transform: uppercase;
+}
+
+.personal-details, .car-details {
+    display: flex;
+    flex-direction: column;
+    width: 30%;
+    box-shadow: inset 0px -20px 198px 448px rgba(0,0,0,0.1);
+    padding: 20px;
+}
+.personal-details {
+margin-bottom: 15px;
+}
+
+.add-car-personal-info, .add-car-desc {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+.add-car-personal-info > input {
+    background-color: #d9d8d6;
+}
+.add-car-desc > input {
+    background-color: #d9d8d6;
+}
+.add-car-personal-info, .add-car-desc > label {
+    color: white;
+    text-transform: uppercase;
+}
+.terms-add-car {
+    color: white;
+    
+}
+.temrs-text {
+    color: #f2b705;
+}
+
+.submit-car {
+    border-radius: 15px;
+    padding: 4px 50px;
+    overflow: hidden;
+    border: none;
+    color: white;
+    background-color: #f2b705;
+}
+.listed-cars-page {
+    background-image: url('/images/listed-cars-img.webp');
+    background-repeat: no-repeat;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    display: flex;
+    flex-direction: column;
+    box-shadow: inset 0px -20px 198px 448px rgba(0,0,0,0.6);
+}
+.listed-cars-title {
+    margin: 0 auto;
+    color: white;
+    letter-spacing: 2px;
+    white-space: pre-line;
+    text-transform: uppercase;
+    
+}
+
+.listed-cars-infos{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 25px 50px;
+
+}
+.listed-cars-infos > li:not(:last-child){
+    margin-right: 20px;
+}
+.listed-cars-infos > li {
+    width: 30%;
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    text-transform: uppercase;
+    margin-bottom: 15px;
+}
+.price-sellbtn {
+    display: flex;
+    flex-direction: initial;
+    justify-content: space-between;
+}
+.lister-car-price{
+    color: white;
+    background-color: #f2b705;
+    padding: 3px 12px;
+}
+.listed-deal-model {
+    margin-top: 10px;
+}
+.listed-deal-desc {
+    margin: 15px 0;
+}
+.car-details-page {
+    background-image: url('/images/view\ one\ car.png');
+    background-size: cover;
+    background-repeat: no-repeat;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    box-shadow: inset 0px -20px 198px 448px rgba(0,0,0,0.6);
+}
+
+
+.details-page-title{
+    margin: 0 auto;
+    text-transform: uppercase;
+    color: white
+}
+.car-details-infos {
+    display: flex;
+    width: 65%;
+    padding: 25px 50px;
+    box-shadow: inset 0px -20px 198px 448px rgba(0, 0, 0, 0.2);
+    justify-content: space-around;
+    
+}
+.car-details-desc {
+    display: flex;
+    width: 40%;
+    flex-direction: column;
+}
+
+.details-page-img {
+width: 100%;
+}
+.details-page-main-fields > li:not(:last-child) {
+margin-bottom: 15px;
+
+}
+
+
+.details-page-main-fields > li {
+    color: white;
+    text-transform: uppercase;
+}
+.details-page-main-fields {
+    margin: 20px 0;
+}
+
+.car-details-desc > ul:not(:last-child){
+    margin-right: 15px;
+}
+.car-details-desc h1 {
+    margin: 0 auto;
+}
+.btn-details-page {
+    width: 50%;
+}
+.car-details-btn {
+   color: white;
+   background-color: #f2b705;
+   padding: 4px 15px;
+   border: none;
+   overflow: hidden;
+   cursor: pointer;
+   text-transform: uppercase;
+}
+.car-deitals-allInfo {
+    display: flex;
+    width: 100%;
+
+};
+.car-deitals-allInfo  ul:nth-last-child(1) > li { 
+    margin-left: 15px;
+}
+
+.personal-info-details-page {
+    display: flex;
+    width: 40%;
+    flex-direction: column;
+    color: white;
+}
+.person-details {
+    display: flex;
+    width: 100%;
+}
+.personal-info-main-fields > li{
+    margin-left: 15px;
+    text-transform: uppercase;
+}
+.personal-info-fields, .personal-info-main-fields{
+    margin: 20px 0;
+}
+.personal-info-fields > li {
+    text-transform: uppercase;
+}
+
+.personal-info-main-fields > li:not(:last-child), .personal-info-fields > li:not(:last-child) {
+    margin-bottom: 15px;
+}
+.car-details-desc-title, .personal-title-dtlPage {
+    margin: 0 auto;
+}
