@@ -129,6 +129,7 @@ const priceDecending = () => {
 };
 
   return(
+    <div className="main-wrapper">
       <div class="main-info-products">
          <div class="filter-section .drop-down">
             <div class="dropdown"  onClick={(e) => onClickHandler(e.target)}>
@@ -192,6 +193,7 @@ const priceDecending = () => {
               </div>
           </div>
         </div>
+      </div>
       </div>
   );
 };

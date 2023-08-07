@@ -5,10 +5,11 @@ const publicationSerivce = require('../services/publicationSerivce');
 
 
 router.get('/catalog/bags', async(req, res) => {
-   
+const offset = {...req.query};
+    console.log(offset.offset);
     try {
-        const bags = await publicationSerivce.getAllBags();
-        console.log(bags)
+        const bags = await publicationSerivce.getAllBags(offset.offset);
+        
         res.send(bags);
     } catch (error) {
         res.status(404).json(error)
@@ -38,7 +39,7 @@ router.get('/catalog/shoes', async(req, res) => {
 router.get('/catalog/:color/:data', async(req, res) => {
     const color = req.params;
     
-    console.log(color)
+
 
     try {
         const publication = await publicationSerivce.getAllbyColor(color.color, color.data);

@@ -3,7 +3,7 @@ import * as request from "./requester";
 const baseUrl = 'http://localhost:3000/publication';
 
 
-export const getAll = (location) => request.get(`${baseUrl}/catalog${location}`);
+export const getAll = (location, offset) => request.get(`${baseUrl}/catalog${location}?offset=${offset}`);
 
 export const getShoes = () => request.get(`${baseUrl}/catalog`);
 

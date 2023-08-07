@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 
 export const Header = () => {
     return(
-        <header className="main-header">
+        <header className="main-header main-wrapper">
         <img src="./style/7b5fd9f074cf1ec3709271398dcf653a.jpg" alt="logo" className="logo-header"/>
     <ul className="nav" >
         <Link to={'/bags'} className="nav-item" role="presentation">

@@ -10,8 +10,10 @@ const postgreSQL = knex({
   },
 });
 
-exports.getAllBags = async () => {
-  return await postgreSQL.select("*").from("bags");
+exports.getAllBags = async (offsetItem) => {
+  // return await postgreSQL.select("*").from("bags");
+  console.log(offsetItem)
+  return await postgreSQL.from("bags").limit(5).offset(offsetItem)
 };
 exports.getAllWatches = async () => {
   return await postgreSQL.select("*").from("watches");

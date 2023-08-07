@@ -10,6 +10,7 @@ export const Bags = () => {
   
   const[publication, setPublication] = useState([]);
   useEffect(() => {
+   
     if(click.pickedColer === ""){
       publicationService.getAll(location.pathname)
     .then(result => {
@@ -21,7 +22,7 @@ export const Bags = () => {
        })
        return;
     }
-    publicationService.getWatchesFiltered(click.pickedColer, "bags")
+   publicationService.getWatchesFiltered(click.pickedColer, "bags")
     .then(result => {
       console.log(result, 'fetch3 colorpicked')
       setPublication(result);
@@ -30,12 +31,14 @@ export const Bags = () => {
         console.log(err)
        })
        return () => setPublication([]);
+      
       },[click.pickedColer]);
 
-  useEffect(() => {
+  useEffect( () => {
     publicationService.getAll(location.pathname)
     .then(result => {
       console.log(result, 'onload')
+      click.page = 1;
       setPublication(result);
        })
        .catch((err) => {
@@ -43,6 +46,29 @@ export const Bags = () => {
        })
        return () => setPublication([]);
       },[]);
+
+      useEffect( () => {
+        if(click.offset === undefined){
+         publicationService.getAll(location.pathname)
+        .then(result => {
+          
+          setPublication(result);
+           })
+           .catch((err) => {
+            console.log(err)
+           })
+           return;
+        }
+         publicationService.getAll(location.pathname, click.offset)
+        .then(result => {
+          console.log(result, 'fetch3 offset')
+          setPublication(result);
+           })
+           .catch((err) => {
+            console.log(err)
+           })
+           return () => setPublication([]);
+          },[click.offset !== 0 ]);
 
 const onClickHandler = (e) => { 
   if(e.name === 'filter'){
@@ -128,10 +154,23 @@ const priceDecending = () => {
    console.log(publication, 'decending price')
 };
 
+const offsetHnadler = (e) => {
+ const limit = 5;
+ 
+ if(click.page > 1 ){
+  click.offset = limit * (click.page - 1);
+  click.page++;
+ }
+ click.offset = 0;
+ click.page++;
+ 
+}
+
   return(
-      <div class="main-info-products">
-         <div class="filter-section .drop-down">
-            <div class="dropdown"  onClick={(e) => onClickHandler(e.target)}>
+    <div className="main-wrapper">
+      <div className="main-info-products">
+         <div className="filter-section .drop-down">
+            <div className="dropdown"  onClick={(e) => onClickHandler(e.target)}>
                 <button name="filter" className={`dropbtn`}>Filter</button>
                 
                 <div id="myDropdown" className={`dropdown-content ${click.filter ? "visible": ""}`}>
@@ -158,16 +197,16 @@ const priceDecending = () => {
            
                 
           </div>
-        <div class="list-items-sorting">
+        <div className="list-items-sorting">
          
-          <div class="sort">
-              <div class="category-info">
-                  <h3 class="category-info-title"> <span class="category-title-name">List category:</span></h3>
-                  <p class="category-description">  witch witch can going true all products </p>
+          <div className="sort">
+              <div className="category-info">
+                  <h3 className="category-info-title"> <span className="category-title-name">List category:</span></h3>
+                  <p className="category-description">  witch witch can going true all products </p>
               </div>
-              <div class="dropdown-sort">
-                  <button onClick={(e) => onClickHandler(e.target)} name="sort" class="dropbtn-sort">Sort</button>
-                  <div id="myDropdown" className={`dropdown-content ${click.sort ? "visible": ""}`} class="dropdown-content">
+              <div className="dropdown-sort">
+                  <button onClick={(e) => onClickHandler(e.target)} name="sort" className="dropbtn-sort">Sort</button>
+                  <div id="myDropdown" className={`dropdown-content ${click.sort ? "visible": ""}`} >
                     <a  onClick={ AlphabetDown}>Alphabetical a-z</a>
                     <a  onClick={ AlphabetUp}>Alphabetical z-a</a>
                     <a  onClick={ priceAcending}>Price ascending.</a>
@@ -175,11 +214,11 @@ const priceDecending = () => {
                   </div>
                 </div>
             </div>
-          <div class="listed-items-page">
-              <h1 class="listed-items-title">
+          <div className="listed-items-page">
+              <h1 className="listed-items-title">
                   Listed Items
               </h1>
-              <ul class="listed-items-infos">
+              <ul className="listed-items-infos">
                  {publication.length > 0
                  ?
                  publication.map(x => <Bag key={x.id} product={x}/>)
@@ -187,11 +226,12 @@ const priceDecending = () => {
                  <>Loading.....</>
                  }
               </ul>
-              <div class="load-more-publications">
-                  <button class="load-more-pub">Load more....</button>
+              <div className="load-more-publications" >
+                  <button onClick={ offsetHnadler} className="load-more-pub">Load more....</button>
               </div>
           </div>
         </div>
+      </div>
       </div>
   );
 };
