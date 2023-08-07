@@ -81,7 +81,7 @@ const onClickHandler = (e) => {
      
       return setClicked({...click, black: false, pickedColer: "" })
      }else{
-       setClicked({...click, black: true, pickedColer: "black"  });
+       setClicked({...click, black: true , white:false , pickedColer: "black"  });
      };
   }
 
@@ -89,9 +89,9 @@ const onClickHandler = (e) => {
     
     if(click.white === true){
      
-      return setClicked({...click, white: false , pickedColer: "" })
+      return setClicked({...click, white: false,  pickedColer: "" })
      }else{
-       setClicked({...click, white: true , pickedColer: "white"  });
+       setClicked({...click, white: true, black:false, pickedColer: "white"  });
        
      };
   }
@@ -104,7 +104,7 @@ const AlphabetDown = () => {
   return (a.name)>(b.name) ? 1 : -1 
 
   }).slice(0, ))
-  console.log(publication, 'In sort')
+  
 };
 const AlphabetUp = () => {
   setPublication(publication.sort(function(a, b) {
@@ -135,22 +135,22 @@ const priceDecending = () => {
                 <button name="filter" className={`dropbtn`}>Filter</button>
                 
                 <div id="myDropdown" className={`dropdown-content ${click.filter ? "visible": ""}`}>
-                <a href="#support" value={click.color}  name="color" >Color</a>
+                <a  value={click.color}  name="color" >Color</a>
                 <ul className={`colors-list ${click.color === true ? "visible": ""}`} >
                   <li  >
-                   <input type="checkbox" id="black" name="black" value={"black"}   /> Black
+                   <input type="radio" id="black" name="black" value={"black"} checked={click.black}  /> Black
                   </li>
                   <li>
-                  <input type="checkbox" id="white" name="white" value={"black"} /> White
+                  <input type="radio" id="white" name="white" value={"white"} checked={click.white} /> White
                   </li>
                 </ul>
-                <a href="#tools" name="price" value={click.price} >Price</a>
+                <a  name="price" value={click.price} >Price</a>
                 <ul className={`price-list ${click.price ? "visible": click.price = false}`}>
                   <li >
-                   <input type="checkbox" /> $0-100$
+                   <input type="radio" /> $0-100$
                   </li>
                   <li>
-                  <input type="checkbox" /> $101-200$
+                  <input type="radio" /> $101-200$
                   </li>
                 </ul>
               </div>
