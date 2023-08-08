@@ -10,7 +10,7 @@ import { Watches } from "./Components/Watches/Watches";
 
 function App() {
   return (
-    <>
+    <div className="main-wrapper">
     <Header/>
    
     <Routes>
@@ -22,7 +22,7 @@ function App() {
    
    
     <Footer/>
-    </>
+   </div>
   );
 }
 

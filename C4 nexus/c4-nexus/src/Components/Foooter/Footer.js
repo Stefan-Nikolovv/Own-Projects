@@ -1,11 +1,11 @@
 export const Footer = () => {
-    return(
-        <footer className="footer main-wrapper">
-        <ul className="footer-links">
-          <li><a href="#">Terms &amp; Conditions</a></li>
-          <li><a href="#">Privacy Policy</a></li>
-          <li><a href="#">Contact Us</a></li>
-        </ul>
-      </footer>
-    );
+  return (
+    <footer className="footer">
+      <div className="footer-links">
+        <a className="footer-link" href="#">Terms &amp; Conditions</a>
+        <a className="footer-link" href="#">Privacy Policy</a>
+        <a className="footer-link" href="#">Contact Us</a>
+      </div>
+    </footer>
+  );
 }
