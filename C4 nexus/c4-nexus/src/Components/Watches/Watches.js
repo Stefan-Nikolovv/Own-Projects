@@ -250,10 +250,13 @@ export const Watches = () => {
               <>Loading.....</>
             )}
           </ul>
-          <div class="load-more-publications">
+          <div className="load-more-publications">
             <button onClick={offsetHnadler} className="load-more-pub">
               Load more....
             </button>
+            <span className="founded-result">
+              Founded results: {publication.length}
+            </span>
           </div>
         </div>
       </div>
