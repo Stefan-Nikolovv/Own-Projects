@@ -1,36 +1,25 @@
 import { useState, useEffect } from "react";
-import * as publicationService from '../../services/publicationService';
-import { Route, useLocation } from "react-router-dom";
+// import * as publicationService from '../../services/publicationService';
+
 import { Bag } from './Bag/Bag';
 import { Filter } from "../Filter";
 import { Sorter } from "../Sorter";
+import * as dataBase from '../../dataBase/dataBase';
+
 export const Bags = () => {
   const [click, setClicked] = useState({
   });
-  const location = useLocation();
   
   const [publication, setPublication] = useState([]);
   useEffect(() => {
 
     if (click.pickedColer === "") {
-      publicationService.getAll(location.pathname)
-        .then(result => {
-
-          setPublication(result);
-        })
-        .catch((err) => {
-          console.log(err)
-        })
+     setPublication(dataBase.bagsDB())
       return;
     }
-    publicationService.getWatchesFiltered(click.pickedColer, "bags")
-      .then(result => {
-        console.log(result, 'fetch3 colorpicked')
-        setPublication(result);
-      })
-      .catch((err) => {
-        console.log(err)
-      })
+    setPublication(dataBase.bagsDB().filter(x =>{
+     return x.color === click.pickedColer
+    }))
     return () => setPublication([]);
 
   }, [click.pickedColer]);
@@ -39,29 +28,12 @@ export const Bags = () => {
 
   useEffect(() => {
     if (click.offset === undefined) {
-      publicationService.getAll(location.pathname, 0)
-        .then(result => {
-          console.log('0 offset')
-          setPublication(result);
-        })
-        .catch((err) => {
-          console.log(err)
-        })
+     setPublication(dataBase.bagsDB().splice(0, 5))
       return;
     }
-    publicationService.getAll(location.pathname, click.offset)
-      .then(result => {
-        console.log(result, 'fetch3 offset')
-        setPublication(publication.concat(result));
-      })
-      .catch((err) => {
-        console.log(err)
-      })
+    setPublication(publication.concat(dataBase.bagsDB().splice(0, click.offset)))
     return () => setPublication([]);
   }, [click.offset]);
-
-
-  
 
 
   const onClickHandler = (e) => {
@@ -220,7 +192,9 @@ export const Bags = () => {
                 </ul>
                 <div className="load-more-publications" >
                     <button onClick={offsetHnadler} className="load-more-pub">Load more....</button>
+                    <span className="founded-result">Founded results: {publication.length}</span>
                 </div>
+               
             </div>
         </div>
     </div>

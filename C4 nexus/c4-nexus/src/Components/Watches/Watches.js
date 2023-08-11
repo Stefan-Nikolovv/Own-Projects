@@ -1,36 +1,80 @@
 import { useState, useEffect } from "react";
-import * as publicationService from '../../services/publicationService';
-import { Route, useLocation } from "react-router-dom";
+// import * as publicationService from '../../services/publicationService';
+// import { Route, useLocation } from "react-router-dom";
 import { Watch } from "./Watch/Watch";
 import { Filter } from "../Filter";
 import { Sorter } from "../Sorter";
+import * as dataBase from '../../dataBase/dataBase';
+
+
 export const Watches = () => {
+  // const [click, setClicked] = useState({
+  // });
+  // const location = useLocation();
+  
+  // const[publication, setPublication] = useState([]);
+  // useEffect(() => {
+
+  //   if (click.pickedColer === "") {
+  //     publicationService.getAll(location.pathname)
+  //       .then(result => {
+
+  //         setPublication(result);
+  //       })
+  //       .catch((err) => {
+  //         console.log(err)
+  //       })
+  //     return;
+  //   }
+  //   publicationService.getWatchesFiltered(click.pickedColer, "watches")
+  //     .then(result => {
+  //       console.log(result, 'fetch3 colorpicked')
+  //       setPublication(result);
+  //     })
+  //     .catch((err) => {
+  //       console.log(err)
+  //     })
+  //   return () => setPublication([]);
+
+  // }, [click.pickedColer]);
+
+ 
+
+  // useEffect(() => {
+  //   if (click.offset === undefined) {
+  //     publicationService.getAll(location.pathname, 0)
+  //       .then(result => {
+  //         console.log('0 offset')
+  //         setPublication(result);
+  //       })
+  //       .catch((err) => {
+  //         console.log(err)
+  //       })
+  //     return;
+  //   }
+  //   publicationService.getAll(location.pathname, click.offset)
+  //     .then(result => {
+       
+  //       setPublication(publication.concat(result));
+  //     })
+  //     .catch((err) => {
+  //       console.log(err)
+  //     })
+  //   return () => setPublication([]);
+  // }, [click.offset]);
   const [click, setClicked] = useState({
   });
-  const location = useLocation();
   
-  const[publication, setPublication] = useState([]);
+  const [publication, setPublication] = useState([]);
   useEffect(() => {
 
     if (click.pickedColer === "") {
-      publicationService.getAll(location.pathname)
-        .then(result => {
-
-          setPublication(result);
-        })
-        .catch((err) => {
-          console.log(err)
-        })
+     setPublication(dataBase.watchsDB())
       return;
     }
-    publicationService.getWatchesFiltered(click.pickedColer, "watches")
-      .then(result => {
-        console.log(result, 'fetch3 colorpicked')
-        setPublication(result);
-      })
-      .catch((err) => {
-        console.log(err)
-      })
+    setPublication(dataBase.watchsDB().filter(x =>{
+     return x.color === click.pickedColer
+    }))
     return () => setPublication([]);
 
   }, [click.pickedColer]);
@@ -39,24 +83,10 @@ export const Watches = () => {
 
   useEffect(() => {
     if (click.offset === undefined) {
-      publicationService.getAll(location.pathname, 0)
-        .then(result => {
-          console.log('0 offset')
-          setPublication(result);
-        })
-        .catch((err) => {
-          console.log(err)
-        })
+     setPublication(dataBase.watchsDB().splice(0, 5))
       return;
     }
-    publicationService.getAll(location.pathname, click.offset)
-      .then(result => {
-       
-        setPublication(publication.concat(result));
-      })
-      .catch((err) => {
-        console.log(err)
-      })
+    setPublication(publication.concat(dataBase.watchsDB().splice(0, click.offset)))
     return () => setPublication([]);
   }, [click.offset]);
 
