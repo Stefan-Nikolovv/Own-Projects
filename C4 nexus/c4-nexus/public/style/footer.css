@@ -1,0 +1,17 @@
+.footer {
+    margin-top: auto;
+    padding: 20px;
+    width: 100%;
+    background-color: #f1f1f1;
+    text-align: center;
+}
+
+.footer-link {
+    padding: 10px;
+    text-decoration: none;
+}
+
+.footer-link:hover,
+.footer-link:active {
+    text-decoration: underline;
+}
