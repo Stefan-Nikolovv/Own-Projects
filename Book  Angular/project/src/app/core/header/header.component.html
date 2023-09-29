@@ -1,0 +1,238 @@
+<!-- <header id="site-header">
+    
+    <nav class="navbar">
+        <section class="navbar-dashboard">
+            <a routerLink="/">Books</a>
+      
+
+            <div id="guest" *ngIf="!isLoggedIn">
+                <a class="button" routerLink="auth/login">Login</a>
+                <a class="button" routerLink="auth/register">Register</a>
+            </div>
+            
+           
+            <div id="user" *ngIf="isLoggedIn">
+                <span >Welcome, {{userInfo.email}}</span>
+                <a class="button" routerLink="publication/search">Search</a>
+                <a class="button" routerLink="publication/mybooks">My Books</a>
+                <a class="button" routerLink="publication/create">Add Book</a>
+                <a class="button" routerLink="auth/logout">Logout</a>
+            </div>
+        </section>
+    </nav>
+</header> -->
+
+<header class="rn-header haeder-default header--sticky">
+  <div class="container">
+    <div class="header-inner">
+      <div class="header-left">
+        <div class="logo-thumbnail logo-custom-css">
+          <a class="logo-light" routerLink="/"
+            ><img
+              src="../../../assets/images/logo/logo-dark.png"
+              alt="nft-logo"
+          /></a>
+          <a class="logo-dark" routerLink="/"
+            ><img
+              src="../../../assets/images/logo/logo-white.png"
+              alt="nft-logo"
+          /></a>
+        </div>
+        <div class="mainmenu-wrapper">
+          <nav id="sideNav" class="mainmenu-nav d-none d-xl-block">
+            <ul class="mainmenu">
+              <li class="has-menu-child-item">
+                <a routerLink="/">Home</a>
+              </li>
+              <li><a href="about.html">About</a></li>
+
+              <li class="with-megamenu">
+                <a >Pages</a>
+                <div class="rn-megamenu">
+                  <div class="wrapper">
+                    <div class="row row--0">
+                      <div class="col-lg-3 single-mega-item">
+                        <ul class="mega-menu-item">
+                          <li>
+                            <a routerLink="publication/create"
+                              >Create Book<i data-feather="file-plus"></i
+                            ></a>
+                          </li>
+
+                          <li>
+                            <a routerLink="publication/mybooks"
+                              >Our Collection<i data-feather="package"></i
+                            ></a>
+                          </li>
+                          <li>
+                            <a routerLink="publication/libery"
+                              >Libery<i data-feather="file-plus"></i
+                            ></a>
+                          </li>
+
+                        </ul>
+                      </div>
+                      <div class="col-lg-3 single-mega-item">
+                        <ul class="mega-menu-item">
+                          <li *ngIf="!isLoggedIn">
+                            <a routerLink="/auth/login"
+                              >Log In <i data-feather="log-in"></i
+                            ></a>
+                          </li>
+                          <li *ngIf="!isLoggedIn">
+                            <a routerLink="/auth/register"
+                              >Registration <i data-feather="user-plus"></i
+                            ></a>
+                          </li>
+
+                          <li *ngIf="isLoggedIn">
+                            <a routerLink="auth/logout"
+                              > Logout <i data-feather="user"></i
+                            ></a>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </li>
+
+              <li><a href="contact.html">Contact</a></li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="setting-option d-none d-lg-block">
+          <form class="search-form-wrapper" action="#">
+            <input
+              type="search"
+              placeholder="Search Here"
+              aria-label="Search"
+            />
+            <div class="search-icon">
+              <button><i class="feather-search"></i></button>
+            </div>
+          </form>
+        </div>
+        <div class="setting-option rn-icon-list d-block d-lg-none">
+          <div class="icon-box search-mobile-icon">
+            <button><i class="feather-search"></i></button>
+          </div>
+          <form
+            id="header-search-1"
+            action="#"
+            method="GET"
+            class="large-mobile-blog-search"
+          >
+            <div class="rn-search-mobile form-group">
+              <button type="submit" class="search-button">
+                <i class="feather-search"></i>
+              </button>
+              <input type="text" placeholder="Search ..." />
+            </div>
+          </form>
+        </div>
+
+        
+
+        <div class="header_admin" id="header_admin">
+          <div class="setting-option rn-icon-list user-account">
+            <div class="icon-box">
+              <a href="author.html"
+                ><img
+                  src="/assets/images/icons/boy-avater.png"
+                  alt="Images"
+              /></a>
+              <div class="rn-dropdown">
+                <div class="rn-inner-top">
+                  <h4 class="title">
+                    <a href="product-details.html">Christopher William</a>
+                  </h4>
+                  <span><a href="#">Set Display Name</a></span>
+                </div>
+                <div class="rn-product-inner">
+                  <ul class="product-list">
+                    <li class="single-product-list">
+                      <div class="thumbnail">
+                        <a href="product-details.html"
+                          ><img
+                            src="/assets/images/portfolio/portfolio-07.jpg"
+                            alt="Nft Product Images"
+                        /></a>
+                      </div>
+                      <div class="content">
+                        <h6 class="title">
+                          <a href="product-details.html">Balance</a>
+                        </h6>
+                        <span class="price">25 ETH</span>
+                      </div>
+                      <div class="button"></div>
+                    </li>
+                    <li class="single-product-list">
+                      <div class="thumbnail">
+                        <a href="product-details.html"
+                          ><img
+                            src="assets/images/portfolio/portfolio-01.jpg"
+                            alt="Nft Product Images"
+                        /></a>
+                      </div>
+                      <div class="content">
+                        <h6 class="title">
+                          <a href="product-details.html">Balance</a>
+                        </h6>
+                        <span class="price">25 ETH</span>
+                      </div>
+                      <div class="button"></div>
+                    </li>
+                  </ul>
+                </div>
+                <div class="add-fund-button mt--20 pb--20">
+                  <a class="btn btn-primary-alta w-100" href="connect.html"
+                    >Add Your More Funds</a
+                  >
+                </div>
+                <ul class="list-inner">
+                  <li><a href="author.html">My Profile</a></li>
+                  <li><a href="edit-profile.html">Edit Profile</a></li>
+                  <li><a href="connect.html">Manage funds</a></li>
+                  <li><a href="login.html">Sign Out</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="my_switcher" class="my_switcher setting-option">
+          <ul>
+            <li>
+              <a
+              href="javascript:void(0)"
+                data-theme="light"
+                class="setColor light"
+              >
+                <img
+                  class="sun-image"
+                  src="/assets/images/icons/sun-01.svg"
+                  alt="Sun images"
+                />
+              </a>
+            </li>
+            <li>
+              <a
+              href="javascript:void(0)"
+                data-theme="dark"
+                class="setColor dark"
+              >
+                <img
+                  class="Victor Image"
+                  src="/assets/images/icons/vector.svg"
+                  alt="Vector Images"
+                />
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>

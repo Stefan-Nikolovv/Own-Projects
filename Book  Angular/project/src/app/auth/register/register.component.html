@@ -1,0 +1,132 @@
+
+<div class="login-area rn-section-gapTop">
+  <div class="container">
+      <div class="row g-5">
+          <div class="offset-2 col-lg-4 col-md-6 ml_md--0 ml_sm--0 col-sm-12">
+              <div class="form-wrapper-one registration-area">
+                  <h4>Sign up</h4>
+                  <form 
+                  [formGroup]="validationForm"
+                  (ngSubmit)="registerHandler()">
+                      <div class="mb-5">
+                          <label for="firstName" class="form-label">First name</label>
+
+                          <input type="text" id="firstName" 
+                          formControlName="firstName"
+                          type="text"
+                          name="firstName"
+                          >
+                          <ng-container *ngIf="validationForm.get('firstName')?.touched">
+                            <p class="error" *ngIf="validationForm.get('firstName')?.errors?.['required']">
+                                Firstname is required!
+                            </p>
+                            <p class="error" *ngIf="validationForm.get('firstName')?.errors?.['minlength']">
+                              Firstname is too shorter!
+                            </p>
+                            <p class="error" *ngIf="validationForm.get('firstName')?.errors?.['maxlength']">
+                              Firstname is too longer!
+                            </p>
+                          </ng-container>
+                         
+                      </div>
+                      <div class="mb-5">
+                          <label for="lastName" class="form-label">Last name</label>
+                          <input type="email" id="lastName"
+                          formControlName="lastName"
+                          type="text"
+                          name="lastName"
+                          >
+                          <ng-container *ngIf="validationForm.get('lastName')?.touched">
+                            <p class="error" *ngIf="validationForm.get('lastName')?.errors?.['required']">
+                                Lastname is required!
+                            </p>
+                            <p class="error" *ngIf="validationForm.get('lastName')?.errors?.['minlength']">
+                              Lastname is too shorter!
+                            </p>
+                            <p class="error" *ngIf="validationForm.get('lastName')?.errors?.['maxlength']">
+                              Lastname is too longer!
+                            </p>
+                          </ng-container>
+                      </div>
+                      <div class="mb-5">
+                          <label for="email" class="form-label">Email address</label>
+                          <input type="email" id="email" formControlName="email"
+                          type="text"
+                          name="email">
+                          <ng-container *ngIf="validationForm.get('email')?.touched">
+                            <p class="error" *ngIf="validationForm.get('email')?.errors?.['required']">
+                                Email is required!
+                            </p>
+                            <p class="error" *ngIf="validationForm.get('email')?.errors?.['emailValidator']">
+                                Email is not valid!
+                            </p>
+                          </ng-container>
+                      </div>
+                      <ng-container formGroupName="pass">
+                      <div class="mb-5">
+                        
+                          <label for="password" class="form-label">Create Password</label>
+                          <input type="password" id="password"
+                          formControlName="password"
+                          type="password"
+                          name="password"
+                          id="password"
+                          >
+                          <ng-container
+                          *ngIf="validationForm.get('pass')?.get('password')?.touched"
+                        >
+                          <p
+                            class="error"
+                            *ngIf="validationForm.get('pass')?.get('password')?.errors?.['required']"
+                          >
+                            Password is required!
+                          </p>
+                          <p
+                            class="error"
+                            *ngIf="validationForm.get('pass')?.get('password')?.errors?.['minlength']"
+                          >
+                            Password must be at least 5 characters!
+                          </p>
+                        </ng-container>
+
+                      </div>
+                      <div class="mb-5">
+                          <label for="repeat-pass" class="form-label">Re Password</label>
+                          <input type="password" id="exampleInputPassword1"
+                          formControlName="rePassword"
+                          type="password"
+                          name="confirm-pass"
+                          id="repeat-pass"
+                          >
+                        <p
+                          *ngIf="validationForm.get('pass')?.errors?.['appPasswordValidator'] && validationForm.get('pass')?.get('rePassword')?.touched"
+                          class="error"
+                        >
+                          Repeat Password does not match password!
+                        </p>
+                      
+                      </div>
+                    </ng-container>
+                      <div class="mb-5 rn-check-box">
+                          <input type="checkbox" class="rn-check-box-input" id="exampleCheck1">
+                          <label class="rn-check-box-label" for="exampleCheck1">Allow to all tearms &
+                              condition</label>
+                      </div>
+                      <button [disabled]="validationForm.invalid" type="submit" class="btn btn-primary mr--15">Sign Up</button>
+                      <a href="login.html" class="btn btn-primary-alta">Log In</a>
+                  </form>
+              </div>
+          </div>
+          <div class="col-lg-4 col-md-6 col-sm-12">
+              <div class="social-share-media form-wrapper-one">
+                  <h6>Another way to sign up</h6>
+                  <p> Lorem ipsum dolor sit, amet sectetur adipisicing elit.cumque.</p>
+                  <button class="another-login login-facebook"> <img class="small-image" src="../../../assets/images/icons/google.png" alt=""> <span>Log in with Google</span></button>
+                  <button class="another-login login-facebook"> <img class="small-image" src="../../../assets/images/icons/facebook.png" alt=""> <span>Log in with Facebook</span></button>
+                  <button class="another-login login-twitter"> <img class="small-image" src="../../../assets/images/icons/tweeter.png" alt=""> <span>Log in with Twitter</span></button>
+                  <button class="another-login login-linkedin"> <img class="small-image" src="../../../assets/images/icons/linkedin.png" alt=""> <span>Log in with linkedin</span></button>
+              </div>
+          </div>
+      </div>
+  </div>
+</div>
