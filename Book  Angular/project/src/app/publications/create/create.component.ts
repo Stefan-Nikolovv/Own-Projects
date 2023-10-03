@@ -31,12 +31,11 @@ export class CreateComponent implements OnInit {
     throw new Error('Method not implemented.');
   }
   onSelectNewFile(elemnt: any): void {
-    console.log(elemnt?.target.files)
     if (elemnt.target.files?.length == 0) return;
     this.fileSelected = (elemnt.target.files as FileList)[0];
     this.imageUrl = this.sant.bypassSecurityTrustUrl(window.URL.createObjectURL(this.fileSelected)) as string;
     this.base64 = "Base64...";
-  }
+  };
 
 
    file:string | null | undefined;
@@ -48,21 +47,20 @@ export class CreateComponent implements OnInit {
      reader.onload = (e:any) => {
      this.file =  e.target.result;
      
-     }
-    }
+     };
+    };
       
-    }
+    };
 
   createdHandler(){
-    console.log(this.validationForm.controls.createinputfile, 'createHandler')
     if(this.validationForm.invalid) {
       return;
-    }
+    };
     
     const { author, title, description, type } = this.validationForm.value;
       this.apiSerivce.createBook(this.file as string, author as string, title as string, description as string, type as string )
       .subscribe(() => {
         this.router.navigate(['/'])
-      })
-  }
-}
+      });
+  };
+};

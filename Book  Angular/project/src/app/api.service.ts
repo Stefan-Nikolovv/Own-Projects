@@ -34,7 +34,7 @@ export class ApiService {
         return this.httpClient.put<any>(`${apiURL}/books/` + id, {createFile, author:author, title:title, description: description, type: type}, {withCredentials: true});
       };
       deleteBook(id: string) {
-        console.log('delete')
+        
         return this.httpClient.delete<any>(`${apiURL}/books/` + id, {withCredentials: true});
       }
       loadMyAllBooks(): Observable<any>{

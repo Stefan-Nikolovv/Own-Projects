@@ -22,34 +22,13 @@
               <li class="has-menu-child-item">
                 <a routerLink="/">Home</a>
               </li>
-              <li><a href="about.html">About</a></li>
+              <li><a>About</a></li>
 
               <li class="with-megamenu">
                 <a >Pages</a>
                 <div class="rn-megamenu">
                   <div class="wrapper">
                     <div class="row row--0">
-                      <div class="col-lg-3 single-mega-item">
-                        <ul class="mega-menu-item">
-                          <li>
-                            <a routerLink="publication/create"
-                              >Create Book<i data-feather="file-plus"></i
-                            ></a>
-                          </li>
-
-                          <li>
-                            <a routerLink="publication/mybooks"
-                              >Your Collection<i data-feather="package"></i
-                            ></a>
-                          </li>
-                          <li>
-                            <a routerLink="publication/libery"
-                              >Library<i data-feather="file-plus"></i
-                            ></a>
-                          </li>
-
-                        </ul>
-                      </div>
                       <div class="col-lg-3 single-mega-item">
                         <ul class="mega-menu-item">
                           <li *ngIf="!isLoggedIn">
@@ -70,12 +49,34 @@
                           </li>
                         </ul>
                       </div>
+                      <div class="col-lg-3 single-mega-item">
+                        <ul class="mega-menu-item">
+                          <li *ngIf="isLoggedIn">
+                            <a routerLink="publication/create"
+                              >Create Book<i data-feather="file-plus"></i
+                            ></a>
+                          </li>
+
+                          <li *ngIf="isLoggedIn">
+                            <a routerLink="publication/mybooks"
+                              >Your Collection<i data-feather="package"></i
+                            ></a>
+                          </li>
+                          <li >
+                            <a routerLink="publication/libery"
+                              >Library<i data-feather="file-plus"></i
+                            ></a>
+                          </li>
+
+                        </ul>
+                      </div>
+                     
                     </div>
                   </div>
                 </div>
               </li>
 
-              <li><a href="contact.html">Contact</a></li>
+              <li><a>Contact</a></li>
             </ul>
           </nav>
         </div>

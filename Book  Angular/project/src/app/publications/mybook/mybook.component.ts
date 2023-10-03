@@ -25,7 +25,6 @@ export class MybookComponent implements OnInit {
     this.apiService.loadAll()
     .subscribe({
       next: (value) => {
-        console.log(value)
        this.bookList = value;
        let pageIndex = (this.selectedPage - 1) * this.itemsPerPage;
        this.products = this.bookList.slice(pageIndex, this.itemsPerPage);
@@ -33,16 +32,21 @@ export class MybookComponent implements OnInit {
       },
       error: (err) => {
         this.errorFetcingData = true;
-        this.dataBooks = true
+        this.dataBooks = true;
       }
     })
     
   }
 
   onTableSizeChange(event: any){
-    const newSize = (event.target as HTMLInputElement).value
-    this.itemsPerPage = Number(newSize);
-    this.changePage(1);
+   
+    if(event.target.attributes[0].value > 0){
+      const newSize = (event.target.attributes[0].nodeValue as HTMLInputElement)
+      this.itemsPerPage = Number(newSize);
+      this.changePage(1);
+
+    }
+   
   }
 
   changePage(page : any){
@@ -62,5 +66,44 @@ export class MybookComponent implements OnInit {
     this.products = [];
     this.products = this.bookList.slice(pageIndex, endIndex);
   }
-}
+
+  authorSort(event:any){
+    let value = event.target.attributes[0].value
+    if(value === 'acn'){
+     this.products.sort(function(a, b){
+                const nameA = a.author[0].toLowerCase();
+                const nameB = b.author[0].toLowerCase();
+                  return nameA > nameB ? 1 : -1;   
+            });
+    };
+    if(value === 'desc'){
+      this.products.sort(function(a, b){
+                 const nameA = a.author[0].toLowerCase();
+                 const nameB = b.author[0].toLowerCase();
+                   return nameA < nameB ? 1 : -1;  
+             });
+     };
+
+  };
+
+  titleSort(event:any){
+    let value = event.target.attributes[0].value
+    if(value === 'acn'){
+     this.products.sort(function(a, b){
+                const nameA = a.title[0].toLowerCase();
+                const nameB = b.title[0].toLowerCase();
+                  return nameA > nameB ? 1 : -1;   
+            });
+    };
+    if(value === 'desc'){
+      this.products.sort(function(a, b){
+                 const nameA = a.title[0].toLowerCase();
+                 const nameB = b.title[0].toLowerCase();
+                   return nameA < nameB ? 1 : -1;  
+             });
+     };
+
+  };
+
+};
 

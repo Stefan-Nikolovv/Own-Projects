@@ -32,7 +32,7 @@ export class RegisterComponent {
       return;
     }
     const {firstName, lastName, email, pass: {password, rePassword} = {}} = this.validationForm.value;
-    console.log(firstName, lastName, email, password)
+    
     this.authService.register(firstName as string, lastName as string, email as string, password as string)
     .subscribe(user => {
       this.router.navigate(['/']);

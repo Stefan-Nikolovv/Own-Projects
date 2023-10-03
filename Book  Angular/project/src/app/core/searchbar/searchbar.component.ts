@@ -65,33 +65,4 @@ export class SearchbarComponent implements OnInit {
     this.products = [];
     this.products = this.bookList.slice(pageIndex, endIndex);
   }
-
-  AlphabetDown (e:any){
-    let value = e.target.value
-    console.log(value, "AlphabetDown")
-    if(value === 'author'){
-    this.products.sort((a, b) => {
-  return a.author > b.author ? 1 : -1; 
- })
-    }
-    this.products.sort((a, b) => {
-      return a.title > b.title ? 1 : -1;
-    })
-
-
-  }
-
-  AlphabetUp(e:any){
-    let value = e.target.value
-    console.log(value, "AlphabetUp")
-    if(value === 'author'){
-      this.products.sort(function (a, b) {
-        return a.author < b.author ? 1 : -1;
-      })
-      console.log(this.products)
-    }
-    this.products.sort(function (a, b) {
-      return a.title < b.title ? 1 : -1;
-    })
-  }
 } 

@@ -22,7 +22,7 @@ export class DetailsComponent implements OnInit {
   imageUrl?: string;
   get isLoggedIn() {
     return this.authService.isLoggedIn;
-  }
+  };
 
   owner: boolean | false = false
   
@@ -31,27 +31,25 @@ export class DetailsComponent implements OnInit {
     const modelDiv = document.getElementById('myModal');
     if(modelDiv!= null) {
       modelDiv.style.display = 'block';
-    } 
-  }
+    }; 
+  };
 
   CloseModel() { 
     const modelDiv = document.getElementById('myModal');
     if(modelDiv!= null) {
       modelDiv.style.display = 'none';
-    } 
-  }
+    };
+  };
   
 
 
   deleteHandler(){
-    
-    
       this.apiService.deleteBook(this.activatedRoute.snapshot.params?.["id"])
       .subscribe(() => {
         this.router.navigate([`/`])
-      })
+      });
     
-  }
+  };
 
   bookList: IBook[] | null = null;
   errorFetcingData = false
@@ -59,7 +57,6 @@ export class DetailsComponent implements OnInit {
       this.apiService.getOneBook(this.activatedRoute.snapshot.params?.["id"])
       .subscribe({
         next: (value) => {
-          console.log(this.authService.savedUser?._id, value[0].userId )
           if(value[0].userId === this.authService.savedUser?._id){
            this.owner = true;
           }
@@ -69,9 +66,9 @@ export class DetailsComponent implements OnInit {
           this.errorFetcingData = true;
          
         }
-      })
-    }
-  // return this.apiService.getOneBook(this.activatedRoute.snapshot.params?.["id"]);      
+      });
+    };
+   
   
 };
 

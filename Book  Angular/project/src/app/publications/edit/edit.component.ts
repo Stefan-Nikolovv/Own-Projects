@@ -30,13 +30,12 @@ export class EditComponent implements OnInit {
   });
  
   onSelectNewFile(elemnt: any): void {
-    console.log(elemnt?.target.files)
     if (elemnt.target.files?.length == 0) return;
     this.fileSelected = (elemnt.target.files as FileList)[0];
     this.imageUrl = this.sant.bypassSecurityTrustUrl(window.URL.createObjectURL(this.fileSelected)) as string;
     this.base64 = "Base64...";
     this.validationForm.get(['imageUrl'])?.setValue(this.imageUrl)
-  }
+  };
 
 
    file:string | null | undefined;
@@ -48,22 +47,20 @@ export class EditComponent implements OnInit {
      reader.onload = (e:any) => {
      this.file =  e.target.result;
      this.bookList[0].imageUrl = this.file;
-     }
-    }
+     };
+    };
       
-    }
+    };
   
   editHandler(){
   if(this.validationForm.invalid){
     return;
-  }
+  };
     
   const {author, title, description, type } = this.validationForm.value;
-  console.log(this.activatedRoute.snapshot.params?.["id"]);
       this.apiService.updateBook(this.activatedRoute.snapshot.params?.["id"], this.file as string, author as string, title as string, description as string, type as string )
       .subscribe((book) => {
-        console.log(book)
-        this.router.navigate([`publication/details/${book._id}`])
+        this.router.navigate([`publication/details/${book._id}`]);
       })
   };
 
