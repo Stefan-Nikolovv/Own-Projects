@@ -17,11 +17,11 @@ export class CreateComponent implements OnInit {
   barWidth: string = "0%";
 
   validationForm = this.fb.group({
-    title: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(10)]],
-    author: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(10)]],
+    title: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(20)]],
+    author: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(20)]],
     description: ['', [Validators.required,Validators.minLength(15), Validators.maxLength(100)]],
     createinputfile: [""],
-    type: ['', [Validators.required, Validators.minLength(15), Validators.maxLength(30)]]
+    type: ['', [Validators.required, Validators.minLength(10), Validators.maxLength(20)]]
   });
 
 

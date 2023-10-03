@@ -63,7 +63,7 @@ function createBook(req, res, next) {
 
 function getMyBooks(req, res, next) {
     const { _id: userId } = req.user;
-    
+        console.log()
     bookModel.find()
        
         .then((books) =>{

@@ -28,6 +28,7 @@ function register(req, res, next) {
             }
             res.status(200)
                 .send(createdUser);
+
         })
         .catch(err => {
             if (err.name === 'MongoError' && err.code === 11000) {
@@ -45,7 +46,7 @@ function register(req, res, next) {
 
 function login(req, res, next) {
     const { email, password } = req.body;
-
+    
     userModel.findOne({ email })
         .then(user => {
             return Promise.all([user, user ? user.matchPassword(password) : false]);
@@ -66,10 +67,10 @@ function login(req, res, next) {
             } else {
                 res.cookie(authCookieName, token, { httpOnly: true })
             }
-            console.log(res)
+           
             res.status(200)
                 .send(user);
-                console.log(res)
+                
         })
         
         .catch(next);

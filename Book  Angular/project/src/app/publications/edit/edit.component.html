@@ -1,75 +1,4 @@
-<!-- <section id="edit-page" class="edit" *ngIf="bookList">
-    <form id="edit-form" [formGroup]="validationForm" (ngSubmit)="editHandler()" >
-        <fieldset>
-            
-            <legend>Edit my Book</legend>
-            <p class="field">
-                <label for="title">Title</label>
-                <span class="input"> 
-                    <input formControlName="title" type="text" name="title" id="title" >
-                </span>
-            </p>
-           
-            <ng-container *ngIf="validationForm.get('title')?.touched">
-                <p class="error" *ngIf="validationForm.get('title')?.errors?.['required']">
-                    Title is required.
-                </p>
-                <p class="error" *ngIf="validationForm.get('title')?.errors?.['minlength']">
-                    Title must be at least 5 characters.
-                </p>
-                <p class="error" *ngIf="validationForm.get('title')?.errors?.['maxlength']">
-                    Title must be less than 10 characters.
-                </p>
 
-            </ng-container>
-            <p class="field">
-                <label for="description">Description</label>
-                <span class="input">
-                    <textarea name="description" formControlName="description"
-                        id="description" ></textarea>
-                </span>
-            </p>
-            <ng-container *ngIf="validationForm.get('description')?.touched">
-                <p class="error" *ngIf="validationForm.get('description')?.errors?.['required']">
-                    Description is required.
-                </p>
-                <p class="error" *ngIf="validationForm.get('description')?.errors?.['minlength']">
-                    Title must be at least 15 characters.
-                </p>
-                <p class="error" *ngIf="validationForm.get('description')?.errors?.['maxlength']">
-                    Title must be less than 150 characters.
-                </p>
-
-            </ng-container>
-            <p class="field">
-                <label for="image">Image</label>
-                <span class="input">
-                    <input formControlName="imageUrl" type="text" name="imageUrl" id="image" >
-                </span>
-            </p>
-            <ng-container *ngIf="validationForm.get('imageUrl')?.touched">
-                <p class="error" *ngIf="validationForm.get('imageUrl')?.errors?.['required']">
-                    Image is required.
-                </p>
-                
-
-            </ng-container>
-            <p class="field">
-                <label for="type">Type</label>
-                <span class="input">
-                    <select id="type" name="type" formControlName="type">
-                        <option value="Fiction">Fiction</option>
-                        <option value="Romance">Romance</option>
-                        <option value="Mistery">Mistery</option>
-                        <option value="Classic">Clasic</option>
-                        <option value="Other">Other</option>
-                    </select>
-                </span>
-            </p>
-            <input class="button submit" type="submit" value="Save">
-        </fieldset>
-    </form>
-</section> -->
 
 
 <div class="create-area rn-section-gapTop" *ngIf="bookList" >
@@ -138,7 +67,7 @@
                                     Title must be at least 5 characters.
                                 </p>
                                 <p class="error" *ngIf="validationForm.get('title')?.errors?.['maxlength']">
-                                    Title must be less than 10 characters.
+                                    Title must be less than 20 characters.
                                 </p>
                             </ng-container>
                         </div>
@@ -158,7 +87,7 @@
                                     Author must be at least 5 characters.
                                 </p>
                                 <p class="error" *ngIf="validationForm.get('author')?.errors?.['maxlength']">
-                                    Author must be less than 10 characters.
+                                    Author must be less than 20 characters.
                                 </p>
                             </ng-container>
                         </div>
@@ -192,10 +121,10 @@
                                     QR number is required.
                                 </p>
                                 <p class="error" *ngIf="validationForm.get('type')?.errors?.['minlength']">
-                                    QR number must be at least 15 characters.
+                                    QR number must be at least 10 characters.
                                 </p>
                                 <p class="error" *ngIf="validationForm.get('desctypeription')?.errors?.['maxlength']">
-                                    QR number must be less than 30 characters.
+                                    QR number must be less than 20 characters.
                                 </p>
                             </ng-container>
                             </div>

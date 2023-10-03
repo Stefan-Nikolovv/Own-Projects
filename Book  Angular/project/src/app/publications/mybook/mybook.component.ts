@@ -22,7 +22,7 @@ export class MybookComponent implements OnInit {
   constructor(private apiService: ApiService, private authService: AuthService){}
    
   ngOnInit(): void {
-    this.apiService.loadAll()
+    this.apiService.loadMyAllBooks()
     .subscribe({
       next: (value) => {
        this.bookList = value;
