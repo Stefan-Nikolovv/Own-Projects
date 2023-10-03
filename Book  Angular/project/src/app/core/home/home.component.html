@@ -9,7 +9,9 @@
                   products.</p>
               <div class="button-group">
                   <a class="btn btn-large btn-primary" routerLink="auth/login" data-sal-delay="400" data-sal="slide-up" data-sal-duration="800">Get Started</a>
-                  <a class="btn btn-large btn-primary-alta" routerLink="publication/create" data-sal-delay="500" data-sal="slide-up" data-sal-duration="800">Create</a>
+                  <a class="btn btn-large btn-primary-alta" *ngIf="isLoggedIn" routerLink="publication/create" data-sal-delay="500" data-sal="slide-up" data-sal-duration="800">Create</a>
+                  <a class="btn btn-large btn-primary-alta" *ngIf="!isLoggedIn" routerLink="auth/login" data-sal-delay="500" data-sal="slide-up" data-sal-duration="800">Login</a>
+                  
               </div>
           </div>
           <div class="col-lg-5 col-md-6 col-sm-12 offset-lg-1">
@@ -38,10 +40,19 @@
                           </div>
                           <div class="subtitle">Step-01</div>
                           <div class="content">
-                              <h4 class="title"><a *ngIf="!isLoggedIn" routerLink="auth/login">Create your collection</a></h4>
-                              <p class="description">A great collection of beautiful website templates for your need.
-                                  Choose the best suitable template.</p>
-                              <a class="read-more-button" routerLink="publication/create"><i class="feather-arrow-right"></i></a>
+                            <div *ngIf="!isLoggedIn">
+                                <h4 class="title"><a routerLink="auth/login">Create your collection</a></h4>
+                                <p class="description">A great collection of beautiful website templates for your need.
+                                    Choose the best suitable template.</p>
+                                <a class="read-more-button" routerLink="auth/login"><i class="feather-arrow-right"></i></a>
+                                </div>
+                            <div *ngIf="isLoggedIn">
+                                <h4 class="title"><a  routerLink="publication/create">Create your collection</a></h4>
+                                <p class="description">A great collection of beautiful website templates for your need.
+                                    Choose the best suitable template.</p>
+                                <a class="read-more-button" routerLink="publication/create"><i class="feather-arrow-right"></i></a>
+                                </div>
+                              
                           </div>
                       </div>
                       <a class="over-link" *ngIf="isLoggedIn" routerLink="publication/create"></a>
@@ -55,11 +66,18 @@
                             </div>
                             <div class="subtitle">Step-02</div>
                             <div class="content">
-                               
-                                <h4 class="title"><a *ngIf="!isLoggedIn"  routerLink="/auth/login">See your collection</a></h4>
+                               <div *ngIf="!isLoggedIn">
+                                <h4 class="title"><a   routerLink="/auth/login">See your collection</a></h4>
                                 <p class="description">We've made the template fully responsive, so it looks great on
                                     all devices: desktop, tablets and.</p>
-                                <a class="read-more-button"><i class="feather-arrow-right"></i></a>
+                                <a class="read-more-button" routerLink="/auth/login"><i class="feather-arrow-right"></i></a>
+                            </div>
+                            <div *ngIf="isLoggedIn">
+                                <h4 class="title"><a   routerLink="/publication/mybook">See your collection</a></h4>
+                                <p class="description">We've made the template fully responsive, so it looks great on
+                                    all devices: desktop, tablets and.</p>
+                                <a class="read-more-button" routerLink="/publication/mybook"><i class="feather-arrow-right"></i></a>
+                            </div>
                             </div>
                         </div>
                         <a class="over-link" *ngIf="isLoggedIn" routerLink="/publication/mybook"></a>
