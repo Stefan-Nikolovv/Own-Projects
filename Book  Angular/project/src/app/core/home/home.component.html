@@ -1,36 +1,10 @@
-<!-- <section id="dashboard-page" class="dashboard">
-  <h1>Book Libery</h1>
-  Display ul: with list-items for All books (If any)
-  
-  <ul class="other-books-list" *ngIf ="bookList.length">
-    <li class="otherBooks" *ngFor="let book of bookList; let i = index">
-      <h3> Title:{{ book.title }}</h3>
-      <p>Type: {{ book.type }}</p>
-      <img class="img" src="{{book.imageUrl}}"><img>
-      <a class="button" href="details/{{ book._id }}">Details</a>
-    </li>
 
-  </ul>
-
-  <div class="no-books" *ngIf=!bookList.length>
-    <p>No books yet created!</p>
-    <p>Want to create one?</p>
-    <div *ngIf="isLoggedIn">
-      <a class="button" href="/create">Click here.....</a>
-    </div>
-    <div *ngIf="!isLoggedIn">
-      <a class="button" href="/auth/login">Click here.....</a>
-    </div>
-   
-  </div>
-  
-</section> -->
 
  <div class="slider-one rn-section-gapTop">
   <div class="container">
       <div class="row row-reverce-sm align-items-center">
           <div class="col-lg-5 col-md-6 col-sm-12 mt_sm--50">
-              <h2 class="title" data-sal-delay="200" data-sal="slide-up" data-sal-duration="800">Discover Digital Art, Collect and Sell Your Specific NFTs.</h2>
+              <h2 class="title" data-sal-delay="200" data-sal="slide-up" data-sal-duration="800">Discover Digital Art, Create or Search Your Specific Books.</h2>
               <p class="slide-disc" data-sal-delay="300" data-sal="slide-up" data-sal-duration="800">Partner with one of the world’s largest retailers to showcase your brand and
                   products.</p>
               <div class="button-group">
@@ -51,7 +25,7 @@
         <div class="container">
             <div class="row">
                 <div class="col-12 mb--50">
-                    <h3 class="title" data-sal-delay="150" data-sal="slide-up" data-sal-duration="800">Create and sell your NFTs</h3>
+                    <h3 class="title" data-sal-delay="150" data-sal="slide-up" data-sal-duration="800">Create or See your Books</h3>
                 </div>
             </div>
             <div class="row g-5">
@@ -64,13 +38,13 @@
                           </div>
                           <div class="subtitle">Step-01</div>
                           <div class="content">
-                              <h4 class="title"><a routerLink="publication/create">Create your collection</a></h4>
+                              <h4 class="title"><a *ngIf="!isLoggedIn" routerLink="auth/login">Create your collection</a></h4>
                               <p class="description">A great collection of beautiful website templates for your need.
                                   Choose the best suitable template.</p>
                               <a class="read-more-button" routerLink="publication/create"><i class="feather-arrow-right"></i></a>
                           </div>
                       </div>
-                      <a class="over-link" routerLink="publication/create"></a>
+                      <a class="over-link" *ngIf="isLoggedIn" routerLink="publication/create"></a>
                   </div>
               </div>
                 <div class="col-xxl-3 col-lg-4 col-md-6 col-sm-6 col-12">
@@ -81,13 +55,14 @@
                             </div>
                             <div class="subtitle">Step-02</div>
                             <div class="content">
-                                <h4 class="title"><a routerLink="publication/mybook">See your collection</a></h4>
+                               
+                                <h4 class="title"><a *ngIf="!isLoggedIn"  routerLink="/auth/login">See your collection</a></h4>
                                 <p class="description">We've made the template fully responsive, so it looks great on
                                     all devices: desktop, tablets and.</p>
-                                <a class="read-more-button" href="#"><i class="feather-arrow-right"></i></a>
+                                <a class="read-more-button"><i class="feather-arrow-right"></i></a>
                             </div>
                         </div>
-                        <a class="over-link" routerLink="/publication/mybook"></a>
+                        <a class="over-link" *ngIf="isLoggedIn" routerLink="/publication/mybook"></a>
                     </div>
                 </div>
                 
@@ -106,19 +81,19 @@
                     <div class="copyright-left">
                         <span>©2022 Nuron, Inc. All rights reserved.</span>
                         <ul class="privacy">
-                            <li><a href="terms-condition.html">Terms</a></li>
-                            <li><a href="privacy-policy.html">Privacy Policy</a></li>
+                            <li><a >Terms</a></li>
+                            <li><a >Privacy Policy</a></li>
                         </ul>
                     </div>
                 </div>
                 <div class="col-lg-6 col-md-12 col-sm-12">
                     <div class="copyright-right">
                         <ul class="social-copyright">
-                            <li><a href="#"><i class="fa-brands fa-facebook-f"></i></a></li>
-                            <li><a href="#"><i class="fa-brands fa-twitter"></i></a></li>
-                            <li><a href="#"><i class="fa-brands fa-instagram"></i></a></li>
-                            <li><a href="#"><i class="fa-brands fa-linkedin"></i></a></li>
-                            <li><a href="#"><i class="fa-regular fa-envelope"></i></a></li>
+                            <li><a ><i class="fa-brands fa-facebook-f"></i></a></li>
+                            <li><a ><i class="fa-brands fa-twitter"></i></a></li>
+                            <li><a ><i class="fa-brands fa-instagram"></i></a></li>
+                            <li><a ><i class="fa-brands fa-linkedin"></i></a></li>
+                            <li><a ><i class="fa-regular fa-envelope"></i></a></li>
                         </ul>
                     </div>
                 </div>

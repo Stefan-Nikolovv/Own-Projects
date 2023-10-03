@@ -41,7 +41,7 @@
                           <label class="rn-check-box-label" for="exampleCheck1">Remember me leter</label>
                       </div>
                       <button type="submit" [disabled]="validationForm.invalid" class="btn btn-primary mr--15">Log In</button>
-                      <a routerLink="auth/register" class="btn btn-primary-alta">Sign Up</a>
+                      <a routerLink="/auth/register" class="btn btn-primary-alta">Sign Up</a>
                   </form>
               </div>
           </div>
@@ -60,54 +60,3 @@
 </div>
 
 
- <!-- <section id="login-page" class="login">
-  <form [formGroup]="validationForm" id="login-form" (ngSubmit)="loginHandler()">
-    <fieldset>
-      <legend>Login Form</legend>
-      <p class="field">
-        <label for="email">Email</label>
-        <span class="input"  >
-          <input
-            formControlName="email"
-            type="text"
-            name="email"
-            id="email"
-            placeholder="john.doe"
-            
-          />
-        </span>
-      </p>
-
-      <ng-container *ngIf="validationForm.get('email')?.touched">
-        <p class="error" *ngIf="validationForm.get('email')?.errors?.['required']">
-          Email is required!
-        </p>
-        <p class="error" *ngIf="validationForm.get('email')?.errors?.['emailValidator']">
-          Email is not valid!
-        </p>
-      </ng-container>
-      <p class="field">
-        <label for="password">Password</label>
-        <span class="input">
-          <input
-            type="password"
-            formControlName="password"
-            name="password"
-            id="password"
-            placeholder="Password"
-          />
-        </span>
-      </p>
-      <ng-container *ngIf="validationForm.get('password')?.touched">
-        <p class="error" *ngIf="validationForm.get('password')?.errors?.['required']">
-          Password is required!
-        </p>
-        <p class="error" *ngIf="validationForm.get('password')?.errors?.['minlength']">
-          Password must be at least 5 characters!
-        </p>
-      </ng-container>
-      <button class="form-btn" [disabled]="validationForm.invalid">Login</button>
-
-    </fieldset>
-  </form>
-</section>  -->
