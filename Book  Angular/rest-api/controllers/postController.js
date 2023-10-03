@@ -6,7 +6,7 @@ const { userModel, bookModel, postModel } = require('../models');
 
 function newPost(title, description, imageUrl, type, userId, bookId) {
 
-    console.log('title:', title , 'description:', description, imageUrl,'imageUrl',type, 'type',userId, 'userId',bookId, 'bookId')
+   
     return postModel.create({ title, description, imageUrl, type, userId, bookId })
         .then(post => {
             return Promise.all([
@@ -42,24 +42,24 @@ function createPost(req, res, next) {
 
 function editPost(req, res, next) {
     const { bookId } = req.params;
-    let { title, description, imageUrl, type } = req.body;
+    let {author, title, description, imageUrl, type } = req.body;
     const { _id: userId } = req.user;
    
     let fileName = '';
-
-    if (req.body.createFile) {
+   
+    if (!req.body.createFile.startsWith('http')) {
         
          fileName = uuidv4();
         let filePath = `${'../static/images'}/${fileName}`;
         let buffer = Buffer.from(req.body.createFile.split(',')[1], "base64")
        
         fs.writeFileSync(path.join(__dirname, filePath), buffer);
-         
+        imageUrl = `${'http://localhost:3000/public/images/'}${fileName}`
     }
-   
-    imageUrl = `${'http://localhost:3000/public/images/'}${fileName}`
+    imageUrl = req.body.createFile;
+    
     // if the userId is not the same as this one of the post, the post will not be updated
-    bookModel.findOneAndUpdate({ _id: bookId, userId }, { title, description, imageUrl, type }, { new: true })
+    bookModel.findOneAndUpdate({ _id: bookId, userId }, { author, title, description, imageUrl, type  }, { new: true })
         .then(updatedPost => {
             if (updatedPost) {
                 res.status(200).json(updatedPost);

@@ -21,7 +21,7 @@ function getBook(req, res, next) {
         .then((books) =>{
            
             const ownerOFBooks = books.filter(x => x._id.toString() == bookId.toString());
-            console.log(ownerOFBooks)
+            
             return res.json(ownerOFBooks)
         })
         
@@ -63,7 +63,7 @@ function createBook(req, res, next) {
 
 function getMyBooks(req, res, next) {
     const { _id: userId } = req.user;
-        console.log()
+       
     bookModel.find()
        
         .then((books) =>{

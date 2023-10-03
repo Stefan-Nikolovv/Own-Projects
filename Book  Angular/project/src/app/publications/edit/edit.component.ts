@@ -57,11 +57,16 @@ export class EditComponent implements OnInit {
     return;
   };
     
-  const {author, title, description, type } = this.validationForm.value;
-      this.apiService.updateBook(this.activatedRoute.snapshot.params?.["id"], this.file as string, author as string, title as string, description as string, type as string )
-      .subscribe((book) => {
-        this.router.navigate([`publication/details/${book._id}`]);
-      })
+  const { author, title, description, type } = this.validationForm.value;
+  
+  if(this.file === undefined){
+    this.file = this.bookList[0].imageUrl
+  }
+  console.log( this.file, author)
+       this.apiService.updateBook(this.activatedRoute.snapshot.params?.["id"], this.file as string, author as string, title as string, description as string, type as string )
+       .subscribe((book) => {
+         this.router.navigate([`publication/details/${book._id}`]);
+       })
   };
 
   

@@ -26,11 +26,10 @@ export class ApiService {
       };
 
       createBook(createFile: string,author: string, title: string,description: string, type: string ){
-        //const Fifi = btoa(file.toString());
        return this.httpClient.post<any>(`${apiURL}/books`,{createFile, author:author, title:title, description: description, type: type}, {withCredentials: true})
       };
 
-      updateBook(id: string, createFile: string, author: string, title: string,description: string, type: string) {
+      updateBook(id: string, createFile: string, author: string, title: string ,description: string, type: string) {
         return this.httpClient.put<any>(`${apiURL}/books/` + id, {createFile, author:author, title:title, description: description, type: type}, {withCredentials: true});
       };
       deleteBook(id: string) {

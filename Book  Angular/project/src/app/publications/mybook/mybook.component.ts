@@ -19,6 +19,7 @@ export class MybookComponent implements OnInit {
   itemsPerPage: number = 5;
   tableSizes: any = [5, 10, 15, 20];
   totalProducts: number = 1;
+  
   constructor(private apiService: ApiService, private authService: AuthService){}
    
   ngOnInit(): void {
