@@ -8,33 +8,31 @@ import { IBook } from 'src/app/shared/interfaces/book';
   templateUrl: './libery.component.html',
   styleUrls: ['./libery.component.css']
 })
-export class LiberyComponent {
+export class LiberyComponent implements OnInit {
   get isLoggedIn() {
     return this.authService.isLoggedIn;
   }
   bookList: IBook[] | any;
+  products: any[] = [];
   errorFetcingData = false;
   dataBooks = false;
   Books: any;
-  page: number = 1;
+  public selectedPage = 1;
   count: number = 1;
-  itemsPerpage: number = 4;
+  itemsPerPage: number = 5;
   tableSizes: any = [5, 10, 15, 20];
   totalProducts: number = 1;
   
   constructor(private apiService: ApiService, private authService: AuthService){}
 
   ngOnInit(): void {
-    this.booksList();
-  }
-
-  booksList():void{
     this.apiService.loadAll()
     .subscribe({
       next: (value) => {
         
-        this.bookList = value;
-        this.totalProducts = value.length;
+       this.bookList = value;
+       let pageIndex = (this.selectedPage - 1) * this.itemsPerPage;
+       this.products = this.bookList.slice(pageIndex, this.itemsPerPage);
         
       },
       error: (err) => {
@@ -42,16 +40,77 @@ export class LiberyComponent {
         this.dataBooks = true
       }
     })
-  } 
+    
+  }
 
-  onTableDataChange(event: any){
-    this.page = event;
-    this.booksList();
-  }
+
+
+
   onTableSizeChange(event: any){
-    console.log(event)
-    this.itemsPerpage = event.target.value;
-    this.page = 1;
-    this.booksList();
+   
+    if(event.target.attributes[0].value > 0){
+      const newSize = (event.target.attributes[0].nodeValue as HTMLInputElement)
+      this.itemsPerPage = Number(newSize);
+      this.changePage(1);
+
+    }
+   
   }
-}
+
+  changePage(page : any){
+    this.selectedPage = page;
+    this.slicedItems();
+  }
+  get pageNumbers(): number[]{
+   
+  let items = Array(Math.ceil(this.bookList.length / this.itemsPerPage))
+    .fill(0).map((x,i) => i + 1)
+   
+    return items;
+  }
+  slicedItems(){
+    let pageIndex = (this.selectedPage - 1) * this.itemsPerPage;
+    let endIndex = (this.selectedPage - 1) * this.itemsPerPage + this.itemsPerPage;
+    this.products = [];
+    this.products = this.bookList.slice(pageIndex, endIndex);
+  }
+
+  authorSort(event:any){
+    let value = event.target.attributes[0].value
+    if(value === 'acn'){
+     this.products.sort(function(a, b){
+                const nameA = a.author[0].toLowerCase();
+                const nameB = b.author[0].toLowerCase();
+                  return nameA > nameB ? 1 : -1;   
+            });
+    };
+    if(value === 'desc'){
+      this.products.sort(function(a, b){
+                 const nameA = a.author[0].toLowerCase();
+                 const nameB = b.author[0].toLowerCase();
+                   return nameA < nameB ? 1 : -1;  
+             });
+     };
+
+  };
+
+  titleSort(event:any){
+    let value = event.target.attributes[0].value
+    if(value === 'acn'){
+     this.products.sort(function(a, b){
+                const nameA = a.title[0].toLowerCase();
+                const nameB = b.title[0].toLowerCase();
+                  return nameA > nameB ? 1 : -1;   
+            });
+    };
+    if(value === 'desc'){
+      this.products.sort(function(a, b){
+                 const nameA = a.title[0].toLowerCase();
+                 const nameB = b.title[0].toLowerCase();
+                   return nameA < nameB ? 1 : -1;  
+             });
+     };
+
+  };
+
+} 

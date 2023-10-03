@@ -13,6 +13,7 @@ router.get('/:bookId', bookController.getBook);
 
 router.put('/:bookId', auth(), postController.editPost);
 router.delete('/:bookId', auth(), postController.deletePost);
+router.post('/search', bookController.getSearchedBook)
 
 // router.get('/my-trips/:id/reservations', auth(), themeController.getReservations);
 

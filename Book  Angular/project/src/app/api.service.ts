@@ -16,6 +16,10 @@ export class ApiService {
         return this.httpClient.get<any>(`${apiURL}/books`)
       };
 
+      searchBook(keyword :string){
+        return this.httpClient.post<any>(`${apiURL}/books/search`, { keyword })
+      }
+
 
       getOneBook(id: number){
         return this.httpClient.get<any>(`${apiURL}/books/${id}`);
@@ -26,8 +30,8 @@ export class ApiService {
        return this.httpClient.post<any>(`${apiURL}/books`,{createFile, author:author, title:title, description: description, type: type}, {withCredentials: true})
       };
 
-      updateBook(id: string, title: string,description: string, imageUrl: string, type: string) {
-        return this.httpClient.put<any>(`${apiURL}/books/` + id, { title, description, imageUrl, type }, {withCredentials: true});
+      updateBook(id: string, createFile: string, author: string, title: string,description: string, type: string) {
+        return this.httpClient.put<any>(`${apiURL}/books/` + id, {createFile, author:author, title:title, description: description, type: type}, {withCredentials: true});
       };
       deleteBook(id: string) {
         console.log('delete')

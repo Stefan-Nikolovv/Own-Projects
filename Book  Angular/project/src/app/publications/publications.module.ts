@@ -8,8 +8,7 @@ import { DetailsComponent } from './details/details.component';
 import { MybookComponent } from './mybook/mybook.component';
 import { NgxPaginationModule } from 'ngx-pagination';
 import { LiberyComponent } from './libery/libery.component';
-
-
+import { DialogCompComponent } from './dialog-comp/dialog-comp.component';
 
 
 @NgModule({
@@ -19,12 +18,14 @@ import { LiberyComponent } from './libery/libery.component';
     DetailsComponent,
     MybookComponent,
     LiberyComponent,
+    DialogCompComponent,
+   
   ],
   imports: [
     CommonModule,
     publicationRouterModule,
     ReactiveFormsModule,
-    NgxPaginationModule
+   
   ],
   
 })

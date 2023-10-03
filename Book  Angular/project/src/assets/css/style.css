@@ -473,6 +473,7 @@ var {
 /*---------------------------
 	List Style 
 ---------------------------*/
+
 ul,
 ol {
   padding-left: 18px;
@@ -6840,7 +6841,9 @@ input[type=radio] ~ label::after {
 .form-group textarea:focus {
   border-color: var(--color-primary);
 }
-
+.error{
+  display: contents;
+}
 input[type=submit] {
   width: auto;
   padding: 0 30px;
@@ -11793,7 +11796,7 @@ body.sal-disabled [data-sal|=flip] {
 .haeder-default .header-left {
   display: flex;
   align-items: center;
-  justify-content: start;
+  justify-content: flex-start;
   flex-basis: 55%;
 }
 @media only screen and (min-width: 992px) and (max-width: 1199px) {
@@ -18303,12 +18306,12 @@ button .small-image {
 }
 @media only screen and (min-width: 768px) and (max-width: 991px) {
   .default-exp-wrapper .inner {
-    justify-content: start;
+    justify-content: flex-start;
   }
 }
 @media only screen and (max-width: 767px) {
   .default-exp-wrapper .inner {
-    justify-content: start;
+    justify-content: flex-start;
   }
 }
 .default-exp-wrapper .inner .filter-select-option {
@@ -18334,6 +18337,15 @@ button .small-image {
   .default-exp-wrapper .inner .filter-select-option {
     flex-basis: 100%;
   }
+}
+
+.customItems {
+  display: flex;
+ 
+    flex-flow: column;
+   
+    flex-direction: row-reverse;
+    width: 95%;
 }
 .default-exp-wrapper .inner .filter-select-option .filter-leble {
   display: block;
@@ -24171,4 +24183,5 @@ body.active-light-mode {
   color: #fff;
   text-shadow: 1px 0 0 #000, 0 -1px 0 #000, 0 1px 0 #000, -1px 0 0 #000;
 }
+
 /*# sourceMappingURL=../maps/style.css.map */

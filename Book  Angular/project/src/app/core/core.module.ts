@@ -5,18 +5,19 @@ import { RouterModule } from '@angular/router';
 import { HomeComponent } from './home/home.component';
 import { SharedModule } from '../shared/shared.module';
 import { NgxPaginationModule } from 'ngx-pagination';
-
-
+import { SearchbarComponent } from './searchbar/searchbar.component';
+import { ReactiveFormsModule } from '@angular/forms';
 @NgModule({
   declarations: [
     HeaderComponent,
     HomeComponent,
+    SearchbarComponent,
   ],
   imports: [
     CommonModule,
     RouterModule,
     SharedModule,
-    NgxPaginationModule
+    ReactiveFormsModule
   ],
   exports:[
     HeaderComponent

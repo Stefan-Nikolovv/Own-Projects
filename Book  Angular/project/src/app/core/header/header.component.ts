@@ -1,5 +1,8 @@
-import { Component} from '@angular/core';
-
+import { Component } from '@angular/core';
+import { FormBuilder, Validators } from '@angular/forms';
+import { DomSanitizer } from '@angular/platform-browser';
+import { Router } from '@angular/router';
+import { ApiService } from 'src/app/api.service';
 import { AuthService } from 'src/app/auth/auth.service';
 
 @Component({
@@ -9,7 +12,7 @@ import { AuthService } from 'src/app/auth/auth.service';
 })
 export class HeaderComponent {
 
-  
+ 
   get isLoggedIn() {
     return this.authService.isLoggedIn;
   }
@@ -19,8 +22,22 @@ export class HeaderComponent {
   };
 
 
-constructor(private authService: AuthService){}
+  validationForm = this.fb.group({
+    keyword: ['', [Validators.required]]
+   
+  });
 
+constructor(private fb: FormBuilder, private router: Router, private apiSerivce: ApiService, private sant: DomSanitizer, private authService: AuthService){}
 
+createdHandler(){
+  
+  if(this.validationForm.invalid) {
+    return;
+  }
+  const { keyword } = this.validationForm.value;
+ 
+    this.router.navigate(['/search'], { queryParams: { book: keyword } })
+    
+}
 
 }

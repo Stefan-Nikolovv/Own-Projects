@@ -47,16 +47,11 @@ export class CreateComponent implements OnInit {
      reader.readAsDataURL(event.target.files[0]);
      reader.onload = (e:any) => {
      this.file =  e.target.result;
-     console.log(e.target.result)
+     
      }
     }
       
     }
-
-  
-  onUpload(){
-    console.log('here');
-  }
 
   createdHandler(){
     console.log(this.validationForm.controls.createinputfile, 'createHandler')

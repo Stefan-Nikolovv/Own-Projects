@@ -1,55 +1,133 @@
-<div class="rn-collection-area rn-section-gapTop">
-    <div class="container">
-        <div class="row g-5"  >
-            <div>
-                <select (change)="onTableSizeChange($event)">
-                    <option *ngFor="let size of tableSizes">
-                        {{size}}
-                    </option>
-                </select>
-            </div>
-            <!-- start single collention -->
-            <div data-sal="slide-up " data-sal-delay="150" data-sal-duration="800" class="col-lg-4 col-xl-3 col-md-6 col-sm-6 col-12" 
-            *ngFor="let book of bookList  | paginate : {
-                
-                itemsPerPage: itemsPerpage,
-                currentPage: page,
-                totalItems: count
-                
-                }; let i = index"
-                
-            >
-                {{itemsPerpage}}
-                <a routerLink="details/{{ book._id }}" class="rn-collection-inner-one">
-                    <div class="collection-wrapper">
-                        <div class="collection-big-thumbnail">
-                            <img src="{{book.imageUrl}}" alt="Nft_Profile">
-                        </div>
-                        <div class="collection-deg">
-                            <h6 class="title">{{book.author}}</h6>
-                            <span class="items">27 Items</span>
-                        </div>
-                    </div>
-                </a>
-            </div>
-           
-        </div>
-        <div class="row">
-            <div class="col-lg-12" data-sal="slide-up" data-sal-delay="550" data-sal-duration="800">
-                <nav class="pagination-wrapper" aria-label="Page navigation example">
-                    <ul class="pagination">
-                        <pagination-controls 
-                        previousLabel="Prev"
-                        nextLabel="Next"
-                        [responsive]="true"
-                        (pageChange)="onTableDataChange($event)"
-                        >
-
-                        </pagination-controls>
-                    </ul>
-                </nav>
-            </div>
-        </div>
+<!-- 
+-->
+<div class="rn-product-area rn-section-gapTop">
+  <div class="container" >
+    <div class="row mb--50 align-items-center">
+      <div class="col-lg-6 col-md-6 col-sm-6 col-12">
+        <h3
+          class="title mb--0"
+          data-sal-delay="150"
+          data-sal="slide-up"
+          data-sal-duration="800"
+        >
+          Explore Product
+        </h3>
+      </div>
     </div>
 
+    <div class="default-exp-wrapper">
+      <div class="inner">
+        <div class="filter-select-option" (click)="titleSort($event)">
+          <label class="filter-leble">Title</label>
+          <select>
+            <option value="acn">Acending</option>
+            <option value="desc">Decending</option>
+          </select>
+        </div>
+
+        <div class="filter-select-option" (click)="authorSort($event)">
+          <label class="filter-leble">Author</label>
+          <select>
+            <option value="acn" >Acending</option>
+            <option value="desc">Decending</option>
+          </select>
+        </div>
+
+        <div class="filter-select-option" (click)="onTableSizeChange($event)">
+          <label class="filter-leble">Items</label>
+          <select [value]="itemsPerPage" >
+            <option value="5">5 Items</option>
+            <option value="10">10 Items</option>
+            <option value="15">15 Items</option>
+            <option value="20">20 Items</option>
+          </select>
+        </div>
+
+        <!-- <div class="filter-select-option">
+          <label class="filter-leble">Price Range</label>
+          <div class="price_filter s-filter clear">
+            <form action="#" method="GET">
+              <div id="slider-range"></div>
+              <div class="slider__range--output">
+                <div class="price__output--wrap">
+                  <div class="price--output">
+                    <span>Price :</span
+                    ><input type="text" id="amount" readonly />
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div> -->
+      </div>
+    </div>
+    <div class="rn-collection-area rn-section-gapTop">
+      <div class="row g-5">
+        <div class="row g-5">
+          <div
+            class="col-lg-4 col-md-6 col-sm-12"
+            *ngFor="let product of products"
+          >
+            <div class="product-style-one no-overlay with-placeBid">
+              <div class="card-thumbnail">
+                <a href="product-details.html">
+                  <img [src]="product.imageUrl" alt="NFT_portfolio" />
+                </a>
+                <a
+                  [routerLink]="['/publication/details', product._id]"
+                  class="btn btn-primary"
+                  >Details</a
+                >
+              </div>
+              <div class="product-share-wrapper">
+                <div class="share-btn share-btn-activation dropdown">
+                  <div
+                    class="share-btn-setting dropdown-menu dropdown-menu-end"
+                  >
+                    <button
+                      type="button"
+                      class="btn-setting-text share-text"
+                      data-bs-toggle="modal"
+                      data-bs-target="#shareModal"
+                    >
+                      Share
+                    </button>
+                    <button
+                      type="button"
+                      class="btn-setting-text report-text"
+                      data-bs-toggle="modal"
+                      data-bs-target="#reportModal"
+                    >
+                      Report
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <a href="product-details.html"
+                ><span class="product-name">{{ product.author }}</span></a
+              >
+              <span class="latest-bid">{{ product.title }}</span>
+              <div class="bid-react-area">
+                <div class="react-area"></div>
+              </div>
+            </div>
+          </div>
+
+          <nav class="pagination-wrapper" aria-label="Page navigation example">
+            <ul class="pagination single-column-blog">
+              <li
+                class="page-item"
+                *ngFor="let page of pageNumbers"
+                (click)="changePage(page)"
+              >
+                <a class="page-link" [class.active]="page == selectedPage">{{
+                  page
+                }}</a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

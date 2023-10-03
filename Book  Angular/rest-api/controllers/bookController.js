@@ -19,8 +19,9 @@ function getBook(req, res, next) {
     bookModel.find()
        
         .then((books) =>{
-            
+           
             const ownerOFBooks = books.filter(x => x._id.toString() == bookId.toString());
+            console.log(ownerOFBooks)
             return res.json(ownerOFBooks)
         })
         
@@ -46,7 +47,7 @@ function createBook(req, res, next) {
     }
    
     imageUrl = `${'http://localhost:3000/public/images/'}${fileName}`
-    console.log(userId)
+  
     bookModel.create({ author, title, description, imageUrl, type, userId })
     .then(post => {
         return Promise.all([
@@ -74,20 +75,24 @@ function getMyBooks(req, res, next) {
         .catch(next);
 }
 
-// function subscribe(req, res, next) {
-//     const bookId = req.params.bookId;
-//     const { _id: userId } = req.user;
-//     bookModel.findByIdAndUpdate({ _id: bookId }, { $addToSet: { subscribers: userId } }, { new: true })
-//         .then(updatedBook => {
-//             res.status(200).json(updatedBook)
-//         })
-//         .catch(next);
-// }
+function getSearchedBook(req, res, next) {
+    const {  keyword: keyword } = req.body;
+   const foundBooks =  bookModel.find({$or:[{author: keyword},{title:keyword}]}, function (err, books){
+        if(err){
+            res.send(err)
+        }
+        
+      return  res.json(books)
+    });
+    
+    
+}
 
 module.exports = {
     getBooks,
     createBook,
     getBook,
-    getMyBooks
+    getMyBooks,
+    getSearchedBook
    
 }

@@ -15,9 +15,6 @@ import { PublicationsModule } from './publications/publications.module';
 import { API_ERROR } from './shared/constants';
 import { SharedModule } from './shared/shared.module';
 
-
-
-
 @NgModule({
   declarations: [
     AppComponent,
@@ -31,7 +28,7 @@ import { SharedModule } from './shared/shared.module';
     FormsModule,
     ReactiveFormsModule,
     HttpClientModule,
-    NgxPaginationModule,
+    
   ],
   providers: [
     appInterceptorProvider,

@@ -9,43 +9,58 @@ import { IBook } from 'src/app/shared/interfaces';
   styleUrls: ['./mybook.component.css']
 })
 export class MybookComponent implements OnInit {
-title = 'pagination';
-Books: any;
-page: number = 1;
-count: number = 1;
-tableSize: number = 10;
-tableSizes: any = [5, 10, 15, 20];
   bookList: IBook[] | any;
+  products: any[] = [];
   errorFetcingData = false;
   dataBooks = false;
+  Books: any;
+  public selectedPage = 1;
+  count: number = 1;
+  itemsPerPage: number = 5;
+  tableSizes: any = [5, 10, 15, 20];
+  totalProducts: number = 1;
   constructor(private apiService: ApiService, private authService: AuthService){}
    
   ngOnInit(): void {
-   this.booksList();
+    this.apiService.loadAll()
+    .subscribe({
+      next: (value) => {
+        console.log(value)
+       this.bookList = value;
+       let pageIndex = (this.selectedPage - 1) * this.itemsPerPage;
+       this.products = this.bookList.slice(pageIndex, this.itemsPerPage);
+        
+      },
+      error: (err) => {
+        this.errorFetcingData = true;
+        this.dataBooks = true
+      }
+    })
+    
   }
 
-  booksList(): void  {
-    this.apiService.loadMyAllBooks()
-  .subscribe({
-    next: (value) => {
-     console.log(value)
-      this.bookList = value;
-    },
-    error: (err) => {
-     
-      this.errorFetcingData = true;
-      this.dataBooks = true
-    }
-  })
-  }
-
-  onTableDataChange(event: any){
-    this.page = event;
-    this.booksList();
-  }
   onTableSizeChange(event: any){
-    this.tableSize = event.target.value;
-    this.page = 1;
-    this.booksList();
+    const newSize = (event.target as HTMLInputElement).value
+    this.itemsPerPage = Number(newSize);
+    this.changePage(1);
+  }
+
+  changePage(page : any){
+    this.selectedPage = page;
+    this.slicedItems();
+  }
+  get pageNumbers(): number[]{
+   
+  let items = Array(Math.ceil(this.bookList.length / this.itemsPerPage))
+    .fill(0).map((x,i) => i + 1)
+   
+    return items;
+  }
+  slicedItems(){
+    let pageIndex = (this.selectedPage - 1) * this.itemsPerPage;
+    let endIndex = (this.selectedPage - 1) * this.itemsPerPage + this.itemsPerPage;
+    this.products = [];
+    this.products = this.bookList.slice(pageIndex, endIndex);
   }
 }
+

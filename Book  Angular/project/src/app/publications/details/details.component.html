@@ -1,23 +1,245 @@
-<!-- 
-<section id="details-page" class="details" *ngIf="bookList">
-    <div class="book-information" >
-        <h3>{{bookList[0].title}}</h3>
-        <p class="type">Type: {{bookList[0].type}}</p>
-        <img class="img" src="{{bookList[0].imageUrl}}"><img>
-        <div class="actions">
-            
-            <ng-container *ngIf="isLoggedIn && owner">
-            <a class="button" href="edit/{{bookList[0]._id}}">Edit</a>
-            <a class="button" (click)="deleteHandler()">Delete</a>
+<!-- <section id="create-page" class="create">
+    <form [formGroup]="validationForm" id="create-form"  (ngSubmit)="createdHandler()" >
+        <fieldset>
+            <legend>Add new Book</legend>
+            <p class="field">
+                <label for="title">Title</label>
+                <span class="input">
+                    <input formControlName="title" type="text" name="title" id="title" placeholder="Title">
+                </span>
+            </p>
+            <ng-container *ngIf="validationForm.get('title')?.touched">
+                <p class="error" *ngIf="validationForm.get('title')?.errors?.['required']">
+                    Title is required.
+                </p>
+                <p class="error" *ngIf="validationForm.get('title')?.errors?.['minlength']">
+                    Title must be at least 5 characters.
+                </p>
+                <p class="error" *ngIf="validationForm.get('title')?.errors?.['maxlength']">
+                    Title must be less than 10 characters.
+                </p>
             </ng-container>
-
-           
-        </div>
-    </div>
-    <div class="book-description">
-        <h3>Description:</h3>
-        <p>{{bookList[0].description}}</p>
-    </div>
+            <p class="field">
+                <label for="description">Description</label>
+                <span class="input">
+                    <textarea formControlName="description" name="description" id="description" placeholder="Description"></textarea>
+                </span>
+            </p>
+            <ng-container *ngIf="validationForm.get('description')?.touched">
+                <p class="error" *ngIf="validationForm.get('description')?.errors?.['required']">
+                    Description is required.
+                </p>
+                <p class="error" *ngIf="validationForm.get('description')?.errors?.['minlength']">
+                    Title must be at least 15 characters.
+                </p>
+                <p class="error" *ngIf="validationForm.get('description')?.errors?.['maxlength']">
+                    Title must be less than 150 characters.
+                </p>
+            </ng-container>
+            <p class="field">
+                <label for="image">Image</label>
+                <span class="input">
+                    <input formControlName="imageUrl" type="text" name="imageUrl" id="image" placeholder="Image">
+                </span>
+            </p>
+            <ng-container *ngIf="validationForm.get('imageUrl')?.touched">
+                <p class="error" *ngIf="validationForm.get('imageUrl')?.errors?.['required']">
+                    Image is required.
+                </p>
+            </ng-container>
+            <p class="field">
+                <label for="type">Type</label>
+                <span class="input">
+                    <select id="type" name="type" formControlName="type">
+                        <option value="Fiction">Fiction</option>
+                        <option value="Romance">Romance</option>
+                        <option value="Mistery">Mistery</option>
+                        <option value="Classic">Clasic</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </span>
+            </p>
+            <input class="button submit" type="submit" value="Add Book">
+        </fieldset>
+    </form>
 </section> -->
 
+<div class="create-area rn-section-gapTop" *ngIf="bookList">
+  <div class="container">
+    <div class="row g-5">
+      <div class="col-lg-3 offset-1 ml_md--0 ml_sm--0">
+        <!-- file upload area -->
+        <div class="upload-area">
+          <div class="upload-formate mb--30">
+            <!-- <h6 class="title">
+                            Upload file
+                        </h6>
+                        <p class="formate">
+                            Drag or choose your file to upload
+                        </p> -->
+          </div>
 
+          <div class="brows-file-wrapper">
+            <div class="form-group">
+              <!-- <input
+                name="createinputfile"
+                id="createinputfile"
+                type="file"
+                class="inputfile"
+              /> -->
+
+              <img
+                id="createfileImage"
+                [src]="bookList[0].imageUrl"
+                alt=""
+                data-black-overlay="6"
+              />
+              our custom upload button <
+              <label for="createinputfile" title="No File Choosen">
+                <!-- <i class="feather-upload"></i>
+                            <span class="text-center text-black-border">Choose a File</span>
+                            <p class="text-center mt--10 text-black-border">PNG, GIF, WEBP, MP4 or MP3. <br>    Max 1Gb.</p> -->
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-7">
+        <div class="form-wrapper-one">
+          <form class="row">
+            <div class="col-md-12">
+              <div class="input-box pb--20">
+                <label for="title" class="form-label">Book Title</label>
+
+                <div
+                  id="title"
+                  placeholder="e. g. `The Little Prince`"
+                  type="text"
+                  name="title"
+                >
+                  {{ bookList[0].title }}
+                </div>
+              </div>
+            </div>
+            <div class="col-md-12">
+              <div class="input-box pb--20">
+                <label for="author" class="form-label">Author</label>
+                <div
+                  id="name"
+                  type="text"
+                  name="author"
+                  placeholder="e. g. `Antoine de Saint-Exupéry`"
+                >
+                  {{ bookList[0].author }}
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-12">
+              <div class="input-box pb--20">
+                <label for="Discription" class="form-label">Description</label>
+                <div
+                  id="Discription"
+                  rows="3"
+                  name="description"
+                  placeholder="e. g. “The story follows a young prince who visits various planets”"
+                >
+                  {{ bookList[0].description }}
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="input-box pb--20">
+                <label for="type" class="form-label">Item QR number</label>
+                <div
+                  id="type"
+                  id="type"
+                  name="type"
+                  placeholder="e. g. `specific number`"
+                >
+                  {{ bookList[0].type }}
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-4 col-sm-4">
+              <!-- <div class="input-box pb--20 rn-check-box">
+                                <input class="rn-check-box-input" type="checkbox" id="putonsale">
+                                <label class="rn-check-box-label" for="putonsale">
+                                    Delete
+                                </label>
+                            </div> -->
+            </div>
+
+            <div class="col-md-4 col-sm-4">
+              <!-- <div class="input-box pb--20 rn-check-box">
+                                <input class="rn-check-box-input" type="checkbox" id="instantsaleprice">
+                                <label class="rn-check-box-label" for="instantsaleprice">
+                                    Instant Sale Price
+                                </label>
+                            </div> -->
+            </div>
+
+            <div class="col-md-4 col-sm-4">
+              <!-- <div class="input-box pb--20 rn-check-box">
+                                <input class="rn-check-box-input" type="checkbox" id="unlockpurchased" >
+                                <label class="rn-check-box-label" for="unlockpurchased">
+                                    Delete
+                                </label>
+                            </div> -->
+            </div>
+
+            <div class="col-md-12 col-xl-4">
+              <!-- <div class="input-box">
+                                <button type="button" class="btn btn-primary-alta btn-large w-100" data-bs-toggle="modal" data-bs-target="#uploadModal">Preview</button>
+                            </div> -->
+            </div>
+            <ng-container *ngIf="isLoggedIn && owner">
+              <div class="col-md-12 col-xl-8 mt_lg--15 mt_md--15 mt_sm--15">
+                <div class="input-box">
+                  <button
+                    class="btn btn-primary btn-large w-50"
+                    (click)="openModel($event)"
+                  >
+                    Delete
+                  </button>
+
+                  <button
+                    class="btn btn-primary btn-large w-50"
+                    [routerLink]="['/publication/edit', bookList[0]._id]"
+                  >
+                    Edit
+                  </button>
+                </div>
+              </div>
+            </ng-container>
+            <div class="modal" tabindex="-1" role="dialog" id="myModal">
+                <div class="modal-dialog" role="document">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title">Modal title</h5>
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true"></span>
+                      </button>
+                    </div>
+                    <div class="modal-body">
+                      <p>Are you sure want to delete this?</p>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-primary"(click)="CloseModel()" (click)="deleteHandler()" >Delete Item</button>
+                      <button type="button" class="btn btn-secondary" (click)="CloseModel()" data-dismiss="modal">Close</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+             
+            
+          </form>
+        </div>
+        
+      </div>
+    </div>
+  </div>
+</div>

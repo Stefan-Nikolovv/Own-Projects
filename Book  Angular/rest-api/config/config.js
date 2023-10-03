@@ -3,7 +3,7 @@ const env = process.env.NODE_ENV || 'development';
 const config = {
     development: {
         port: process.env.PORT || 3000,
-        dbURL: 'mongodb://127.0.0.1:27017/bookLibery',
+        dbURL: 'mongodb://127.0.0.1/bookLibery',
         origin: ['http://localhost:5555', 'http://localhost:4200']
     },
     production: {
@@ -14,3 +14,6 @@ const config = {
 };
 
 module.exports = config[env];
+
+//latest nodeJS working with this link : mongodb://127.0.0.1/Crypto-Web;
+//old version is working on port mongodb://localhost:27017/Crypto-Web;

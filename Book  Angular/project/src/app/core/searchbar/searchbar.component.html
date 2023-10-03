@@ -1,0 +1,46 @@
+<div class="rn-collection-area rn-section-gapTop">
+    <div class="container">
+        <div class="row g-5"  >
+          
+                <select [value] = "itemsPerPage"  (change) = "onTableSizeChange($event)">
+                   
+                       <option value=5>5 Items</option>
+                       <option value=10>10 Items</option>
+                       <option value=15>15 Items</option>
+                       <option value=20>20 Items</option>
+                   
+                </select>
+            
+            <!-- start single collention -->
+            <div data-sal="slide-up " data-sal-delay="150" data-sal-duration="800" class="col-lg-4 col-xl-3 col-md-6 col-sm-6 col-12" 
+            *ngFor="let product of products"
+                
+            >
+               
+                <a routerLink="details/{{ product._id }}" class="rn-collection-inner-one">
+                    <div class="collection-wrapper">
+                        <div class="collection-big-thumbnail">
+                            <img [src]="product.imageUrl" alt="Nft_Profile">
+                        </div>
+                        <div class="collection-deg">
+                            <h6 class="title">{{product.author}}</h6>
+                            <span class="items">27 Items</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+           
+        </div>
+        <div class="row">
+            <div class="col-lg-12" data-sal="slide-up" data-sal-delay="550" data-sal-duration="800">
+                <nav class="pagination-wrapper" aria-label="Page navigation example">
+                    <ul class="pagination">
+                        <li class="page-item" *ngFor= "let page of pageNumbers" (click) ="changePage(page)" ><a class="page-link"  [class.active]="page == selectedPage">{{page}}</a></li>
+                      
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+</div>
