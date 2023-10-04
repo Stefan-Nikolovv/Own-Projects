@@ -2,11 +2,11 @@
 
 This project was created by [Stefan Nikolov](https://github.com/Stefan-Nikolovv/Own-Projects/tree/main/Book%20%20Angular).
 
-## Discover Digital Art, Create and Search Your Specific Books.
+## Discover Digital Art, Create and Search Your Specific Book.
 
 Partner with one of the world’s largest retailers to showcase your brand and products.
 
-### `You can add Books`
+### `You can add Book`
 
 By creating a book it is directly uploaded in Book Library.
 
@@ -26,6 +26,8 @@ Deleting Book is very easy, can be done any time you want.
 
 **Note: You can delete only Books that are your own**
 ### `DataBase is used MongoDB`
-if you use 18.xx.xx version of  nodeJS working with this link : mongodb://127.0.0.1/"DB-Name";
-if you use older version than 18.xx.xx is working on port mongodb://localhost:27017/"DB-Name";
+if you use 18.xx.xx version of  nodeJS working with this link : mongodb://127.0.0.1/"DB-Name".
 
+if you use older version than 18.xx.xx is working on port mongodb://localhost:27017/"DB-Name".
+
+**Note: When you connected to the DataBase please create user and add a few posts**
