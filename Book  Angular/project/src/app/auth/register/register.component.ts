@@ -23,7 +23,7 @@ export class RegisterComponent {
     })
   });
  
-
+  errorMessage: string = "";
 
   constructor(private fb: FormBuilder, private router: Router, private authService: AuthService){}
 
@@ -34,8 +34,15 @@ export class RegisterComponent {
     const {firstName, lastName, email, pass: {password, rePassword} = {}} = this.validationForm.value;
     
     this.authService.register(firstName as string, lastName as string, email as string, password as string)
-    .subscribe(user => {
-      this.router.navigate(['/']);
-    })
+    .subscribe( {
+      next: (user) => {
+        
+        this.router.navigate(['/']);
+      },
+      error: (err) => {
+        this.errorMessage = "This user already exists!";
+      }
+      
+    });
   }
 }

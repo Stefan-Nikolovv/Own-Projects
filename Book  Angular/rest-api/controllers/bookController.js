@@ -33,7 +33,7 @@ function createBook(req, res, next) {
     let {author, title, description, imageUrl, type } = req.body;
     const { _id: userId } = req.user;
    
-    
+    console.log(req.body.createFile);
     let fileName = '';
 
     if (req.body.createFile) {
@@ -43,10 +43,13 @@ function createBook(req, res, next) {
         let buffer = Buffer.from(req.body.createFile.split(',')[1], "base64")
        
         fs.writeFileSync(path.join(__dirname, filePath), buffer);
-         
+        imageUrl = `${'http://localhost:3000/public/images/'}${fileName}`
+    }else{
+        imageUrl =  `${'http://localhost:3000/public/img/portfolio-05.jpg'}`
     }
-   
-    imageUrl = `${'http://localhost:3000/public/images/'}${fileName}`
+    
+   console.log(imageUrl);
+    
   
     bookModel.create({ author, title, description, imageUrl, type, userId })
     .then(post => {

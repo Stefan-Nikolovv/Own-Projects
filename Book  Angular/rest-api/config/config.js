@@ -15,5 +15,5 @@ const config = {
 
 module.exports = config[env];
 
-//latest nodeJS working with this link : mongodb://127.0.0.1/Crypto-Web;
-//old version is working on port mongodb://localhost:27017/Crypto-Web;
+//latest nodeJS working with this link : mongodb://127.0.0.1/"DB-Name";
+//old version is working on port mongodb://localhost:27017/"DB-Name";

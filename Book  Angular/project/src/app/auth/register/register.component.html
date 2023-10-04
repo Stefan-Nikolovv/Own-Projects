@@ -108,10 +108,11 @@
                       </div>
                     </ng-container>
                       <div class="mb-5 rn-check-box">
-                          <input type="checkbox" class="rn-check-box-input" id="exampleCheck1">
-                          <label class="rn-check-box-label" for="exampleCheck1">Allow to all tearms &
-                              condition</label>
+                        <ng-container *ngIf="errorMessage">
+                          {{errorMessage}}
+                       </ng-container>
                       </div>
+                      
                       <button [disabled]="validationForm.invalid" type="submit" class="btn btn-primary mr--15">Sign Up</button>
                       <a routerLink="/auth/login" class="btn btn-primary-alta">Log In</a>
                   </form>

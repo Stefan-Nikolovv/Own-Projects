@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { ApiService } from 'src/app/api.service';
 import { AuthService } from 'src/app/auth/auth.service';
 import { IBook } from 'src/app/shared/interfaces';
@@ -19,17 +20,20 @@ export class MybookComponent implements OnInit {
   itemsPerPage: number = 5;
   tableSizes: any = [5, 10, 15, 20];
   totalProducts: number = 1;
+  pageNumbers: number[] = [];
   
-  constructor(private apiService: ApiService, private authService: AuthService){}
-   
+  constructor(private apiService: ApiService){
+  }
+ 
   ngOnInit(): void {
+   
     this.apiService.loadMyAllBooks()
     .subscribe({
       next: (value) => {
        this.bookList = value;
        let pageIndex = (this.selectedPage - 1) * this.itemsPerPage;
        this.products = this.bookList.slice(pageIndex, this.itemsPerPage);
-        
+       this.pageNumbers = Array(Math.ceil(this.bookList.length / this.itemsPerPage)).fill(0).map((x,i) => i + 1)
       },
       error: (err) => {
         this.errorFetcingData = true;
@@ -46,21 +50,15 @@ export class MybookComponent implements OnInit {
       this.itemsPerPage = Number(newSize);
       this.changePage(1);
 
-    }
+    };
    
-  }
+  };
 
   changePage(page : any){
     this.selectedPage = page;
     this.slicedItems();
   }
-  get pageNumbers(): number[]{
-   
-  let items = Array(Math.ceil(this.bookList.length / this.itemsPerPage))
-    .fill(0).map((x,i) => i + 1)
-   
-    return items;
-  }
+
   slicedItems(){
     let pageIndex = (this.selectedPage - 1) * this.itemsPerPage;
     let endIndex = (this.selectedPage - 1) * this.itemsPerPage + this.itemsPerPage;
@@ -105,6 +103,7 @@ export class MybookComponent implements OnInit {
      };
 
   };
+ 
 
 };
 

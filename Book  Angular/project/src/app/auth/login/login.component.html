@@ -40,6 +40,9 @@
                           <input type="checkbox" class="rn-check-box-input" id="exampleCheck1">
                           <label class="rn-check-box-label" for="exampleCheck1">Remember me leter</label>
                       </div>
+                      <ng-container *ngIf="errorMessage">
+                         {{errorMessage}}
+                      </ng-container>
                       <button type="submit" [disabled]="validationForm.invalid" class="btn btn-primary mr--15">Log In</button>
                       <a routerLink="/auth/register" class="btn btn-primary-alta">Sign Up</a>
                   </form>
