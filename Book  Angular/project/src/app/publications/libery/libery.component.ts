@@ -22,7 +22,7 @@ export class LiberyComponent implements OnInit {
   itemsPerPage: number = 5;
   tableSizes: any = [5, 10, 15, 20];
   totalProducts: number = 1;
-  pageNumbers: number[] = [];
+  //pageNumbers: number[] = [];
   constructor(private apiService: ApiService, private authService: AuthService){}
 
   ngOnInit(): void {
@@ -33,7 +33,7 @@ export class LiberyComponent implements OnInit {
        this.bookList = value;
        let pageIndex = (this.selectedPage - 1) * this.itemsPerPage;
        this.products = this.bookList.slice(pageIndex, this.itemsPerPage);
-       this.pageNumbers = Array(Math.ceil(this.bookList.length / this.itemsPerPage)).fill(0).map((x,i) => i + 1)
+       //this.pageNumbers = Array(Math.ceil(this.bookList.length / this.itemsPerPage)).fill(0).map((x,i) => i + 1)
       },
       error: (err) => {
         this.errorFetcingData = true;
@@ -69,6 +69,13 @@ export class LiberyComponent implements OnInit {
     this.products = this.bookList.slice(pageIndex, endIndex);
   }
 
+  get pageNumbers(): number[]{
+   
+    let items = Array(Math.ceil(this.bookList.length / this.itemsPerPage))
+      .fill(0).map((x,i) => i + 1)
+     
+      return items;
+    }
   authorSort(event:any){
     let value = event.target.attributes[0].value
     if(value === 'acn'){

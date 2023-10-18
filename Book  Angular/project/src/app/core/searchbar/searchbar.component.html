@@ -35,7 +35,8 @@
             <div class="col-lg-12" data-sal="slide-up" data-sal-delay="550" data-sal-duration="800">
                 <nav class="pagination-wrapper" aria-label="Page navigation example">
                     <ul class="pagination">
-                        <li class="page-item" *ngFor= "let page of pageNumbers" (click) ="changePage(page)" ><a class="page-link"  [class.active]="page == selectedPage">{{page}}</a></li>
+                        <li class="page-item" *ngFor= "let page of pageNumbers" 
+                        (click) ="changePage(page)" ><a class="page-link"  [class.active]="page == selectedPage">{{page}}</a></li>
                       
                     </ul>
                 </nav>
