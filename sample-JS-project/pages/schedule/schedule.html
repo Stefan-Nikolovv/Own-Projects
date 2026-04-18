@@ -1,0 +1,39 @@
+<section class="page schedule-page">
+    <div class="schedule-header">
+        <div>
+            <p class="schedule-eyebrow">Personal Training</p>
+            <h1>Weekly Schedule</h1>
+            <p class="schedule-subtitle">Choose a slot and save your spot.</p>
+        </div>
+    </div>
+
+    <div id="weekGrid" class="week-grid"></div>
+
+    <div id="slotSpinner" class="slot-spinner hidden">
+        <div class="spinner-circle"></div>
+    </div>
+
+    <dialog id="slotDialog" class="slot-dialog">
+        <form method="dialog" class="dialog-shell">
+            <button class="dialog-close" id="closeDialogBtn" type="submit">×</button>
+
+            <p id="dialogDay" class="dialog-day"></p>
+            <h2 id="dialogTime" class="dialog-time"></h2>
+            <p id="dialogSpots" class="dialog-spots"></p>
+
+            <div class="dialog-field">
+                <label for="clientName">Your name</label>
+                <input id="clientName" type="text" placeholder="Enter your name" />
+            </div>
+            <p id="dialogMessage" class="dialog-message hidden"></p>
+            <button id="saveSpotBtn" type="button" class="save-spot-btn">
+                Save your spot
+            </button>
+
+            <div class="saved-list-wrap">
+                <h3>Saved names</h3>
+                <ul id="savedNamesList" class="saved-names-list"></ul>
+            </div>
+        </form>
+    </dialog>
+</section>
