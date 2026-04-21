@@ -1,5 +1,5 @@
-// This file is gitignored - your secrets are safe!
-// For deployment: create this file with your production values
+// Supabase configuration
+// Note: The anon key is safe to expose publicly - RLS policies protect your data
 
 export const config = {
   supabaseUrl: "https://pghirikwblrhemnqcbmw.supabase.co",
