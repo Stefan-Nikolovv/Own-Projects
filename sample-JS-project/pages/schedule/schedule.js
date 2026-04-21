@@ -1,4 +1,5 @@
-const STORAGE_KEY = "pt_schedule_v1";
+import { supabase, OWNER_EMAIL } from "../../js/supabase.js";
+
 const CAPACITY = 16;
 
 const DAY_SLOT_MAP = {
@@ -13,64 +14,100 @@ const DAY_SLOT_MAP = {
 
 let state = [];
 let selectedSlot = null;
+let isOwner = false;
 
-export function init() {
-  state = loadSchedule();
-  renderWeek();
-  bindDialogActions();
+export async function init() {
+  try {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    isOwner = user?.email === OWNER_EMAIL;
+
+    state = await loadSchedule();
+    renderWeek();
+    bindDialogActions();
+  } catch (err) {
+    console.error("Schedule init error:", err);
+    const app = document.getElementById("app");
+    if (app) {
+      app.innerHTML = `<div class="page"><h1>Error loading schedule</h1><p>${err.message}</p></div>`;
+    }
+  }
 }
 
-function loadSchedule() {
-  const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-  const freshWeek = createWeekSchedule();
+async function loadSchedule() {
+  const weekDates = getCurrentWeekDates();
+  const weekDayKeys = weekDates.map(toDateKey);
 
-  if (!saved || !Array.isArray(saved)) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(freshWeek));
-    return freshWeek;
-  }
-
-  const mergedWeek = freshWeek.map((freshDay) => {
-    const savedDay = saved.find((item) => item.key === freshDay.key);
-
-    if (!savedDay) return freshDay;
-
-    const mergedSlots = freshDay.slots.map((freshSlot) => {
-      const savedSlot = savedDay.slots?.find(
-        (item) => item.time === freshSlot.time
-      );
-
-      return {
-        ...freshSlot,
-        bookedUsers: Array.isArray(savedSlot?.bookedUsers)
-          ? savedSlot.bookedUsers
-          : [],
-      };
-    });
-
-    return {
-      ...freshDay,
-      slots: mergedSlots,
-    };
+  // Upsert slots for this week (ignoreDuplicates preserves existing booking_count)
+  const slotsToUpsert = weekDates.flatMap((date) => {
+    const dayName = formatDayName(date);
+    return (DAY_SLOT_MAP[dayName] || []).map((time) => ({
+      day_key: toDateKey(date),
+      day_name: dayName,
+      time,
+      capacity: CAPACITY,
+    }));
   });
 
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(mergedWeek));
-  return mergedWeek;
-}
+  if (slotsToUpsert.length > 0) {
+    const { error: upsertError } = await supabase
+      .from("slots")
+      .upsert(slotsToUpsert, { onConflict: "day_key,time", ignoreDuplicates: true });
+    
+    if (upsertError) {
+      console.error("Upsert error:", upsertError);
+    }
+  }
 
-function createWeekSchedule() {
-  const weekDates = getCurrentWeekDates();
+  // Fetch slots for this week (booking_count kept accurate by a DB trigger)
+  const { data: slotsData, error } = await supabase
+    .from("slots")
+    .select("id, day_key, time, capacity, booking_count")
+    .in("day_key", weekDayKeys);
+
+  if (error) {
+    console.error("Failed to load schedule:", error.message);
+    return buildEmptyWeek(weekDates);
+  }
 
   return weekDates.map((date) => {
+    const dayKey = toDateKey(date);
     const dayName = formatDayName(date);
     const times = DAY_SLOT_MAP[dayName] || [];
 
     return {
+      key: dayKey,
+      dayName,
+      dateLabel: formatDateLabel(date),
+      slots: times.map((time) => {
+        const dbSlot = slotsData?.find(
+          (s) => s.day_key === dayKey && s.time === time
+        );
+        return {
+          id: dbSlot?.id ?? null,
+          time,
+          capacity: CAPACITY,
+          bookingCount: dbSlot?.booking_count ?? 0,
+          bookedUsers: [],
+        };
+      }),
+    };
+  });
+}
+
+function buildEmptyWeek(weekDates) {
+  return weekDates.map((date) => {
+    const dayName = formatDayName(date);
+    return {
       key: toDateKey(date),
       dayName,
       dateLabel: formatDateLabel(date),
-      slots: times.map((time) => ({
+      slots: (DAY_SLOT_MAP[dayName] || []).map((time) => ({
+        id: null,
         time,
         capacity: CAPACITY,
+        bookingCount: 0,
         bookedUsers: [],
       })),
     };
@@ -126,7 +163,7 @@ function renderWeek() {
       slotList.appendChild(emptyText);
     } else {
       day.slots.forEach((slot) => {
-        const spotsLeft = getSpotsLeft(slot);
+        const spotsLeft = slot.capacity - slot.bookingCount;
 
         const slotBtn = document.createElement("button");
         slotBtn.className = "slot-btn";
@@ -148,7 +185,7 @@ function renderWeek() {
 
         const meta = document.createElement("div");
         meta.className = "slot-meta";
-        meta.textContent = `${slot.bookedUsers.length} booked / ${slot.capacity} total`;
+        meta.textContent = `${slot.bookingCount} booked / ${slot.capacity} total`;
 
         slotBtn.append(top, meta);
         slotBtn.addEventListener("click", () => openSlot(day.key, slot.time));
@@ -162,59 +199,55 @@ function renderWeek() {
   });
 }
 
-function openSlot(dayKey, time) {
+async function openSlot(dayKey, time) {
   const spinner = document.getElementById("slotSpinner");
-  if (spinner) {
-    spinner.classList.remove("hidden");
+  if (spinner) spinner.classList.remove("hidden");
+
+  const day = state.find((item) => item.key === dayKey);
+  const slot = day?.slots.find((item) => item.time === time);
+
+  if (!day || !slot || !slot.id) {
+    if (spinner) spinner.classList.add("hidden");
+    return;
   }
 
-  setTimeout(() => {
-    if (spinner) {
-      spinner.classList.add("hidden");
-    }
+  // RPC returns name+phone for the owner, name only (phone=null) for everyone else
+  const { data: bookings, error } = await supabase.rpc(
+    "get_bookings_with_phone",
+    { p_slot_id: slot.id }
+  );
 
-    const day = state.find((item) => item.key === dayKey);
-    const slot = day?.slots.find((item) => item.time === time);
+  if (spinner) spinner.classList.add("hidden");
 
-    if (!day || !slot) return;
+  if (error) {
+    console.error("Failed to load bookings:", error.message);
+    return;
+  }
 
-    selectedSlot = { dayKey, time };
+  slot.bookedUsers = bookings ?? [];
+  selectedSlot = { dayKey, time };
 
-    const dialogDay = document.getElementById("dialogDay");
-    const dialogTime = document.getElementById("dialogTime");
-    const dialogSpots = document.getElementById("dialogSpots");
-    const clientName = document.getElementById("clientName");
-    const dialog = document.getElementById("slotDialog");
+  const dialogDay = document.getElementById("dialogDay");
+  const dialogTime = document.getElementById("dialogTime");
+  const dialogSpots = document.getElementById("dialogSpots");
+  const clientName = document.getElementById("clientName");
+  const clientPhone = document.getElementById("clientPhone");
+  const dialog = document.getElementById("slotDialog");
 
-    if (dialogDay) {
-      dialogDay.textContent = `${day.dayName} • ${day.dateLabel}`;
-    }
+  if (dialogDay) dialogDay.textContent = `${day.dayName} • ${day.dateLabel}`;
+  if (dialogTime) dialogTime.textContent = slot.time;
+  if (dialogSpots) {
+    const spotsLeft = slot.capacity - slot.bookingCount;
+    dialogSpots.textContent = `${spotsLeft} of ${slot.capacity} spots available`;
+  }
+  if (clientName) clientName.value = "";
+  if (clientPhone) clientPhone.value = "";
 
-    if (dialogTime) {
-      dialogTime.textContent = slot.time;
-    }
+  renderSavedNames(slot.bookedUsers);
+  clearDialogMessage();
 
-    if (dialogSpots) {
-      dialogSpots.textContent = `${getSpotsLeft(slot)} of ${
-        slot.capacity
-      } spots available`;
-    }
-
-    if (clientName) {
-      clientName.value = "";
-    }
-
-    renderSavedNames(slot.bookedUsers);
-    clearDialogMessage();
-
-    if (dialog && !dialog.open) {
-      dialog.showModal();
-    }
-
-    if (clientName) {
-      clientName.focus();
-    }
-  }, 500);
+  if (dialog && !dialog.open) dialog.showModal();
+  if (clientName) clientName.focus();
 }
 
 function bindDialogActions() {
@@ -244,67 +277,106 @@ function bindDialogActions() {
   }
 }
 
-function saveSpot() {
+async function saveSpot() {
   if (!selectedSlot) return;
 
-  const input = document.getElementById("clientName");
-  if (!input) return;
+  const nameInput = document.getElementById("clientName");
+  const phoneInput = document.getElementById("clientPhone");
+  if (!nameInput) return;
 
-  const name = input.value.trim();
+  const name = nameInput.value.trim();
+  const phone = phoneInput?.value.trim() || null;
 
   if (!name) {
     showDialogMessage("Please enter your name.");
-    input.focus();
+    nameInput.focus();
     return;
   }
 
   const day = state.find((item) => item.key === selectedSlot.dayKey);
   const slot = day?.slots.find((item) => item.time === selectedSlot.time);
 
-  if (!day || !slot) return;
+  if (!day || !slot || !slot.id) return;
 
   const alreadyExists = slot.bookedUsers.some(
-    (savedName) => savedName.toLowerCase() === name.toLowerCase()
+    (b) => b.name.toLowerCase() === name.toLowerCase()
   );
-
   if (alreadyExists) {
     showDialogMessage("This name is already saved for this slot.");
-    input.focus();
+    nameInput.focus();
     return;
   }
 
-  if (slot.bookedUsers.length >= slot.capacity) {
+  if (slot.bookingCount >= slot.capacity) {
     showDialogMessage("No spots left for this slot.");
     return;
   }
 
-  slot.bookedUsers.push(name);
+  const saveBtn = document.getElementById("saveSpotBtn");
+  if (saveBtn) saveBtn.disabled = true;
 
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  const { data: newBooking, error } = await supabase
+    .from("bookings")
+    .insert({ slot_id: slot.id, name, phone })
+    .select("id, name, phone")
+    .single();
+
+  if (saveBtn) saveBtn.disabled = false;
+
+  if (error) {
+    if (error.code === "23505") {
+      showDialogMessage("This name is already saved for this slot.");
+    } else {
+      showDialogMessage("Failed to save. Please try again.");
+    }
+    nameInput.focus();
+    return;
+  }
+
+  // For non-owners, mask the phone in local state (matches what the RPC returns)
+  slot.bookedUsers.push({
+    id: newBooking.id,
+    name: newBooking.name,
+    phone: isOwner ? newBooking.phone : null,
+  });
+
+  // Refetch the slot to get the updated booking_count from the trigger
+  const { data: updatedSlot } = await supabase
+    .from("slots")
+    .select("booking_count")
+    .eq("id", slot.id)
+    .single();
+
+  if (updatedSlot) {
+    slot.bookingCount = updatedSlot.booking_count;
+  } else {
+    // Fallback if fetch fails
+    slot.bookingCount += 1;
+  }
 
   const dialogSpots = document.getElementById("dialogSpots");
   if (dialogSpots) {
-    dialogSpots.textContent = `${getSpotsLeft(slot)} of ${
-      slot.capacity
-    } spots available`;
+    const spotsLeft = slot.capacity - slot.bookingCount;
+    dialogSpots.textContent = `${spotsLeft} of ${slot.capacity} spots available`;
   }
 
   renderSavedNames(slot.bookedUsers);
   renderWeek();
 
-  input.value = "";
-  input.focus();
+  nameInput.value = "";
+  if (phoneInput) phoneInput.value = "";
+  nameInput.focus();
 
-  showDialogMessage("Your spot has been saved.", "success");
+  showDialogMessage("Your spot has been saved!", "success");
 }
 
-function renderSavedNames(names) {
+function renderSavedNames(bookings) {
   const list = document.getElementById("savedNamesList");
   if (!list) return;
 
   list.replaceChildren();
 
-  if (!names.length) {
+  if (!bookings.length) {
     const empty = document.createElement("li");
     empty.className = "empty-state";
     empty.textContent = "No saved names yet.";
@@ -312,9 +384,14 @@ function renderSavedNames(names) {
     return;
   }
 
-  names.forEach((name) => {
+  bookings.forEach((booking) => {
     const item = document.createElement("li");
-    item.textContent = name;
+    // Phone is only non-null for the owner (the RPC masks it for everyone else)
+    if (isOwner && booking.phone) {
+      item.textContent = `${booking.name} — ${booking.phone}`;
+    } else {
+      item.textContent = booking.name;
+    }
     list.appendChild(item);
   });
 }
@@ -333,10 +410,6 @@ function clearDialogMessage() {
 
   message.textContent = "";
   message.className = "dialog-message hidden";
-}
-
-function getSpotsLeft(slot) {
-  return slot.capacity - slot.bookedUsers.length;
 }
 
 function formatDayName(date) {
