@@ -119,11 +119,37 @@ python -m http.server 5500
 - ✅ **Real-time counts** - accurate slot availability
 - ✅ **Responsive design** - mobile-friendly interface
 
-## Deployment
+## Deployment to Vercel
 
-For deployment (Netlify, Vercel, etc.):
-1. Create `js/config.js` with production values
-2. Deploy the app
-3. Config is gitignored and stays secure
+### 1. Push to GitHub
+```bash
+git add .
+git commit -m "Initial commit"
+git push origin main
+```
 
-**Note**: `js/config.js` is gitignored. Never commit your Supabase credentials!
+### 2. Import to Vercel
+1. Go to [vercel.com](https://vercel.com) and sign in
+2. Click "Add New" → "Project"
+3. Import your GitHub repository
+
+### 3. Configure Environment Variables
+In Vercel project settings → Environment Variables, add:
+
+| Name | Value |
+|------|-------|
+| `SUPABASE_URL` | Your Supabase project URL |
+| `SUPABASE_ANON_KEY` | Your Supabase anon/public key |
+| `OWNER_EMAIL` | Admin email address |
+
+### 4. Deploy
+Vercel will automatically run `npm run build` which generates `config.js` from your environment variables.
+
+**Note**: The build script (`build-config.js`) generates `js/config.js` from environment variables during deployment. Your secrets stay secure and never get committed to Git!
+
+### Local Development
+For local development, create `js/config.js` from the example:
+```bash
+cp js/config.example.js js/config.js
+# Edit js/config.js with your local values
+```
