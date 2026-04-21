@@ -12,7 +12,6 @@ async function updateAuthNav() {
     data: { user },
   } = await supabase.auth.getUser();
 
-
   if (user) {
     authLink.textContent = "Logout";
     authLink.href = "#";
