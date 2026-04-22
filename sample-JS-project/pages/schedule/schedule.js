@@ -1,7 +1,7 @@
 import { supabase, OWNER_EMAIL } from "../../js/supabase.js";
 
 const CAPACITY = 16;
-
+let editingBookingId = null;
 const DAY_SLOT_MAP = {
   Monday: ["17:00", "18:00"],
   Tuesday: ["18:00"],
@@ -220,7 +220,141 @@ function renderWeek() {
     weekGrid.appendChild(dayCard);
   });
 }
+async function saveSpot() {
+  if (!selectedSlot) return;
 
+  const nameInput = document.getElementById("clientName");
+  const phoneInput = document.getElementById("clientPhone");
+  const saveBtn = document.getElementById("saveSpotBtn");
+
+  if (!nameInput) return;
+
+  const name = nameInput.value.trim();
+  const phone = phoneInput?.value.trim() || null;
+
+  if (!name) {
+    showDialogMessage("Please enter your name.");
+    nameInput.focus();
+    return;
+  }
+
+  const day = state.find((item) => item.key === selectedSlot.dayKey);
+  const slot = day?.slots.find((item) => item.time === selectedSlot.time);
+
+  if (!day || !slot || !slot.id) return;
+
+  const duplicateBooking = slot.bookedUsers.find((b) => {
+    const sameName = b.name.toLowerCase() === name.toLowerCase();
+    const sameRecord = b.id === editingBookingId;
+    return sameName && !sameRecord;
+  });
+
+  if (duplicateBooking) {
+    showDialogMessage("This name is already saved for this slot.");
+    nameInput.focus();
+    return;
+  }
+
+  if (!editingBookingId && slot.bookingCount >= slot.capacity) {
+    showDialogMessage("No spots left for this slot.");
+    return;
+  }
+
+  if (saveBtn) saveBtn.disabled = true;
+
+  let response = null;
+  let error = null;
+
+  try {
+    if (editingBookingId) {
+      const result = await supabase
+        .from("bookings")
+        .update({ name, phone })
+        .eq("id", editingBookingId)
+        .select("id, name, phone")
+        .maybeSingle();
+
+      response = result.data;
+      error = result.error;
+
+      console.log("edit result:", result);
+
+      if (error) {
+        console.error(error);
+        showDialogMessage("Failed to update booking. Please try again.");
+        nameInput.focus();
+        return;
+      }
+
+      if (!response) {
+        console.error(
+          "Update returned no row for booking id:",
+          editingBookingId
+        );
+        showDialogMessage(
+          "Booking was not found or you do not have permission to edit it."
+        );
+        nameInput.focus();
+        return;
+      }
+
+      slot.bookedUsers = slot.bookedUsers.map((booking) =>
+        booking.id === editingBookingId
+          ? {
+              ...booking,
+              name: response.name,
+              phone: isOwner ? response.phone : null,
+            }
+          : booking
+      );
+
+      showDialogMessage("Booking updated successfully!", "success");
+    } else {
+      const result = await supabase
+        .from("bookings")
+        .insert({ slot_id: slot.id, name, phone })
+        .select("id, name, phone")
+        .single();
+
+      response = result.data;
+      error = result.error;
+
+      if (error) {
+        console.error(error);
+
+        if (error.code === "23505") {
+          showDialogMessage("This name is already saved for this slot.");
+        } else {
+          showDialogMessage("Failed to save. Please try again.");
+        }
+
+        nameInput.focus();
+        return;
+      }
+
+      slot.bookedUsers.push({
+        id: response.id,
+        name: response.name,
+        phone: isOwner ? response.phone : null,
+      });
+
+      slot.bookingCount = slot.bookedUsers.length;
+      showDialogMessage("Your spot has been saved!", "success");
+    }
+
+    const dialogSpots = document.getElementById("dialogSpots");
+    if (dialogSpots) {
+      const spotsLeft = slot.capacity - slot.bookingCount;
+      dialogSpots.textContent = `${spotsLeft} of ${slot.capacity} spots available`;
+    }
+
+    renderSavedNames(slot.bookedUsers);
+    renderWeek();
+    resetBookingForm();
+  } finally {
+    if (saveBtn) saveBtn.disabled = false;
+  }
+}
 async function openSlot(dayKey, time) {
   const spinner = document.getElementById("slotSpinner");
   if (spinner) spinner.classList.remove("hidden");
@@ -272,13 +406,51 @@ async function openSlot(dayKey, time) {
   if (clientName) clientName.focus();
 }
 
+// function bindDialogActions() {
+//   const saveBtn = document.getElementById("saveSpotBtn");
+//   const clientName = document.getElementById("clientName");
+//   const dialog = document.getElementById("slotDialog");
+//   const cancelEditBtn = document.getElementById("cancelEditBtn");
+
+//   if (saveBtn) {
+//     saveBtn.addEventListener("click", saveSpot);
+//   }
+
+//   if (cancelEditBtn) {
+//     cancelEditBtn.addEventListener("click", resetBookingForm);
+//   }
+
+//   if (clientName) {
+//     clientName.addEventListener("input", clearDialogMessage);
+//     clientName.addEventListener("keydown", (event) => {
+//       if (event.key === "Enter") {
+//         event.preventDefault();
+//         saveSpot();
+//       }
+//     });
+//   }
+
+//   if (dialog) {
+//     dialog.addEventListener("close", () => {
+//       clearDialogMessage();
+//       selectedSlot = null;
+//       resetBookingForm();
+//     });
+//   }
+// }
+
 function bindDialogActions() {
   const saveBtn = document.getElementById("saveSpotBtn");
   const clientName = document.getElementById("clientName");
   const dialog = document.getElementById("slotDialog");
+  const cancelEditBtn = document.getElementById("cancelEditBtn");
 
   if (saveBtn) {
     saveBtn.addEventListener("click", saveSpot);
+  }
+
+  if (cancelEditBtn) {
+    cancelEditBtn.addEventListener("click", resetBookingForm);
   }
 
   if (clientName) {
@@ -295,89 +467,9 @@ function bindDialogActions() {
     dialog.addEventListener("close", () => {
       clearDialogMessage();
       selectedSlot = null;
+      resetBookingForm();
     });
   }
-}
-
-async function saveSpot() {
-  if (!selectedSlot) return;
-
-  const nameInput = document.getElementById("clientName");
-  const phoneInput = document.getElementById("clientPhone");
-  if (!nameInput) return;
-
-  const name = nameInput.value.trim();
-  const phone = phoneInput?.value.trim() || null;
-
-  if (!name) {
-    showDialogMessage("Please enter your name.");
-    nameInput.focus();
-    return;
-  }
-
-  const day = state.find((item) => item.key === selectedSlot.dayKey);
-  const slot = day?.slots.find((item) => item.time === selectedSlot.time);
-
-  if (!day || !slot || !slot.id) return;
-
-  const alreadyExists = slot.bookedUsers.some(
-    (b) => b.name.toLowerCase() === name.toLowerCase()
-  );
-  if (alreadyExists) {
-    showDialogMessage("This name is already saved for this slot.");
-    nameInput.focus();
-    return;
-  }
-
-  if (slot.bookingCount >= slot.capacity) {
-    showDialogMessage("No spots left for this slot.");
-    return;
-  }
-
-  const saveBtn = document.getElementById("saveSpotBtn");
-  if (saveBtn) saveBtn.disabled = true;
-
-  const { data: newBooking, error } = await supabase
-    .from("bookings")
-    .insert({ slot_id: slot.id, name, phone })
-    .select("id, name, phone")
-    .single();
-
-  if (saveBtn) saveBtn.disabled = false;
-
-  if (error) {
-    if (error.code === "23505") {
-      showDialogMessage("This name is already saved for this slot.");
-    } else {
-      showDialogMessage("Failed to save. Please try again.");
-    }
-    nameInput.focus();
-    return;
-  }
-
-  // For non-owners, mask the phone in local state (matches what the RPC returns)
-  slot.bookedUsers.push({
-    id: newBooking.id,
-    name: newBooking.name,
-    phone: isOwner ? newBooking.phone : null,
-  });
-
-  slot.bookingCount = slot.bookedUsers.length;
-
-  const dialogSpots = document.getElementById("dialogSpots");
-  if (dialogSpots) {
-    const spotsLeft = slot.capacity - slot.bookingCount;
-    dialogSpots.textContent = `${spotsLeft} of ${slot.capacity} spots available`;
-  }
-
-  renderSavedNames(slot.bookedUsers);
-  renderWeek();
-
-  nameInput.value = "";
-  if (phoneInput) phoneInput.value = "";
-  nameInput.focus();
-
-  showDialogMessage("Your spot has been saved!", "success");
 }
 
 // function renderSavedNames(bookings) {
@@ -470,6 +562,80 @@ function renderSavedNames(bookings) {
 
     list.appendChild(item);
   });
+}
+
+function handleEditBooking(currentUser) {
+  editingBookingId = currentUser.id;
+
+  const nameEl = document.getElementById("clientName");
+  const telEl = document.getElementById("clientPhone");
+  const saveBtn = document.getElementById("saveSpotBtn");
+  const cancelEditBtn = document.getElementById("cancelEditBtn");
+
+  if (nameEl) nameEl.value = currentUser.name || "";
+  if (telEl) telEl.value = currentUser.phone || "";
+
+  if (saveBtn) saveBtn.textContent = "Update booking";
+  if (cancelEditBtn) cancelEditBtn.classList.remove("hidden");
+
+  clearDialogMessage();
+  nameEl?.focus();
+}
+async function handleRemoveBooking(currentUser) {
+  const confirmed = window.confirm(
+    `Remove ${currentUser.name} from this slot?`
+  );
+  if (!confirmed) return;
+
+  const day = state.find((item) => item.key === selectedSlot?.dayKey);
+  const slot = day?.slots.find((item) => item.time === selectedSlot?.time);
+
+  if (!day || !slot) return;
+
+  const { error } = await supabase
+    .from("bookings")
+    .delete()
+    .eq("id", currentUser.id);
+
+  if (error) {
+    console.error(error);
+    showDialogMessage("Failed to remove booking.");
+    return;
+  }
+
+  slot.bookedUsers = slot.bookedUsers.filter(
+    (booking) => booking.id !== currentUser.id
+  );
+  slot.bookingCount = slot.bookedUsers.length;
+
+  if (editingBookingId === currentUser.id) {
+    resetBookingForm();
+  }
+
+  const dialogSpots = document.getElementById("dialogSpots");
+  if (dialogSpots) {
+    const spotsLeft = slot.capacity - slot.bookingCount;
+    dialogSpots.textContent = `${spotsLeft} of ${slot.capacity} spots available`;
+  }
+
+  renderSavedNames(slot.bookedUsers);
+  renderWeek();
+  showDialogMessage("Booking removed successfully.", "success");
+}
+
+function resetBookingForm() {
+  editingBookingId = null;
+
+  const nameEl = document.getElementById("clientName");
+  const telEl = document.getElementById("clientPhone");
+  const saveBtn = document.getElementById("saveSpotBtn");
+  const cancelEditBtn = document.getElementById("cancelEditBtn");
+
+  if (nameEl) nameEl.value = "";
+  if (telEl) telEl.value = "";
+
+  if (saveBtn) saveBtn.textContent = "Save your spot";
+  if (cancelEditBtn) cancelEditBtn.classList.add("hidden");
 }
 function showDialogMessage(text, type = "error") {
   const message = document.getElementById("dialogMessage");
