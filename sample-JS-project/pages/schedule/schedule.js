@@ -2,6 +2,7 @@ import { supabase, OWNER_EMAIL } from "../../js/supabase.js";
 
 const CAPACITY = 16;
 let editingBookingId = null;
+let pendingRemoveBooking = null;
 const DAY_SLOT_MAP = {
   Monday: ["17:00", "18:00"],
   Tuesday: ["18:00"],
@@ -398,52 +399,22 @@ async function openSlot(dayKey, time) {
   }
   if (clientName) clientName.value = "";
   if (clientPhone) clientPhone.value = "";
-
+  resetBookingForm();
   renderSavedNames(slot.bookedUsers);
   clearDialogMessage();
 
   if (dialog && !dialog.open) dialog.showModal();
   if (clientName) clientName.focus();
 }
-
-// function bindDialogActions() {
-//   const saveBtn = document.getElementById("saveSpotBtn");
-//   const clientName = document.getElementById("clientName");
-//   const dialog = document.getElementById("slotDialog");
-//   const cancelEditBtn = document.getElementById("cancelEditBtn");
-
-//   if (saveBtn) {
-//     saveBtn.addEventListener("click", saveSpot);
-//   }
-
-//   if (cancelEditBtn) {
-//     cancelEditBtn.addEventListener("click", resetBookingForm);
-//   }
-
-//   if (clientName) {
-//     clientName.addEventListener("input", clearDialogMessage);
-//     clientName.addEventListener("keydown", (event) => {
-//       if (event.key === "Enter") {
-//         event.preventDefault();
-//         saveSpot();
-//       }
-//     });
-//   }
-
-//   if (dialog) {
-//     dialog.addEventListener("close", () => {
-//       clearDialogMessage();
-//       selectedSlot = null;
-//       resetBookingForm();
-//     });
-//   }
-// }
-
 function bindDialogActions() {
   const saveBtn = document.getElementById("saveSpotBtn");
   const clientName = document.getElementById("clientName");
   const dialog = document.getElementById("slotDialog");
   const cancelEditBtn = document.getElementById("cancelEditBtn");
+
+  const removeConfirmDialog = document.getElementById("removeConfirmDialog");
+  const cancelRemoveBtn = document.getElementById("cancelRemoveBtn");
+  const confirmRemoveBtn = document.getElementById("confirmRemoveBtn");
 
   if (saveBtn) {
     saveBtn.addEventListener("click", saveSpot);
@@ -451,6 +422,14 @@ function bindDialogActions() {
 
   if (cancelEditBtn) {
     cancelEditBtn.addEventListener("click", resetBookingForm);
+  }
+
+  if (cancelRemoveBtn) {
+    cancelRemoveBtn.addEventListener("click", closeRemoveConfirmDialog);
+  }
+
+  if (confirmRemoveBtn) {
+    confirmRemoveBtn.addEventListener("click", confirmRemoveBooking);
   }
 
   if (clientName) {
@@ -470,8 +449,13 @@ function bindDialogActions() {
       resetBookingForm();
     });
   }
-}
 
+  if (removeConfirmDialog) {
+    removeConfirmDialog.addEventListener("close", () => {
+      pendingRemoveBooking = null;
+    });
+  }
+}
 // function renderSavedNames(bookings) {
 //   const list = document.getElementById("savedNamesList");
 //   if (!list) return;
@@ -563,34 +547,26 @@ function renderSavedNames(bookings) {
     list.appendChild(item);
   });
 }
-
-function handleEditBooking(currentUser) {
-  editingBookingId = currentUser.id;
-
-  const nameEl = document.getElementById("clientName");
-  const telEl = document.getElementById("clientPhone");
-  const saveBtn = document.getElementById("saveSpotBtn");
-  const cancelEditBtn = document.getElementById("cancelEditBtn");
-
-  if (nameEl) nameEl.value = currentUser.name || "";
-  if (telEl) telEl.value = currentUser.phone || "";
-
-  if (saveBtn) saveBtn.textContent = "Update booking";
-  if (cancelEditBtn) cancelEditBtn.classList.remove("hidden");
-
-  clearDialogMessage();
-  nameEl?.focus();
+function closeRemoveConfirmDialog() {
+  const dialog = document.getElementById("removeConfirmDialog");
+  if (dialog?.open) {
+    dialog.close();
+  }
+  pendingRemoveBooking = null;
 }
-async function handleRemoveBooking(currentUser) {
-  const confirmed = window.confirm(
-    `Remove ${currentUser.name} from this slot?`
-  );
-  if (!confirmed) return;
 
-  const day = state.find((item) => item.key === selectedSlot?.dayKey);
-  const slot = day?.slots.find((item) => item.time === selectedSlot?.time);
+async function confirmRemoveBooking() {
+  if (!pendingRemoveBooking || !selectedSlot) return;
 
-  if (!day || !slot) return;
+  const currentUser = pendingRemoveBooking;
+
+  const day = state.find((item) => item.key === selectedSlot.dayKey);
+  const slot = day?.slots.find((item) => item.time === selectedSlot.time);
+
+  if (!day || !slot) {
+    closeRemoveConfirmDialog();
+    return;
+  }
 
   const { error } = await supabase
     .from("bookings")
@@ -599,6 +575,7 @@ async function handleRemoveBooking(currentUser) {
 
   if (error) {
     console.error(error);
+    closeRemoveConfirmDialog();
     showDialogMessage("Failed to remove booking.");
     return;
   }
@@ -620,22 +597,8 @@ async function handleRemoveBooking(currentUser) {
 
   renderSavedNames(slot.bookedUsers);
   renderWeek();
+  closeRemoveConfirmDialog();
   showDialogMessage("Booking removed successfully.", "success");
-}
-
-function resetBookingForm() {
-  editingBookingId = null;
-
-  const nameEl = document.getElementById("clientName");
-  const telEl = document.getElementById("clientPhone");
-  const saveBtn = document.getElementById("saveSpotBtn");
-  const cancelEditBtn = document.getElementById("cancelEditBtn");
-
-  if (nameEl) nameEl.value = "";
-  if (telEl) telEl.value = "";
-
-  if (saveBtn) saveBtn.textContent = "Save your spot";
-  if (cancelEditBtn) cancelEditBtn.classList.add("hidden");
 }
 function showDialogMessage(text, type = "error") {
   const message = document.getElementById("dialogMessage");
@@ -671,4 +634,65 @@ function toDateKey(date) {
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
+}
+function resetBookingForm() {
+  editingBookingId = null;
+
+  const nameEl = document.getElementById("clientName");
+  const telEl = document.getElementById("clientPhone");
+  const saveBtn = document.getElementById("saveSpotBtn");
+  const cancelEditBtn = document.getElementById("cancelEditBtn");
+
+  if (nameEl) nameEl.value = "";
+  if (telEl) telEl.value = "";
+
+  if (saveBtn) saveBtn.textContent = "Save your spot";
+  if (cancelEditBtn) cancelEditBtn.classList.add("hidden");
+}
+
+function handleEditBooking(currentUser) {
+  editingBookingId = currentUser.id;
+
+  const nameEl = document.getElementById("clientName");
+  const telEl = document.getElementById("clientPhone");
+  const saveBtn = document.getElementById("saveSpotBtn");
+  const cancelEditBtn = document.getElementById("cancelEditBtn");
+
+  if (nameEl) nameEl.value = currentUser.name || "";
+  if (telEl) telEl.value = currentUser.phone || "";
+
+  if (saveBtn) saveBtn.textContent = "Update booking";
+  if (cancelEditBtn) cancelEditBtn.classList.remove("hidden");
+
+  clearDialogMessage();
+
+  const fieldToScroll = nameEl || telEl;
+  fieldToScroll?.scrollIntoView({
+    behavior: "smooth",
+    block: "center",
+  });
+
+  setTimeout(() => {
+    nameEl?.focus({ preventScroll: true });
+    nameEl?.select?.();
+  }, 250);
+}
+function handleRemoveBooking(currentUser) {
+  pendingRemoveBooking = currentUser;
+
+  const title = document.getElementById("removeConfirmTitle");
+  const text = document.getElementById("removeConfirmText");
+  const dialog = document.getElementById("removeConfirmDialog");
+
+  if (title) {
+    title.textContent = `Remove ${currentUser.name}?`;
+  }
+
+  if (text) {
+    text.textContent = "This booking will be removed from the selected slot.";
+  }
+
+  if (dialog && !dialog.open) {
+    dialog.showModal();
+  }
 }
