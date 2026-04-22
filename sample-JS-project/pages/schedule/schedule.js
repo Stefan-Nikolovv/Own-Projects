@@ -53,8 +53,11 @@ async function loadSchedule() {
   if (slotsToUpsert.length > 0) {
     const { error: upsertError } = await supabase
       .from("slots")
-      .upsert(slotsToUpsert, { onConflict: "day_key,time", ignoreDuplicates: true });
-    
+      .upsert(slotsToUpsert, {
+        onConflict: "day_key,time",
+        ignoreDuplicates: true,
+      });
+
     if (upsertError) {
       console.error("Upsert error:", upsertError);
     }
@@ -102,7 +105,7 @@ async function loadSchedule() {
         const dbSlot = slotsData?.find(
           (s) => s.day_key === dayKey && s.time === time
         );
-        const bookingCount = dbSlot ? (countMap[dbSlot.id] ?? 0) : 0;
+        const bookingCount = dbSlot ? countMap[dbSlot.id] ?? 0 : 0;
         return {
           id: dbSlot?.id ?? null,
           time,
@@ -377,6 +380,42 @@ async function saveSpot() {
   showDialogMessage("Your spot has been saved!", "success");
 }
 
+// function renderSavedNames(bookings) {
+//   const list = document.getElementById("savedNamesList");
+//   if (!list) return;
+
+//   list.replaceChildren();
+
+//   if (!bookings.length) {
+//     const empty = document.createElement("li");
+//     empty.className = "empty-state";
+//     empty.textContent = "No saved names yet.";
+//     list.appendChild(empty);
+//     return;
+//   }
+
+//   bookings.forEach((booking) => {
+//     const item = document.createElement("li");
+//     item.className = "";
+//     const btnEdit = document.createElement("BUTTON");
+//     const btnRemove = document.createElement("BUTTON");
+//     btnEdit.className = "user-edit-btn";
+//     btnEdit. = "button";
+//     btnRemove.className = "user-remove-btn";
+//     btnEdit.textContent = "Edit";
+//     btnRemove.textContent = "Remove";
+
+//     // Phone is only non-null for the owner (the RPC masks it for everyone else)
+//     if (isOwner && booking.phone) {
+//       item.textContent = `${booking.name} — ${booking.phone}`;
+//       item.appendChild(btnEdit);
+//       item.appendChild(btnRemove);
+//     } else {
+//       item.textContent = booking.name;
+//     }
+//     list.appendChild(item);
+//   });
+// }
 function renderSavedNames(bookings) {
   const list = document.getElementById("savedNamesList");
   if (!list) return;
@@ -393,16 +432,45 @@ function renderSavedNames(bookings) {
 
   bookings.forEach((booking) => {
     const item = document.createElement("li");
-    // Phone is only non-null for the owner (the RPC masks it for everyone else)
+    item.className = "saved-user-item";
+
+    const info = document.createElement("div");
+    info.className = "saved-user-info";
+
     if (isOwner && booking.phone) {
-      item.textContent = `${booking.name} — ${booking.phone}`;
+      info.textContent = `${booking.name} — ${booking.phone}`;
     } else {
-      item.textContent = booking.name;
+      info.textContent = booking.name;
     }
+
+    item.appendChild(info);
+
+    if (isOwner) {
+      const actions = document.createElement("div");
+      actions.className = "saved-user-actions";
+
+      const btnEdit = document.createElement("button");
+      const btnRemove = document.createElement("button");
+
+      btnEdit.className = "user-edit-btn";
+      btnEdit.type = "button";
+      btnRemove.className = "user-remove-btn";
+      btnRemove.type = "button";
+
+      btnEdit.textContent = "Edit";
+      btnRemove.textContent = "Remove";
+
+      // Example handlers
+      btnEdit.addEventListener("click", () => handleEditBooking(booking));
+      btnRemove.addEventListener("click", () => handleRemoveBooking(booking));
+
+      actions.append(btnEdit, btnRemove);
+      item.appendChild(actions);
+    }
+
     list.appendChild(item);
   });
 }
-
 function showDialogMessage(text, type = "error") {
   const message = document.getElementById("dialogMessage");
   if (!message) return;
