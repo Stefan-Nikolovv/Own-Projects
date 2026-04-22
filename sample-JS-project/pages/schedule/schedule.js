@@ -359,20 +359,7 @@ async function saveSpot() {
     phone: isOwner ? newBooking.phone : null,
   });
 
-  // Use bookedUsers.length as the source of truth — it was fetched fresh from
-  // the RPC when the dialog opened, so it's always accurate regardless of
-  // whatever stale value is stored in slots.booking_count
-  const newBookingCount = Math.abs(slot.bookedUsers.length);
-  const { error: updateError } = await supabase
-    .from("slots")
-    .update({ booking_count: newBookingCount })
-    .eq("id", slot.id);
-
-  if (updateError) {
-    console.error("Failed to update booking_count:", updateError);
-  }
-
-  slot.bookingCount = newBookingCount;
+  slot.bookingCount = slot.bookedUsers.length;
 
   const dialogSpots = document.getElementById("dialogSpots");
   if (dialogSpots) {
