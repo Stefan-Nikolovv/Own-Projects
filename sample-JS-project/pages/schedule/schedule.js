@@ -60,16 +60,34 @@ async function loadSchedule() {
     }
   }
 
-  // Fetch slots for this week (booking_count kept accurate by a DB trigger)
+  // Fetch slots for this week
   const { data: slotsData, error } = await supabase
     .from("slots")
-    .select("id, day_key, time, capacity, booking_count")
+    .select("id, day_key, time, capacity")
     .in("day_key", weekDayKeys);
 
   if (error) {
     console.error("Failed to load schedule:", error.message);
     return buildEmptyWeek(weekDates);
   }
+
+  const slotIds = slotsData?.map((s) => s.id) ?? [];
+
+  // Fetch real booking counts directly from the bookings table
+  const { data: bookingCounts, error: countError } = await supabase
+    .from("bookings")
+    .select("slot_id")
+    .in("slot_id", slotIds);
+
+  if (countError) {
+    console.error("Failed to load booking counts:", countError.message);
+  }
+
+  // Build a count map: slot_id -> number of bookings
+  const countMap = {};
+  bookingCounts?.forEach(({ slot_id }) => {
+    countMap[slot_id] = (countMap[slot_id] ?? 0) + 1;
+  });
 
   return weekDates.map((date) => {
     const dayKey = toDateKey(date);
@@ -84,11 +102,12 @@ async function loadSchedule() {
         const dbSlot = slotsData?.find(
           (s) => s.day_key === dayKey && s.time === time
         );
+        const bookingCount = dbSlot ? (countMap[dbSlot.id] ?? 0) : 0;
         return {
           id: dbSlot?.id ?? null,
           time,
           capacity: CAPACITY,
-          bookingCount: dbSlot?.booking_count ?? 0,
+          bookingCount,
           bookedUsers: [],
         };
       }),
@@ -340,19 +359,20 @@ async function saveSpot() {
     phone: isOwner ? newBooking.phone : null,
   });
 
-  // Refetch the slot to get the updated booking_count from the trigger
-  const { data: updatedSlot } = await supabase
+  // Use bookedUsers.length as the source of truth — it was fetched fresh from
+  // the RPC when the dialog opened, so it's always accurate regardless of
+  // whatever stale value is stored in slots.booking_count
+  const newBookingCount = Math.abs(slot.bookedUsers.length);
+  const { error: updateError } = await supabase
     .from("slots")
-    .select("booking_count")
-    .eq("id", slot.id)
-    .single();
+    .update({ booking_count: newBookingCount })
+    .eq("id", slot.id);
 
-  if (updatedSlot) {
-    slot.bookingCount = updatedSlot.booking_count;
-  } else {
-    // Fallback if fetch fails
-    slot.bookingCount += 1;
+  if (updateError) {
+    console.error("Failed to update booking_count:", updateError);
   }
+
+  slot.bookingCount = newBookingCount;
 
   const dialogSpots = document.getElementById("dialogSpots");
   if (dialogSpots) {
