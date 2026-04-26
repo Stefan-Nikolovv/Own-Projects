@@ -1,9 +1,11 @@
 <section class="page schedule-page">
     <div class="schedule-header">
         <div>
-            <p class="schedule-eyebrow">Personal Training</p>
-            <h1>Weekly Schedule</h1>
-            <p class="schedule-subtitle">Choose a slot and save your spot.</p>
+            <p class="schedule-eyebrow" data-i18n="home_subtitle">Personal Training</p>
+            <h1 data-i18n="schedule_title">Weekly Schedule</h1>
+            <p class="schedule-subtitle" data-i18n="schedule_subtitle">
+                Choose a slot and save your spot.
+            </p>
         </div>
     </div>
 
@@ -22,39 +24,48 @@
             <p id="dialogSpots" class="dialog-spots"></p>
 
             <div class="dialog-field">
-                <label for="clientName">Your name</label>
-                <input id="clientName" type="text" placeholder="Enter your name" />
+                <label for="clientName" data-i18n="dialog_name_label">Your name</label>
+                <input id="clientName" type="text" data-i18n-placeholder="dialog_name_label" placeholder="Your name" />
             </div>
+
             <div class="dialog-field">
-                <label for="clientPhone">Phone (optional)</label>
-                <input id="clientPhone" type="tel" placeholder="Enter your phone number" />
+                <label for="clientPhone" data-i18n="dialog_phone_label">Phone number</label>
+                <input id="clientPhone" type="text" data-i18n-placeholder="dialog_phone_label"
+                    placeholder="Phone number" />
             </div>
+
             <p id="dialogMessage" class="dialog-message hidden"></p>
-            <button id="saveSpotBtn" type="button" class="save-spot-btn">
+
+            <button id="saveSpotBtn" type="button" class="save-spot-btn" data-i18n="dialog_save">
                 Save your spot
             </button>
-            <button id="cancelEditBtn" type="button" class="cancel-edit-btn hidden">
+
+            <button id="cancelEditBtn" type="button" class="cancel-edit-btn hidden" data-i18n="dialog_cancel_edit">
                 Cancel edit
             </button>
+
             <div class="saved-list-wrap">
-                <h3>Saved names</h3>
+                <h3 data-i18n="dialog_saved_names">Saved names</h3>
                 <ul id="savedNamesList" class="saved-names-list"></ul>
             </div>
         </form>
     </dialog>
+
     <dialog id="removeConfirmDialog" class="confirm-dialog">
         <div class="confirm-dialog-shell">
-            <p class="confirm-dialog-eyebrow">Remove booking</p>
-            <h3 id="removeConfirmTitle" class="confirm-dialog-title">Are you sure?</h3>
-            <p id="removeConfirmText" class="confirm-dialog-text">
-                This action will remove the booking.
+            <p class="confirm-dialog-eyebrow" data-i18n="remove_eyebrow">Remove booking</p>
+            <h3 id="removeConfirmTitle" class="confirm-dialog-title" data-i18n="remove_question">
+                Are you sure?
+            </h3>
+            <p id="removeConfirmText" class="confirm-dialog-text" data-i18n="remove_text">
+                This booking will be removed from the selected slot.
             </p>
 
             <div class="confirm-dialog-actions">
-                <button id="cancelRemoveBtn" type="button" class="confirm-cancel-btn">
+                <button id="cancelRemoveBtn" type="button" class="confirm-cancel-btn" data-i18n="remove_keep">
                     Keep booking
                 </button>
-                <button id="confirmRemoveBtn" type="button" class="confirm-remove-btn">
+                <button id="confirmRemoveBtn" type="button" class="confirm-remove-btn" data-i18n="remove_btn">
                     Remove
                 </button>
             </div>

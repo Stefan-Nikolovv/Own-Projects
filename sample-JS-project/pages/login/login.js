@@ -1,4 +1,5 @@
 import { supabase } from "../../js/supabase.js";
+import { t } from "../../js/i18n.js";
 
 export async function init() {
   // Already logged in → go straight to schedule
@@ -21,12 +22,12 @@ export async function init() {
     const password = document.getElementById("loginPassword").value;
 
     if (!email || !password) {
-      showError("Please enter your email and password.");
+      showError(t("login_missing"));
       return;
     }
 
     loginBtn.disabled = true;
-    loginBtn.textContent = "Logging in…";
+    loginBtn.textContent = t("login_loading");
     hideError();
 
     const { error } = await supabase.auth.signInWithPassword({
@@ -35,9 +36,9 @@ export async function init() {
     });
 
     if (error) {
-      showError("Invalid email or password.");
+      showError(t("login_invalid"));
       loginBtn.disabled = false;
-      loginBtn.textContent = "Log in";
+      loginBtn.textContent = t("login_button");
       return;
     }
 

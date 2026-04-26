@@ -5,10 +5,23 @@ export const translations = {
     nav_home: "Home",
     nav_schedule: "Schedule",
     nav_contact: "Contact",
+    nav_login: "Login",
+    nav_logout: "Logout",
+    brand_subtitle: "Personal Training",
 
     home_title: "Train with Silvia Mihaylova",
     home_subtitle: "Personal Training",
+    home_text:
+      "High-energy group sessions with a clean schedule, fast booking, and a simple weekly experience.",
     home_book: "Book your spot",
+    home_small_group_title: "Small group feel",
+    home_small_group_text:
+      "Each slot has limited capacity, so the gym stays comfortable.",
+    home_fast_booking_title: "Fast booking",
+    home_fast_booking_text:
+      "Choose a day, open the slot, enter your name, and save your spot.",
+    home_weekly_plan_title: "Weekly plan",
+    home_weekly_plan_text: "Clear day-by-day schedule from Monday to Sunday.",
 
     schedule_title: "Weekly Schedule",
     schedule_subtitle: "Choose a slot and save your spot.",
@@ -43,6 +56,22 @@ export const translations = {
     remove_keep: "Keep booking",
     remove_btn: "Remove",
 
+    login_title: "Admin Login",
+    login_subtitle: "Sign in to manage bookings and view client details.",
+    login_email_label: "Email",
+    login_email_placeholder: "your@email.com",
+    login_password_label: "Password",
+    login_password_placeholder: "Password",
+    login_button: "Log in",
+    login_loading: "Logging in...",
+    login_missing: "Please enter your email and password.",
+    login_invalid: "Invalid email or password.",
+
+    not_found: "404 - Page not found",
+    load_failed: "Could not load page.",
+
+    footer_contact: "Contact us.",
+    footer_location: "Location",
     footer_rights: "All rights reserved.",
   },
 
@@ -50,10 +79,23 @@ export const translations = {
     nav_home: "Начало",
     nav_schedule: "График",
     nav_contact: "Контакти",
+    nav_login: "Влизане",
+    nav_logout: "Изход",
+    brand_subtitle: "Персонални тренировки",
 
     home_title: "Тренирай със Силвия Михайлова",
     home_subtitle: "Персонални тренировки",
+    home_text:
+      "Енергични групови тренировки с ясен график, бързо записване и удобен седмичен план.",
     home_book: "Запази място",
+    home_small_group_title: "Малки групи",
+    home_small_group_text:
+      "Всеки час е с ограничен капацитет, за да има комфорт в залата.",
+    home_fast_booking_title: "Бързо записване",
+    home_fast_booking_text:
+      "Избери ден, отвори часа, въведи името си и запази място.",
+    home_weekly_plan_title: "Седмичен план",
+    home_weekly_plan_text: "Ясен график по дни от понеделник до неделя.",
 
     schedule_title: "Седмичен график",
     schedule_subtitle: "Избери час и запази своето място.",
@@ -88,11 +130,33 @@ export const translations = {
     remove_keep: "Запази записването",
     remove_btn: "Премахни",
 
+    login_title: "Админ вход",
+    login_subtitle:
+      "Влез, за да управляваш записванията и да виждаш данните на клиентите.",
+    login_email_label: "Имейл",
+    login_email_placeholder: "your@email.com",
+    login_password_label: "Парола",
+    login_password_placeholder: "Парола",
+    login_button: "Влез",
+    login_loading: "Влизане...",
+    login_missing: "Моля, въведи имейл и парола.",
+    login_invalid: "Невалиден имейл или парола.",
+
+    not_found: "404 - Страницата не е намерена",
+    load_failed: "Страницата не може да се зареди.",
+
+    footer_contact: "Свържете се с нас.",
+    footer_location: "Локация",
     footer_rights: "Всички права запазени.",
   },
 };
 
-let currentLanguage = localStorage.getItem(STORAGE_KEY) || "en";
+let currentLanguage = localStorage.getItem(STORAGE_KEY);
+
+if (!currentLanguage) {
+  currentLanguage = "en";
+  localStorage.setItem(STORAGE_KEY, currentLanguage);
+}
 
 export function getLanguage() {
   return currentLanguage;
@@ -101,6 +165,7 @@ export function getLanguage() {
 export function setLanguage(lang) {
   currentLanguage = lang === "bg" ? "bg" : "en";
   localStorage.setItem(STORAGE_KEY, currentLanguage);
+  document.documentElement.lang = currentLanguage;
 }
 
 export function getLocale() {
@@ -117,6 +182,8 @@ export function t(key, vars = {}) {
 }
 
 export function applyTranslations(root = document) {
+  document.documentElement.lang = currentLanguage;
+
   root.querySelectorAll("[data-i18n]").forEach((el) => {
     el.textContent = t(el.dataset.i18n);
   });
@@ -135,15 +202,18 @@ export function initLanguageSwitcher(onChange) {
     });
   };
 
+  syncActive();
+
   buttons.forEach((btn) => {
     btn.addEventListener("click", async () => {
       setLanguage(btn.dataset.lang);
       syncActive();
+
       if (onChange) {
         await onChange();
       }
+
+      applyTranslations(document);
     });
   });
-
-  syncActive();
 }

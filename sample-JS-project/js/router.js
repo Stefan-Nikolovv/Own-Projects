@@ -1,4 +1,4 @@
-import { applyTranslations } from "./i18n.js";
+import { applyTranslations, t } from "./i18n.js";
 
 const routes = {
   "#home": {
@@ -8,6 +8,10 @@ const routes = {
   "#schedule": {
     html: "/pages/schedule/schedule.html",
     js: "/pages/schedule/schedule.js",
+  },
+  "#login": {
+    html: "/pages/login/login.html",
+    js: "/pages/login/login.js",
   },
   "#contact": {
     html: "/pages/contact/contact.html",
@@ -30,7 +34,7 @@ export async function router() {
   const route = routes[`#${routeName}`];
 
   if (!route) {
-    app.textContent = "404 - Page not found";
+    app.textContent = t("not_found");
     return;
   }
 
@@ -42,16 +46,16 @@ export async function router() {
     const doc = parser.parseFromString(htmlText, "text/html");
 
     app.replaceChildren(...doc.body.childNodes);
-    applyTranslations(app);
 
     const pageModule = await import(route.js);
     if (pageModule.init) {
       await pageModule.init();
     }
 
+    applyTranslations(app);
     setActiveLink(routeName);
   } catch (error) {
     console.error("Router error:", error);
-    app.textContent = "Could not load page.";
+    app.textContent = t("load_failed");
   }
 }
