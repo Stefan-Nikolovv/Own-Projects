@@ -38,6 +38,7 @@ create table slots (
   time          text    not null,
   capacity      integer not null default 16,
   booking_count integer not null default 0,
+  is_day_locked boolean not null default false,
   constraint slots_day_time_unique unique (day_key, time)
 );
 
@@ -77,6 +78,31 @@ create policy "Anyone reads slots" on slots for select using (true);
 create policy "Authenticated manages slots" on slots for all to authenticated using (true) with check (true);
 create policy "Anyone can book" on bookings for insert with check (true);
 create policy "Anyone reads bookings" on bookings for select using (true);
+
+-- Add this if your slots table already exists from an older setup
+alter table slots
+add column if not exists is_day_locked boolean not null default false;
+
+-- Prevent bookings from being inserted for locked days
+create or replace function prevent_booking_for_locked_day()
+returns trigger language plpgsql as $$
+begin
+  if exists (
+    select 1
+    from slots s
+    where s.id = NEW.slot_id
+      and s.is_day_locked = true
+  ) then
+    raise exception 'Bookings are locked for this day.';
+  end if;
+
+  return NEW;
+end;
+$$;
+
+create trigger prevent_locked_day_booking_trigger
+before insert on bookings
+for each row execute function prevent_booking_for_locked_day();
 
 -- RPC function for phone privacy
 create or replace function get_bookings_with_phone(p_slot_id uuid)

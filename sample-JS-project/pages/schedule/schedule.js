@@ -68,10 +68,27 @@ async function loadSchedule() {
     }
   }
 
-  const { data: slotsData, error } = await supabase
+  let { data: slotsData, error } = await supabase
     .from("slots")
-    .select("id, day_key, time, capacity")
+    .select("id, day_key, time, capacity, is_day_locked")
     .in("day_key", weekDayKeys);
+
+  if (error && error.message?.includes("is_day_locked")) {
+    console.warn(
+      "Missing slots.is_day_locked column. Run the README SQL migration."
+    );
+
+    const fallback = await supabase
+      .from("slots")
+      .select("id, day_key, time, capacity")
+      .in("day_key", weekDayKeys);
+
+    slotsData = fallback.data?.map((slot) => ({
+      ...slot,
+      is_day_locked: false,
+    }));
+    error = fallback.error;
+  }
 
   if (error) {
     console.error("Failed to load schedule:", error.message);
@@ -101,8 +118,12 @@ async function loadSchedule() {
 
     return {
       key: dayKey,
+      stableDayKey,
       dayName: formatDayName(date),
       dateLabel: formatDateLabel(date),
+      locked: Boolean(
+        slotsData?.some((s) => s.day_key === dayKey && s.is_day_locked)
+      ),
       slots: times.map((time) => {
         const dbSlot = slotsData?.find(
           (s) => s.day_key === dayKey && s.time === time
@@ -127,8 +148,10 @@ function buildEmptyWeek(weekDates) {
 
     return {
       key: toDateKey(date),
+      stableDayKey,
       dayName: formatDayName(date),
       dateLabel: formatDateLabel(date),
+      locked: false,
       slots: (DAY_SLOT_MAP[stableDayKey] || []).map((time) => ({
         id: null,
         time,
@@ -179,6 +202,7 @@ function renderWeek() {
   state.forEach((day) => {
     const dayCard = document.createElement("article");
     dayCard.className = "day-card";
+    dayCard.dataset.dayKey = day.key;
 
     const header = document.createElement("div");
     header.className = "day-card-header";
@@ -191,10 +215,25 @@ function renderWeek() {
     dayDate.className = "day-date";
     dayDate.textContent = day.dateLabel;
 
-    header.append(dayName, dayDate);
+    const dayMeta = document.createElement("div");
+    dayMeta.className = "day-meta";
+    dayMeta.append(dayName, dayDate);
+
+    header.appendChild(dayMeta);
+
+    if (isOwner) {
+      header.appendChild(createDayLockButton(day));
+    }
 
     const slotList = document.createElement("div");
     slotList.className = "slot-list";
+
+    if (day.locked) {
+      const lockedText = document.createElement("p");
+      lockedText.className = "day-locked-message";
+      lockedText.textContent = t("day_locked_message");
+      slotList.appendChild(lockedText);
+    }
 
     if (!day.slots.length) {
       const emptyText = document.createElement("p");
@@ -207,8 +246,11 @@ function renderWeek() {
 
         const slotBtn = document.createElement("button");
         slotBtn.className = "slot-btn";
+        if (day.locked) {
+          slotBtn.classList.add("slot-btn-locked");
+        }
         slotBtn.type = "button";
-        slotBtn.disabled = spotsLeft <= 0;
+        slotBtn.disabled = day.locked || spotsLeft <= 0;
 
         const top = document.createElement("div");
         top.className = "slot-top";
@@ -219,8 +261,11 @@ function renderWeek() {
 
         const badge = document.createElement("span");
         badge.className = "slot-badge";
-        badge.textContent =
-          spotsLeft > 0 ? t("spots_left", { count: spotsLeft }) : t("full");
+        badge.textContent = day.locked
+          ? t("day_locked_badge")
+          : spotsLeft > 0
+          ? t("spots_left", { count: spotsLeft })
+          : t("full");
 
         top.append(time, badge);
 
@@ -232,7 +277,9 @@ function renderWeek() {
         });
 
         slotBtn.append(top, meta);
-        slotBtn.addEventListener("click", () => openSlot(day.key, slot.time));
+        if (!day.locked) {
+          slotBtn.addEventListener("click", () => openSlot(day.key, slot.time));
+        }
 
         slotList.appendChild(slotBtn);
       });
@@ -241,6 +288,71 @@ function renderWeek() {
     dayCard.append(header, slotList);
     weekGrid.appendChild(dayCard);
   });
+}
+
+function createDayLockButton(day) {
+  const label = day.locked ? t("unlock_day") : t("lock_day");
+  const hint = day.locked ? t("unlock_day_hint") : t("lock_day_hint");
+
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = day.locked
+    ? "day-lock-btn day-lock-btn-unlock"
+    : "day-lock-btn";
+  button.setAttribute("aria-label", label);
+  button.title = hint;
+  button.innerHTML = day.locked
+    ? '<i class="fa-solid fa-lock" aria-hidden="true"></i><span class="sr-only"></span>'
+    : '<i class="fa-solid fa-lock-open" aria-hidden="true"></i><span class="sr-only"></span>';
+  button.querySelector(".sr-only").textContent = label;
+  button.addEventListener("click", () => toggleDayLock(day.key, button));
+
+  return button;
+}
+
+async function toggleDayLock(dayKey, button) {
+  const day = state.find((item) => item.key === dayKey);
+  if (!isOwner || !day) return;
+
+  button.disabled = true;
+  const nextLocked = !day.locked;
+
+  try {
+    const { error } = await supabase
+      .from("slots")
+      .update({ is_day_locked: nextLocked })
+      .eq("day_key", day.key);
+
+    if (error) throw error;
+
+    day.locked = nextLocked;
+    renderWeek();
+  } catch (error) {
+    console.error("Failed to update day lock:", {
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      code: error.code,
+    });
+    button.disabled = false;
+    renderDayLockFeedback(day, t("day_lock_failed"), "error");
+  }
+}
+
+function renderDayLockFeedback(day, message, type = "error") {
+  const weekGrid = document.getElementById("weekGrid");
+  const dayCard = weekGrid?.querySelector(`[data-day-key="${day.key}"]`);
+  if (!dayCard) return;
+
+  const existing = dayCard.querySelector(".day-lock-feedback");
+  existing?.remove();
+
+  const feedback = document.createElement("p");
+  feedback.className = `day-lock-feedback ${type}`;
+  feedback.textContent = message;
+
+  const header = dayCard.querySelector(".day-card-header");
+  header?.insertAdjacentElement("afterend", feedback);
 }
 
 async function openSlot(dayKey, time) {
@@ -370,6 +482,14 @@ async function saveSpot() {
 
   if (!day || !slot || !slot.id) return;
 
+  const isLocked = day.locked || (await isDayLocked(day.key));
+  if (isLocked && !editingBookingId) {
+    day.locked = true;
+    renderWeek();
+    showDialogMessage(t("msg_day_locked"));
+    return;
+  }
+
   const duplicateBooking = slot.bookedUsers.find((b) => {
     const sameName = (b.name || "").toLowerCase() === name.toLowerCase();
     const sameRecord = b.id === editingBookingId;
@@ -456,6 +576,22 @@ async function saveSpot() {
   } finally {
     if (saveBtn) saveBtn.disabled = false;
   }
+}
+
+async function isDayLocked(dayKey) {
+  const { data, error } = await supabase
+    .from("slots")
+    .select("is_day_locked")
+    .eq("day_key", dayKey)
+    .eq("is_day_locked", true)
+    .limit(1);
+
+  if (error) {
+    console.warn("Failed to check day lock:", error.message);
+    return false;
+  }
+
+  return Boolean(data?.length);
 }
 
 function renderSavedNames(bookings) {
