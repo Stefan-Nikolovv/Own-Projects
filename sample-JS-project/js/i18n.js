@@ -25,6 +25,8 @@ export const translations = {
 
     schedule_title: "Weekly Schedule",
     schedule_subtitle: "Choose a slot and save your spot.",
+    previous_week: "Previous week",
+    next_week: "Next week",
     no_slots: "No training slots available.",
     day_locked_badge: "Locked",
     day_locked_message:
@@ -109,6 +111,8 @@ export const translations = {
 
     schedule_title: "Седмичен график",
     schedule_subtitle: "Избери час и запази своето място.",
+    previous_week: "Предишна седмица",
+    next_week: "Следваща седмица",
     no_slots: "Няма налични тренировки.",
     day_locked_badge: "Заключено",
     day_locked_message:

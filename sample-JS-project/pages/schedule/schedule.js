@@ -18,6 +18,7 @@ const DAY_SLOT_MAP = {
 let state = [];
 let selectedSlot = null;
 let isOwner = false;
+let visibleWeekStart = null;
 
 export async function init() {
   try {
@@ -26,8 +27,10 @@ export async function init() {
     } = await supabase.auth.getUser();
 
     isOwner = user?.email === OWNER_EMAIL;
+    visibleWeekStart ??= getStartOfWeek(new Date());
 
     state = await loadSchedule();
+    renderWeekNav();
     renderWeek();
     bindDialogActions();
     // applyTranslations(document.getElementById("app"));
@@ -42,7 +45,7 @@ export async function init() {
 }
 
 async function loadSchedule() {
-  const weekDates = getCurrentWeekDates();
+  const weekDates = getVisibleWeekDates();
   const weekDayKeys = weekDates.map(toDateKey);
 
   const slotsToUpsert = weekDates.flatMap((date) => {
@@ -163,20 +166,110 @@ function buildEmptyWeek(weekDates) {
   });
 }
 
-function getCurrentWeekDates() {
-  const today = new Date();
-  const day = today.getDay();
-  const mondayOffset = day === 0 ? -6 : 1 - day;
-
-  const monday = new Date(today);
+function getVisibleWeekDates() {
+  const monday = new Date(visibleWeekStart ?? getStartOfWeek(new Date()));
   monday.setHours(0, 0, 0, 0);
-  monday.setDate(today.getDate() + mondayOffset);
 
   return Array.from({ length: 7 }, (_, index) => {
     const date = new Date(monday);
     date.setDate(monday.getDate() + index);
     return date;
   });
+}
+
+function getStartOfWeek(date) {
+  const start = new Date(date);
+  const day = start.getDay();
+  const mondayOffset = day === 0 ? -6 : 1 - day;
+  start.setHours(0, 0, 0, 0);
+  start.setDate(start.getDate() + mondayOffset);
+  return start;
+}
+
+function addDays(date, amount) {
+  const next = new Date(date);
+  next.setDate(next.getDate() + amount);
+  return next;
+}
+
+function renderWeekNav() {
+  const controls = document.getElementById("weekNavControls");
+  if (!controls) return;
+
+  controls.replaceChildren();
+
+  const previousBtn = createWeekNavButton("previous_week", "fa-chevron-left");
+  const nextBtn = createWeekNavButton("next_week", "fa-chevron-right");
+
+  previousBtn.addEventListener("click", () => changeWeek(-1));
+  nextBtn.addEventListener("click", () => changeWeek(1));
+
+  const range = document.createElement("p");
+  range.className = "week-range-label";
+  range.textContent = formatWeekRange();
+
+  controls.append(previousBtn, range, nextBtn);
+}
+
+function createWeekNavButton(labelKey, iconClass) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "week-nav-btn";
+  button.setAttribute("aria-label", t(labelKey));
+  button.title = t(labelKey);
+  button.innerHTML = `<i class="fa-solid ${iconClass}" aria-hidden="true"></i><span class="sr-only">${t(
+    labelKey
+  )}</span>`;
+
+  return button;
+}
+
+async function changeWeek(direction) {
+  visibleWeekStart = addDays(
+    visibleWeekStart ?? getStartOfWeek(new Date()),
+    direction * 7
+  );
+  await refreshScheduleView();
+}
+
+async function refreshScheduleView() {
+  const dialog = document.getElementById("slotDialog");
+  if (dialog?.open) {
+    dialog.close();
+  }
+
+  selectedSlot = null;
+  resetBookingForm();
+
+  state = await loadSchedule();
+  renderWeekNav();
+  renderWeek();
+  applyTranslations(document.getElementById("app"));
+}
+
+function formatWeekRange() {
+  const start = visibleWeekStart ?? getStartOfWeek(new Date());
+  const end = addDays(start, 6);
+  const sameMonth = start.getMonth() === end.getMonth();
+  const sameYear = start.getFullYear() === end.getFullYear();
+  const locale = getLocale();
+
+  const startOptions = {
+    day: "numeric",
+    month: "short",
+    ...(!sameYear ? { year: "numeric" } : {}),
+  };
+
+  const endOptions = {
+    day: "numeric",
+    month: "short",
+    ...(!sameYear ? { year: "numeric" } : {}),
+  };
+
+  const startLabel = new Intl.DateTimeFormat(locale, startOptions).format(start);
+  const endLabel = new Intl.DateTimeFormat(locale, endOptions).format(end);
+
+  return `${startLabel} - ${endLabel}`;
 }
 
 function getStableDayKey(date) {

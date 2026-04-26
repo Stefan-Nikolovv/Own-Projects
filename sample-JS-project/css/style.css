@@ -421,6 +421,70 @@ body {
   opacity: 0.82;
 }
 
+.schedule-page .week-nav-controls {
+  display: grid;
+  grid-template-columns: 42px minmax(156px, auto) 42px;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  width: fit-content;
+  padding: 5px;
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.schedule-page .week-range-label {
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 150px;
+  padding: 0 16px;
+  border-radius: 10px;
+  margin: 0;
+  background: rgba(215, 240, 0, 0.12);
+  border: 1px solid rgba(215, 240, 0, 0.22);
+  color: #d7f000;
+  font-size: 0.9rem;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.schedule-page .week-nav-btn {
+  width: 42px;
+  height: 38px;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.065) !important;
+  color: #ffffff !important;
+  font-size: 0.95rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.18s ease, background 0.18s ease,
+    border-color 0.18s ease, color 0.18s ease;
+}
+
+.schedule-page .week-nav-btn:hover {
+  transform: translateY(-1px);
+  background: rgba(215, 240, 0, 0.12) !important;
+  border-color: rgba(215, 240, 0, 0.3) !important;
+  opacity: 1;
+}
+
+.schedule-page .week-nav-btn:active,
+.schedule-page .week-nav-btn:focus-visible {
+  background: #d7f000 !important;
+  border-color: #d7f000 !important;
+  color: #111 !important;
+  outline: none;
+  transform: translateY(0);
+}
+
 .week-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -937,8 +1001,23 @@ body {
   }
 
   .schedule-header {
+    flex-direction: column;
+    align-items: stretch;
     margin-bottom: 18px;
   }
+
+  .schedule-page .week-nav-controls {
+    grid-template-columns: 42px minmax(0, 1fr) 42px;
+    justify-items: stretch;
+    width: 100%;
+    padding: 5px;
+  }
+
+  .schedule-page .week-range-label {
+    min-width: 0;
+    font-size: 0.84rem;
+  }
+
 
   .week-grid {
     grid-template-columns: 1fr;
