@@ -4,7 +4,6 @@ import { supabase } from "./supabase.js";
 async function updateAuthNav() {
   const authLink = document.getElementById("authNavLink");
   if (!authLink) {
-    console.log("authNavLink not found");
     return;
   }
 
