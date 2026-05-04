@@ -343,7 +343,7 @@ function renderWeek() {
           slotBtn.classList.add("slot-btn-locked");
         }
         slotBtn.type = "button";
-        slotBtn.disabled = day.locked || spotsLeft <= 0;
+        slotBtn.disabled = day.locked || (spotsLeft <= 0 && !isOwner);
 
         const top = document.createElement("div");
         top.className = "slot-top";
@@ -595,7 +595,7 @@ async function saveSpot() {
     return;
   }
 
-  if (!editingBookingId && slot.bookingCount >= slot.capacity) {
+  if (!editingBookingId && slot.bookingCount >= slot.capacity && !isOwner) {
     showDialogMessage(t("msg_full"));
     return;
   }
