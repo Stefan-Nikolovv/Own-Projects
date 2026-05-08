@@ -43,6 +43,9 @@ export const translations = {
 
     dialog_name_label: "Your name",
     dialog_phone_label: "Phone number",
+    dialog_email_label: "Email address",
+    dialog_email_placeholder: "your@email.com",
+    dialog_email_hint: "A confirmation email will be sent to this address.",
     dialog_saved_names: "Saved names",
     dialog_save: "Save your spot",
     dialog_update: "Update booking",
@@ -50,6 +53,7 @@ export const translations = {
     dialog_no_names: "No saved names yet.",
 
     msg_enter_name: "Please enter your name.",
+    msg_email_invalid: "Please enter a valid email address.",
     msg_duplicate: "This name is already saved for this slot.",
     msg_full: "No spots left for this slot.",
     msg_day_locked: "Bookings for this day are locked.",
@@ -129,6 +133,9 @@ export const translations = {
 
     dialog_name_label: "Твоето име",
     dialog_phone_label: "Телефонен номер",
+    dialog_email_label: "Имейл адрес",
+    dialog_email_placeholder: "your@email.com",
+    dialog_email_hint: "На този адрес ще бъде изпратен имейл за потвърждение.",
     dialog_saved_names: "Записани имена",
     dialog_save: "Запази място",
     dialog_update: "Обнови записването",
@@ -136,6 +143,7 @@ export const translations = {
     dialog_no_names: "Все още няма записани имена.",
 
     msg_enter_name: "Моля, въведи име.",
+    msg_email_invalid: "Моля, въведи валиден имейл адрес.",
     msg_duplicate: "Това име вече е записано за този час.",
     msg_full: "Няма свободни места за този час.",
     msg_day_locked: "Записванията за този ден са заключени.",

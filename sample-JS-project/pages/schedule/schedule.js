@@ -1,5 +1,7 @@
 import { supabase, OWNER_EMAIL } from "../../js/supabase.js";
 import { t, getLocale, applyTranslations } from "../../js/i18n.js";
+import { config } from "../../js/config.js";
+import emailjs from "https://cdn.jsdelivr.net/npm/@emailjs/browser@4/+esm";
 
 const CAPACITY = 16;
 let editingBookingId = null;
@@ -22,6 +24,10 @@ let visibleWeekStart = null;
 
 export async function init() {
   try {
+    if (config.emailjsPublicKey) {
+      emailjs.init(config.emailjsPublicKey);
+    }
+
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -55,6 +61,7 @@ async function loadSchedule() {
       day_name: dayKey,
       time,
       capacity: CAPACITY,
+      is_day_locked: DEFAULT_LOCKED_DAYS.includes(dayKey),
     }));
   });
 
@@ -145,6 +152,8 @@ async function loadSchedule() {
   });
 }
 
+const DEFAULT_LOCKED_DAYS = ["Tuesday", "Wednesday"];
+
 function buildEmptyWeek(weekDates) {
   return weekDates.map((date) => {
     const stableDayKey = getStableDayKey(date);
@@ -154,7 +163,7 @@ function buildEmptyWeek(weekDates) {
       stableDayKey,
       dayName: formatDayName(date),
       dateLabel: formatDateLabel(date),
-      locked: false,
+      locked: DEFAULT_LOCKED_DAYS.includes(stableDayKey),
       slots: (DAY_SLOT_MAP[stableDayKey] || []).map((time) => ({
         id: null,
         time,
@@ -481,9 +490,10 @@ async function openSlot(dayKey, time) {
   const dialogSpots = document.getElementById("dialogSpots");
   const clientName = document.getElementById("clientName");
   const clientPhone = document.getElementById("clientPhone");
+  const clientEmail = document.getElementById("clientEmail");
   const dialog = document.getElementById("slotDialog");
 
-  if (dialogDay) dialogDay.textContent = `${day.dayName} • ${day.dateLabel}`;
+  if (dialogDay) dialogDay.textContent = `${day.dayName} \u2022 ${day.dateLabel}`;
   if (dialogTime) dialogTime.textContent = slot.time;
   if (dialogSpots) {
     const spotsLeft = slot.capacity - slot.bookingCount;
@@ -492,6 +502,7 @@ async function openSlot(dayKey, time) {
 
   if (clientName) clientName.value = "";
   if (clientPhone) clientPhone.value = "";
+  if (clientEmail) clientEmail.value = "";
 
   resetBookingForm();
   renderSavedNames(slot.bookedUsers);
@@ -557,16 +568,24 @@ async function saveSpot() {
 
   const nameInput = document.getElementById("clientName");
   const phoneInput = document.getElementById("clientPhone");
+  const emailInput = document.getElementById("clientEmail");
   const saveBtn = document.getElementById("saveSpotBtn");
 
   if (!nameInput) return;
 
   const name = nameInput.value.trim();
   const phone = phoneInput?.value.trim() || null;
+  const email = emailInput?.value.trim() || null;
 
   if (!name) {
     showDialogMessage(t("msg_enter_name"));
     nameInput.focus();
+    return;
+  }
+
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    showDialogMessage(t("msg_email_invalid"));
+    emailInput.focus();
     return;
   }
 
@@ -655,6 +674,11 @@ async function saveSpot() {
 
       slot.bookingCount = slot.bookedUsers.length;
       showDialogMessage(t("msg_saved"), "success");
+
+      if (email) {
+        const day = state.find((item) => item.key === selectedSlot.dayKey);
+        sendConfirmationEmail(email, name, day?.dayName ?? "", day?.dateLabel ?? "", slot.time);
+      }
     }
 
     const dialogSpots = document.getElementById("dialogSpots");
@@ -668,6 +692,23 @@ async function saveSpot() {
     resetBookingForm();
   } finally {
     if (saveBtn) saveBtn.disabled = false;
+  }
+}
+
+async function sendConfirmationEmail(email, name, dayName, dateLabel, time) {
+  if (!config.emailjsServiceId || !config.emailjsTemplateId) {
+    console.warn("EmailJS not configured. Skipping confirmation email.");
+    return;
+  }
+
+  try {
+    await emailjs.send(config.emailjsServiceId, config.emailjsTemplateId, {
+      email,
+      name,
+      title: `${dayName}, ${dateLabel} at ${time}`,
+    });
+  } catch (err) {
+    console.warn("Confirmation email could not be sent:", err);
   }
 }
 
@@ -841,11 +882,13 @@ function resetBookingForm() {
 
   const nameEl = document.getElementById("clientName");
   const telEl = document.getElementById("clientPhone");
+  const emailEl = document.getElementById("clientEmail");
   const saveBtn = document.getElementById("saveSpotBtn");
   const cancelEditBtn = document.getElementById("cancelEditBtn");
 
   if (nameEl) nameEl.value = "";
   if (telEl) telEl.value = "";
+  if (emailEl) emailEl.value = "";
 
   if (saveBtn) saveBtn.textContent = t("dialog_save");
   if (cancelEditBtn) cancelEditBtn.classList.add("hidden");
