@@ -9,7 +9,7 @@ export const translations = {
     nav_logout: "Logout",
     brand_subtitle: "Personal Training",
 
-    home_title: "Train with Silvia Mihaylova",
+    home_title: "Train with Silviya Mihaylova",
     home_subtitle: "Personal Training",
     home_text:
       "High-energy group sessions with a clean schedule, fast booking, and a simple weekly experience.",
@@ -85,6 +85,19 @@ export const translations = {
 
     not_found: "404 - Page not found",
     load_failed: "Could not load page.",
+
+    contact_eyebrow: "Get in Touch",
+    contact_title: "Contact",
+    contact_subtitle: "Have a question or want to book a session? Reach out through any of the channels below.",
+    contact_phone_title: "Phone",
+    contact_instagram_text: "@emotioninmotion.by_silviya",
+    contact_location_title: "Location",
+    contact_location_text: "Find us on Google Maps",
+    contact_hours_title: "Working Hours",
+    contact_hours_weekdays: "Mon – Fri",
+    contact_hours_saturday: "Saturday",
+    contact_hours_sunday: "Sunday",
+    contact_hours_closed: "Closed",
 
     footer_contact: "Contact us.",
     footer_location: "Location",
@@ -176,6 +189,19 @@ export const translations = {
 
     not_found: "404 - Страницата не е намерена",
     load_failed: "Страницата не може да се зареди.",
+
+    contact_eyebrow: "Свържете се",
+    contact_title: "Контакти",
+    contact_subtitle: "Имате въпрос или искате да запазите час? Свържете се с нас по някой от каналите по-долу.",
+    contact_phone_title: "Телефон",
+    contact_instagram_text: "@emotioninmotion.by_silviya",
+    contact_location_title: "Локация",
+    contact_location_text: "Намерете ни в Google Maps",
+    contact_hours_title: "Работно време",
+    contact_hours_weekdays: "Пон – Пет",
+    contact_hours_saturday: "Събота",
+    contact_hours_sunday: "Неделя",
+    contact_hours_closed: "Затворено",
 
     footer_contact: "Свържете се с нас.",
     footer_location: "Локация",
