@@ -249,3 +249,36 @@ export function initLanguageSwitcher(onChange) {
     });
   });
 }
+
+/* ------------------------------------------------------------------ */
+/* Theme toggle                                                         */
+/* ------------------------------------------------------------------ */
+
+const THEME_KEY = "app_theme";
+
+function getSystemTheme() {
+  return window.matchMedia("(prefers-color-scheme: light)").matches
+    ? "light"
+    : "dark";
+}
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute("data-theme", theme);
+}
+
+export function initThemeToggle() {
+  const saved = localStorage.getItem(THEME_KEY);
+  const theme = saved || getSystemTheme();
+  applyTheme(theme);
+
+  const btn = document.getElementById("themeToggle");
+  if (!btn) return;
+
+  btn.addEventListener("click", () => {
+    const current =
+      document.documentElement.getAttribute("data-theme") || "dark";
+    const next = current === "dark" ? "light" : "dark";
+    applyTheme(next);
+    localStorage.setItem(THEME_KEY, next);
+  });
+}

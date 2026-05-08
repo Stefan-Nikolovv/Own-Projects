@@ -1,6 +1,6 @@
 import { router } from "./router.js";
 import { supabase } from "./supabase.js";
-import { applyTranslations, initLanguageSwitcher, t } from "./i18n.js";
+import { applyTranslations, initLanguageSwitcher, initThemeToggle, t } from "./i18n.js";
 
 async function updateAuthNav() {
   const authLink = document.getElementById("authNavLink");
@@ -34,6 +34,8 @@ window.addEventListener("DOMContentLoaded", async () => {
     await router();
     await updateAuthNav();
   });
+
+  initThemeToggle();
 
   applyTranslations(document);
   await updateAuthNav();
