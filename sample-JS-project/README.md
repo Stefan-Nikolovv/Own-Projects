@@ -36,7 +36,7 @@ create table slots (
   day_key       date    not null,
   day_name      text    not null,
   time          text    not null,
-  capacity      integer not null default 16,
+  capacity      integer not null default 14,
   booking_count integer not null default 0,
   is_day_locked boolean not null default false,
   constraint slots_day_time_unique unique (day_key, time)
@@ -82,6 +82,12 @@ create policy "Anyone reads bookings" on bookings for select using (true);
 -- Add this if your slots table already exists from an older setup
 alter table slots
 add column if not exists is_day_locked boolean not null default false;
+
+alter table slots
+alter column capacity set default 14;
+
+update slots
+set capacity = 14;
 
 -- Prevent bookings from being inserted for locked days
 create or replace function prevent_booking_for_locked_day()

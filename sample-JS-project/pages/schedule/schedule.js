@@ -3,7 +3,7 @@ import { t, getLocale, applyTranslations } from "../../js/i18n.js";
 import { config } from "../../js/config.js";
 import emailjs from "https://cdn.jsdelivr.net/npm/@emailjs/browser@4/+esm";
 
-const CAPACITY = 16;
+const CAPACITY = 14;
 let editingBookingId = null;
 let pendingRemoveBooking = null;
 
