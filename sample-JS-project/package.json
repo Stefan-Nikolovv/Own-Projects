@@ -4,7 +4,9 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "node build-config.js",
+    "test": "node --test",
+    "check": "node --check pages/schedule/schedule.js && node --check js/i18n.js"
   },
   "author": "",
   "license": "ISC",

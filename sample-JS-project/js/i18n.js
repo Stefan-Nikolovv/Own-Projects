@@ -27,7 +27,12 @@ export const translations = {
     schedule_subtitle: "Choose a slot and save your spot.",
     previous_week: "Previous week",
     next_week: "Next week",
+    today: "Today",
+    past: "Past",
     no_slots: "No training slots available.",
+    schedule_setup_required:
+      "The schedule could not be prepared. The database migration may still need to be applied.",
+    schedule_load_failed: "Could not load the bookings for this session.",
     day_locked_badge: "Locked",
     day_locked_message:
       "Bookings for this day are currently locked. Please check again later.",
@@ -53,10 +58,13 @@ export const translations = {
     dialog_no_names: "No saved names yet.",
 
     msg_enter_name: "Please enter your name.",
+    msg_enter_valid_name: "Please enter a name between 2 and 80 characters.",
+    msg_phone_invalid: "Please enter a shorter phone number.",
     msg_email_invalid: "Please enter a valid email address.",
     msg_duplicate: "This name is already saved for this slot.",
     msg_full: "No spots left for this slot.",
     msg_day_locked: "Bookings for this day are locked.",
+    msg_past_slot: "Past sessions can no longer be booked.",
     msg_saved: "Your spot has been saved!",
     msg_updated: "Booking updated successfully!",
     msg_removed: "Booking removed successfully.",
@@ -71,6 +79,11 @@ export const translations = {
     remove_text: "This booking will be removed from the selected slot.",
     remove_keep: "Keep booking",
     remove_btn: "Remove",
+
+    admin_week_bookings: "{count} bookings this week",
+    admin_export_week: "Export CSV",
+    admin_export_ready: "The weekly attendance file is ready.",
+    admin_export_failed: "Could not export this week.",
 
     login_title: "Admin Login",
     login_subtitle: "Sign in to manage bookings and view client details.",
@@ -130,7 +143,12 @@ export const translations = {
     schedule_subtitle: "Избери час и запази своето място.",
     previous_week: "Предишна седмица",
     next_week: "Следваща седмица",
+    today: "Днес",
+    past: "Минало",
     no_slots: "Няма налични тренировки.",
+    schedule_setup_required:
+      "Графикът не можа да бъде подготвен. Възможно е миграцията на базата данни да не е приложена.",
+    schedule_load_failed: "Записванията за тази тренировка не можаха да се заредят.",
     day_locked_badge: "Заключено",
     day_locked_message:
       "Записванията за този ден в момента са заключени. Моля, проверете по-късно.",
@@ -156,10 +174,13 @@ export const translations = {
     dialog_no_names: "Все още няма записани имена.",
 
     msg_enter_name: "Моля, въведи име.",
+    msg_enter_valid_name: "Моля, въведи име между 2 и 80 символа.",
+    msg_phone_invalid: "Моля, въведи по-кратък телефонен номер.",
     msg_email_invalid: "Моля, въведи валиден имейл адрес.",
     msg_duplicate: "Това име вече е записано за този час.",
     msg_full: "Няма свободни места за този час.",
     msg_day_locked: "Записванията за този ден са заключени.",
+    msg_past_slot: "Не може да се записва за изминала тренировка.",
     msg_saved: "Твоето място беше запазено!",
     msg_updated: "Записването беше обновено успешно!",
     msg_removed: "Записването беше премахнато успешно.",
@@ -174,6 +195,11 @@ export const translations = {
     remove_text: "Това записване ще бъде премахнато от избрания час.",
     remove_keep: "Запази записването",
     remove_btn: "Премахни",
+
+    admin_week_bookings: "{count} записвания тази седмица",
+    admin_export_week: "Експорт CSV",
+    admin_export_ready: "Файлът с посещенията е готов.",
+    admin_export_failed: "Седмицата не можа да бъде експортирана.",
 
     login_title: "Админ вход",
     login_subtitle:

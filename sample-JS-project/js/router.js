@@ -1,5 +1,7 @@
 import { applyTranslations, t } from "./i18n.js";
 
+const APP_VERSION = "20260804-8";
+
 const routes = {
   "#home": {
     html: "/pages/home/home.html",
@@ -39,7 +41,9 @@ export async function router() {
   }
 
   try {
-    const response = await fetch(route.html);
+    const response = await fetch(`${route.html}?v=${APP_VERSION}`, {
+      cache: "no-store",
+    });
     const htmlText = await response.text();
 
     const parser = new DOMParser();
@@ -47,7 +51,7 @@ export async function router() {
 
     app.replaceChildren(...doc.body.childNodes);
 
-    const pageModule = await import(route.js);
+    const pageModule = await import(`${route.js}?v=${APP_VERSION}`);
     if (pageModule.init) {
       await pageModule.init();
     }

@@ -2,25 +2,27 @@ import { supabase, OWNER_EMAIL } from "../../js/supabase.js";
 import { t, getLocale, applyTranslations } from "../../js/i18n.js";
 import { config } from "../../js/config.js";
 import emailjs from "https://cdn.jsdelivr.net/npm/@emailjs/browser@4/+esm";
+import {
+  CAPACITY,
+  DAY_SLOT_MAP,
+  addDays,
+  getStableDayKey,
+  getStartOfWeek,
+  isDateInPast,
+  isSlotInPast,
+  isToday,
+  mapBookingError,
+  toDateKey,
+} from "./schedule-utils.js";
 
-const CAPACITY = 14;
 let editingBookingId = null;
 let pendingRemoveBooking = null;
-
-const DAY_SLOT_MAP = {
-  Monday: ["17:00", "18:00"],
-  Tuesday: ["18:00"],
-  Wednesday: ["17:00", "18:00"],
-  Thursday: ["18:00"],
-  Friday: ["17:00", "18:00"],
-  Saturday: ["10:00", "11:00"],
-  Sunday: [],
-};
 
 let state = [];
 let selectedSlot = null;
 let isOwner = false;
 let visibleWeekStart = null;
+let weekChangeInProgress = false;
 
 export async function init() {
   try {
@@ -32,16 +34,25 @@ export async function init() {
       data: { user },
     } = await supabase.auth.getUser();
 
-    isOwner = user?.email === OWNER_EMAIL;
+    const { data: adminAccess, error: adminError } = await supabase.rpc(
+      "is_app_admin"
+    );
+    isOwner = adminError
+      ? user?.email === OWNER_EMAIL
+      : Boolean(adminAccess);
     visibleWeekStart ??= getStartOfWeek(new Date());
 
+    setScheduleLoading(true);
     state = await loadSchedule();
     renderWeekNav();
-    renderWeek();
+    renderWeek({ animate: true });
+    renderAdminActions();
     bindDialogActions();
-    // applyTranslations(document.getElementById("app"));
+    bindWeekSwipe();
     resetBookingForm();
+    setScheduleLoading(false);
   } catch (err) {
+    setScheduleLoading(false);
     console.error("Schedule init error:", err);
     const app = document.getElementById("app");
     if (app) {
@@ -53,39 +64,11 @@ export async function init() {
 async function loadSchedule() {
   const weekDates = getVisibleWeekDates();
   const weekDayKeys = weekDates.map(toDateKey);
-
-  const slotsToUpsert = weekDates.flatMap((date) => {
-    const dayKey = getStableDayKey(date);
-    return (DAY_SLOT_MAP[dayKey] || []).map((time) => ({
-      day_key: toDateKey(date),
-      day_name: dayKey,
-      time,
-      capacity: CAPACITY,
-      is_day_locked: DEFAULT_LOCKED_DAYS.includes(dayKey),
-    }));
-  });
-
-  if (slotsToUpsert.length > 0) {
-    const { error: upsertError } = await supabase
-      .from("slots")
-      .upsert(slotsToUpsert, {
-        onConflict: "day_key,time",
-        ignoreDuplicates: true,
-      });
-
-    if (upsertError) {
-      console.error("Could not create generated schedule slots:", {
-        code: upsertError.code,
-        message: upsertError.message,
-        details: upsertError.details,
-        hint: upsertError.hint,
-      });
-    }
-  }
+  await ensureWeekSlots(weekDates);
 
   let { data: slotsData, error } = await supabase
     .from("slots")
-    .select("id, day_key, time, capacity, is_day_locked")
+    .select("id, day_key, time, capacity, booking_count, is_day_locked")
     .in("day_key", weekDayKeys);
 
   if (error && error.message?.includes("is_day_locked")) {
@@ -95,7 +78,7 @@ async function loadSchedule() {
 
     const fallback = await supabase
       .from("slots")
-      .select("id, day_key, time, capacity")
+      .select("id, day_key, time, capacity, booking_count")
       .in("day_key", weekDayKeys);
 
     slotsData = fallback.data?.map((slot) => ({
@@ -110,21 +93,7 @@ async function loadSchedule() {
     return buildEmptyWeek(weekDates);
   }
 
-  const slotIds = slotsData?.map((s) => s.id) ?? [];
-
-  const { data: bookingCounts, error: countError } = await supabase
-    .from("bookings")
-    .select("slot_id")
-    .in("slot_id", slotIds);
-
-  if (countError) {
-    console.error("Failed to load booking counts:", countError.message);
-  }
-
-  const countMap = {};
-  bookingCounts?.forEach(({ slot_id }) => {
-    countMap[slot_id] = (countMap[slot_id] ?? 0) + 1;
-  });
+  const legacyBookingCounts = await loadLegacyBookingCounts(slotsData);
 
   return weekDates.map((date) => {
     const dayKey = toDateKey(date);
@@ -143,13 +112,13 @@ async function loadSchedule() {
         const dbSlot = slotsData?.find(
           (s) => s.day_key === dayKey && s.time === time
         );
-        const bookingCount = dbSlot ? countMap[dbSlot.id] ?? 0 : 0;
-
         return {
           id: dbSlot?.id ?? null,
           time,
           capacity: CAPACITY,
-          bookingCount,
+          bookingCount: legacyBookingCounts
+            ? legacyBookingCounts.get(dbSlot?.id) ?? 0
+            : dbSlot?.booking_count ?? 0,
           bookedUsers: [],
         };
       }),
@@ -157,7 +126,85 @@ async function loadSchedule() {
   });
 }
 
-const DEFAULT_LOCKED_DAYS = ["Tuesday", "Wednesday"];
+async function loadLegacyBookingCounts(slotsData) {
+  const slotIds = (slotsData ?? []).map((slot) => slot.id).filter(Boolean);
+  if (!slotIds.length) return new Map();
+
+  const { data, error } = await supabase
+    .from("bookings")
+    .select("slot_id")
+    .in("slot_id", slotIds);
+
+  // The hardened schema intentionally blocks direct booking reads. Its trigger-
+  // maintained slots.booking_count is the source of truth in that case.
+  if (error) return null;
+
+  return (data ?? []).reduce((counts, booking) => {
+    counts.set(booking.slot_id, (counts.get(booking.slot_id) ?? 0) + 1);
+    return counts;
+  }, new Map());
+}
+
+async function ensureWeekSlots(weekDates) {
+  const weekStart = toDateKey(weekDates[0]);
+  const { error } = await supabase.rpc("ensure_week_slots", {
+    p_week_start: weekStart,
+  });
+
+  if (!error) return;
+
+  if (error.message?.includes("WEEK_OUT_OF_RANGE")) return;
+
+  // Keeps local development usable until the migration has been applied.
+  if (error.code === "PGRST202" || error.code === "42883") {
+    const slots = weekDates.flatMap((date) => {
+      const dayKey = getStableDayKey(date);
+      return (DAY_SLOT_MAP[dayKey] || []).map((time) => ({
+        day_key: toDateKey(date),
+        day_name: dayKey,
+        time,
+        capacity: CAPACITY,
+        is_day_locked: false,
+      }));
+    });
+
+    const { data: existingSlots, error: readError } = await supabase
+      .from("slots")
+      .select("day_key, time")
+      .in("day_key", weekDates.map(toDateKey));
+
+    if (readError) {
+      console.warn("Could not check existing schedule slots:", readError.message);
+      return;
+    }
+
+    const existingKeys = new Set(
+      (existingSlots ?? []).map((slot) => `${slot.day_key}:${slot.time}`)
+    );
+    const missingSlots = slots.filter(
+      (slot) => !existingKeys.has(`${slot.day_key}:${slot.time}`)
+    );
+
+    if (!missingSlots.length) return;
+
+    const { error: fallbackError } = await supabase
+      .from("slots")
+      .upsert(missingSlots, {
+        onConflict: "day_key,time",
+        ignoreDuplicates: true,
+      });
+
+    if (!fallbackError) return;
+
+    console.warn(
+      "Missing schedule slots could not be created. Apply the Supabase migration.",
+      fallbackError.message
+    );
+    return;
+  }
+
+  console.error("Could not create this week's schedule:", error);
+}
 
 function buildEmptyWeek(weekDates) {
   return weekDates.map((date) => {
@@ -168,7 +215,7 @@ function buildEmptyWeek(weekDates) {
       stableDayKey,
       dayName: formatDayName(date),
       dateLabel: formatDateLabel(date),
-      locked: DEFAULT_LOCKED_DAYS.includes(stableDayKey),
+      locked: false,
       slots: (DAY_SLOT_MAP[stableDayKey] || []).map((time) => ({
         id: null,
         time,
@@ -191,20 +238,6 @@ function getVisibleWeekDates() {
   });
 }
 
-function getStartOfWeek(date) {
-  const start = new Date(date);
-  const day = start.getDay();
-  const mondayOffset = day === 0 ? -6 : 1 - day;
-  start.setHours(0, 0, 0, 0);
-  start.setDate(start.getDate() + mondayOffset);
-  return start;
-}
-
-function addDays(date, amount) {
-  const next = new Date(date);
-  next.setDate(next.getDate() + amount);
-  return next;
-}
 
 function renderWeekNav() {
   const controls = document.getElementById("weekNavControls");
@@ -225,6 +258,77 @@ function renderWeekNav() {
   controls.append(previousBtn, range, nextBtn);
 }
 
+function renderAdminActions() {
+  const actions = document.getElementById("adminScheduleActions");
+  if (!actions) return;
+
+  actions.replaceChildren();
+  actions.classList.toggle("hidden", !isOwner);
+  if (!isOwner) return;
+
+  const totalBookings = state.reduce(
+    (total, day) =>
+      total + day.slots.reduce((dayTotal, slot) => dayTotal + slot.bookingCount, 0),
+    0
+  );
+
+  const summary = document.createElement("span");
+  summary.className = "admin-week-summary";
+  summary.textContent = t("admin_week_bookings", { count: totalBookings });
+
+  const exportButton = document.createElement("button");
+  exportButton.type = "button";
+  exportButton.className = "admin-export-btn";
+  exportButton.innerHTML = '<i class="fa-solid fa-file-export" aria-hidden="true"></i>';
+
+  const exportLabel = document.createElement("span");
+  exportLabel.textContent = t("admin_export_week");
+  exportButton.appendChild(exportLabel);
+  exportButton.addEventListener("click", () => exportWeekCsv(exportButton));
+
+  actions.append(summary, exportButton);
+}
+
+function bindWeekSwipe() {
+  const weekGrid = document.getElementById("weekGrid");
+  if (!weekGrid) return;
+
+  let startPoint = null;
+
+  weekGrid.addEventListener(
+    "touchstart",
+    (event) => {
+      if (event.target.closest("button") || event.touches.length !== 1) {
+        startPoint = null;
+        return;
+      }
+
+      const touch = event.touches[0];
+      startPoint = { x: touch.clientX, y: touch.clientY };
+    },
+    { passive: true }
+  );
+
+  weekGrid.addEventListener(
+    "touchend",
+    (event) => {
+      if (!startPoint || event.changedTouches.length !== 1) return;
+
+      const touch = event.changedTouches[0];
+      const deltaX = touch.clientX - startPoint.x;
+      const deltaY = touch.clientY - startPoint.y;
+      startPoint = null;
+
+      if (Math.abs(deltaX) < 70 || Math.abs(deltaX) < Math.abs(deltaY) * 1.35) {
+        return;
+      }
+
+      changeWeek(deltaX < 0 ? 1 : -1);
+    },
+    { passive: true }
+  );
+}
+
 function createWeekNavButton(labelKey, iconClass) {
   const button = document.createElement("button");
   button.type = "button";
@@ -239,14 +343,37 @@ function createWeekNavButton(labelKey, iconClass) {
 }
 
 async function changeWeek(direction) {
+  if (weekChangeInProgress) return;
+  weekChangeInProgress = true;
+
+  const weekGrid = document.getElementById("weekGrid");
+  const exitClass =
+    direction > 0 ? "week-grid-exit-next" : "week-grid-exit-previous";
+
+  document.querySelectorAll(".week-nav-btn").forEach((button) => {
+    button.disabled = true;
+  });
+
+  if (!prefersReducedMotion() && weekGrid) {
+    weekGrid.classList.add(exitClass);
+    await wait(150);
+  }
+
   visibleWeekStart = addDays(
     visibleWeekStart ?? getStartOfWeek(new Date()),
     direction * 7
   );
-  await refreshScheduleView();
+
+  try {
+    await refreshScheduleView(direction);
+  } finally {
+    weekChangeInProgress = false;
+  }
 }
 
-async function refreshScheduleView() {
+async function refreshScheduleView(direction = 0) {
+  setScheduleLoading(true);
+  clearScheduleStatus();
   const dialog = document.getElementById("slotDialog");
   if (dialog?.open) {
     dialog.close();
@@ -255,10 +382,15 @@ async function refreshScheduleView() {
   selectedSlot = null;
   resetBookingForm();
 
-  state = await loadSchedule();
-  renderWeekNav();
-  renderWeek();
-  applyTranslations(document.getElementById("app"));
+  try {
+    state = await loadSchedule();
+    renderWeekNav();
+    renderWeek({ animate: true, direction });
+    renderAdminActions();
+    applyTranslations(document.getElementById("app"));
+  } finally {
+    setScheduleLoading(false);
+  }
 }
 
 function formatWeekRange() {
@@ -286,30 +418,31 @@ function formatWeekRange() {
   return `${startLabel} - ${endLabel}`;
 }
 
-function getStableDayKey(date) {
-  const dayNames = [
-    "Sunday",
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-  ];
-
-  return dayNames[date.getDay()];
-}
-
-function renderWeek() {
+function renderWeek({ animate = false, direction = 0 } = {}) {
   const weekGrid = document.getElementById("weekGrid");
   if (!weekGrid) return;
 
+  weekGrid.classList.remove("week-grid-exit-next", "week-grid-exit-previous");
   weekGrid.replaceChildren();
 
-  state.forEach((day) => {
+  state.forEach((day, dayIndex) => {
     const dayCard = document.createElement("article");
     dayCard.className = "day-card";
     dayCard.dataset.dayKey = day.key;
+    if (animate && !prefersReducedMotion()) {
+      dayCard.classList.add(
+        "day-card-enter",
+        direction < 0 ? "day-card-enter-previous" : "day-card-enter-next"
+      );
+      dayCard.style.setProperty(
+        "--card-enter-delay",
+        `${Math.min(dayIndex * 45, 270)}ms`
+      );
+    }
+    const dayIsToday = isToday(day.key);
+    const dayIsPast = isDateInPast(day.key);
+    dayCard.classList.toggle("day-card-today", dayIsToday);
+    dayCard.classList.toggle("day-card-past", dayIsPast);
 
     const header = document.createElement("div");
     header.className = "day-card-header";
@@ -321,6 +454,13 @@ function renderWeek() {
     const dayDate = document.createElement("div");
     dayDate.className = "day-date";
     dayDate.textContent = day.dateLabel;
+
+    if (dayIsToday) {
+      const todayBadge = document.createElement("span");
+      todayBadge.className = "today-badge";
+      todayBadge.textContent = t("today");
+      dayName.appendChild(todayBadge);
+    }
 
     const dayMeta = document.createElement("div");
     dayMeta.className = "day-meta";
@@ -350,6 +490,7 @@ function renderWeek() {
     } else {
       day.slots.forEach((slot) => {
         const spotsLeft = slot.capacity - slot.bookingCount;
+        const slotIsPast = isSlotInPast(day.key, slot.time);
 
         const slotBtn = document.createElement("button");
         slotBtn.className = "slot-btn";
@@ -357,7 +498,8 @@ function renderWeek() {
           slotBtn.classList.add("slot-btn-locked");
         }
         slotBtn.type = "button";
-        slotBtn.disabled = day.locked || (spotsLeft <= 0 && !isOwner);
+        slotBtn.disabled =
+          day.locked || ((slotIsPast || spotsLeft <= 0) && !isOwner);
 
         const top = document.createElement("div");
         top.className = "slot-top";
@@ -368,7 +510,9 @@ function renderWeek() {
 
         const badge = document.createElement("span");
         badge.className = "slot-badge";
-        badge.textContent = day.locked
+        badge.textContent = slotIsPast
+          ? t("past")
+          : day.locked
           ? t("day_locked_badge")
           : spotsLeft > 0
           ? t("spots_left", { count: spotsLeft })
@@ -384,7 +528,7 @@ function renderWeek() {
         });
 
         slotBtn.append(top, meta);
-        if (!day.locked) {
+        if (!day.locked && (!slotIsPast || isOwner)) {
           slotBtn.addEventListener("click", () => openSlot(day.key, slot.time));
         }
 
@@ -422,18 +566,20 @@ async function toggleDayLock(dayKey, button) {
   if (!isOwner || !day) return;
 
   button.disabled = true;
+  button.classList.add("is-changing");
   const nextLocked = !day.locked;
 
   try {
-    const { error } = await supabase
-      .from("slots")
-      .update({ is_day_locked: nextLocked })
-      .eq("day_key", day.key);
+    const { error } = await supabase.rpc("set_day_lock", {
+      p_day_key: day.key,
+      p_locked: nextLocked,
+    });
 
     if (error) throw error;
 
     day.locked = nextLocked;
     renderWeek();
+    showDayLockConfirmation(day.key, nextLocked);
   } catch (error) {
     console.error("Failed to update day lock:", {
       message: error.message,
@@ -462,6 +608,16 @@ function renderDayLockFeedback(day, message, type = "error") {
   header?.insertAdjacentElement("afterend", feedback);
 }
 
+function showDayLockConfirmation(dayKey, locked) {
+  const dayCard = document.querySelector(`[data-day-key="${dayKey}"]`);
+  if (!dayCard || prefersReducedMotion()) return;
+
+  dayCard.classList.add(
+    "day-card-lock-confirm",
+    locked ? "is-locked" : "is-unlocked"
+  );
+}
+
 async function openSlot(dayKey, time) {
   const spinner = document.getElementById("slotSpinner");
   if (spinner) spinner.classList.remove("hidden");
@@ -474,20 +630,20 @@ async function openSlot(dayKey, time) {
     return;
   }
 
-  const { data: bookings, error } = await supabase.rpc(
-    "get_bookings_with_phone",
-    { p_slot_id: slot.id }
-  );
+  const { data: bookings, error } = await fetchSlotBookings(slot.id);
 
   if (spinner) spinner.classList.add("hidden");
 
   if (error) {
     console.error("Failed to load bookings:", error.message);
+    showScheduleStatus(t("schedule_load_failed"), "error");
     return;
   }
 
   slot.bookedUsers = bookings ?? [];
   slot.bookingCount = slot.bookedUsers.length;
+  renderWeek();
+  renderAdminActions();
   selectedSlot = { dayKey, time };
 
   const dialogDay = document.getElementById("dialogDay");
@@ -588,6 +744,18 @@ async function saveSpot() {
     return;
   }
 
+  if (name.length < 2 || name.length > 80) {
+    showDialogMessage(t("msg_enter_valid_name"));
+    nameInput.focus();
+    return;
+  }
+
+  if (phone && phone.length > 30) {
+    showDialogMessage(t("msg_phone_invalid"));
+    phoneInput?.focus();
+    return;
+  }
+
   if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     showDialogMessage(t("msg_email_invalid"));
     emailInput.focus();
@@ -626,6 +794,8 @@ async function saveSpot() {
 
   if (saveBtn) saveBtn.disabled = true;
 
+  let newBookingId = null;
+
   try {
     if (editingBookingId) {
       const { error } = await supabase
@@ -652,32 +822,23 @@ async function saveSpot() {
 
       showDialogMessage(t("msg_updated"), "success");
     } else {
-      const { data, error } = await supabase
-        .from("bookings")
-        .insert({ slot_id: slot.id, name, phone })
-        .select("id, name, phone")
-        .single();
+      const { booking, error } = await createBooking(slot.id, name, phone);
 
       if (error) {
         console.error(error);
-
-        if (error.code === "23505") {
-          showDialogMessage(t("msg_duplicate"));
-        } else {
-          showDialogMessage(t("msg_save_failed"));
-        }
-
+        showDialogMessage(t(mapBookingError(error)));
         nameInput.focus();
         return;
       }
 
       slot.bookedUsers.push({
-        id: data.id,
-        name: data.name,
-        phone: isOwner ? data.phone : null,
+        id: booking.id,
+        name: booking.name,
+        phone: isOwner ? booking.phone : null,
       });
+      newBookingId = booking.id;
 
-      slot.bookingCount = slot.bookedUsers.length;
+      slot.bookingCount = booking.booking_count ?? slot.bookedUsers.length;
       showDialogMessage(t("msg_saved"), "success");
 
       if (email) {
@@ -692,9 +853,13 @@ async function saveSpot() {
       dialogSpots.textContent = `${spotsLeft} / ${slot.capacity}`;
     }
 
-    renderSavedNames(slot.bookedUsers);
+    renderSavedNames(slot.bookedUsers, newBookingId);
     renderWeek();
+    renderAdminActions();
     resetBookingForm();
+    if (newBookingId) {
+      playBookingSuccess(saveBtn, dialogSpots);
+    }
   } finally {
     if (saveBtn) saveBtn.disabled = false;
   }
@@ -708,13 +873,43 @@ async function sendConfirmationEmail(email, name, dayName, dateLabel, time) {
 
   try {
     await emailjs.send(config.emailjsServiceId, config.emailjsTemplateId, {
-      email,
-      name,
-      title: `${dayName}, ${dateLabel} at ${time}`,
+      to_email: email,
+      to_name: name,
+      day_name: dayName,
+      date_label: dateLabel,
+      slot_time: time,
     });
   } catch (err) {
     console.warn("Confirmation email could not be sent:", err);
   }
+}
+
+async function createBooking(slotId, name, phone) {
+  let { data, error } = await supabase.rpc("book_slot", {
+    p_slot_id: slotId,
+    p_name: name,
+    p_phone: phone,
+  });
+
+  if (!error) {
+    return { booking: data?.[0], error: null };
+  }
+
+  // Temporary compatibility path until the migration is installed.
+  if (error.code === "PGRST202" || error.code === "42883") {
+    const fallback = await supabase
+      .from("bookings")
+      .insert({ slot_id: slotId, name, phone })
+      .select("id, name, phone")
+      .single();
+
+    data = fallback.data
+      ? [{ ...fallback.data, booking_count: undefined }]
+      : null;
+    error = fallback.error;
+  }
+
+  return { booking: data?.[0] ?? null, error };
 }
 
 async function isDayLocked(dayKey) {
@@ -733,7 +928,76 @@ async function isDayLocked(dayKey) {
   return Boolean(data?.length);
 }
 
-function renderSavedNames(bookings) {
+function isMissingRpc(error) {
+  return error?.code === "PGRST202" || error?.code === "42883";
+}
+
+async function fetchSlotBookings(slotId) {
+  const result = await supabase.rpc("get_slot_bookings", {
+    p_slot_id: slotId,
+  });
+
+  if (!isMissingRpc(result.error)) return result;
+
+  return supabase.rpc("get_bookings_with_phone", {
+    p_slot_id: slotId,
+  });
+}
+
+async function exportWeekCsv(button) {
+  button.disabled = true;
+  clearScheduleStatus();
+
+  try {
+    const rows = [["Date", "Day", "Time", "Name", "Phone"]];
+    const slots = state.flatMap((day) =>
+      day.slots.filter((slot) => slot.id).map((slot) => ({ day, slot }))
+    );
+    const bookingResults = await Promise.all(
+      slots.map(({ slot }) => fetchSlotBookings(slot.id))
+    );
+
+    bookingResults.forEach((result, index) => {
+      if (result.error) throw result.error;
+      const { day, slot } = slots[index];
+      (result.data ?? []).forEach((booking) => {
+        rows.push([
+          day.key,
+          day.dayName,
+          slot.time,
+          booking.name,
+          booking.phone || "",
+        ]);
+      });
+    });
+
+    const csv = rows
+      .map((row) =>
+        row.map((value) => `"${String(value).replaceAll('"', '""')}"`).join(",")
+      )
+      .join("\n");
+    const blob = new Blob(["\ufeff", csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `schedule-${toDateKey(visibleWeekStart)}.csv`;
+    link.hidden = true;
+    document.body.appendChild(link);
+    link.click();
+    window.setTimeout(() => {
+      link.remove();
+      URL.revokeObjectURL(url);
+    }, 0);
+    showScheduleStatus(t("admin_export_ready"), "success");
+  } catch (error) {
+    console.error("Could not export week:", error);
+    showScheduleStatus(t("admin_export_failed"), "error");
+  } finally {
+    button.disabled = false;
+  }
+}
+
+function renderSavedNames(bookings, highlightedBookingId = null) {
   const list = document.getElementById("savedNamesList");
   if (!list) return;
 
@@ -750,6 +1014,10 @@ function renderSavedNames(bookings) {
   bookings.forEach((booking) => {
     const item = document.createElement("li");
     item.className = "saved-user-item";
+    item.dataset.bookingId = booking.id;
+    if (booking.id === highlightedBookingId && !prefersReducedMotion()) {
+      item.classList.add("saved-user-item-new");
+    }
 
     const info = document.createElement("div");
     info.className = "saved-user-info";
@@ -784,6 +1052,22 @@ function renderSavedNames(bookings) {
 
     list.appendChild(item);
   });
+}
+
+function playBookingSuccess(button, spotsElement) {
+  if (!button) return;
+
+  button.classList.add("is-success");
+  button.innerHTML = `<i class="fa-solid fa-check" aria-hidden="true"></i><span>${t(
+    "msg_saved"
+  )}</span>`;
+  spotsElement?.classList.add("is-updated");
+
+  window.setTimeout(() => {
+    button.classList.remove("is-success");
+    button.textContent = t("dialog_save");
+    spotsElement?.classList.remove("is-updated");
+  }, 1400);
 }
 
 function handleEditBooking(currentUser) {
@@ -878,6 +1162,7 @@ async function confirmRemoveBooking() {
 
   renderSavedNames(slot.bookedUsers);
   renderWeek();
+  renderAdminActions();
   closeRemoveConfirmDialog();
   showDialogMessage(t("msg_removed"), "success");
 }
@@ -915,6 +1200,42 @@ function clearDialogMessage() {
   message.className = "dialog-message hidden";
 }
 
+function setScheduleLoading(loading) {
+  const spinner = document.getElementById("slotSpinner");
+  const page = document.querySelector(".schedule-page");
+  spinner?.classList.toggle("hidden", !loading);
+  spinner?.setAttribute("aria-hidden", String(!loading));
+  page?.setAttribute("aria-busy", String(loading));
+
+  document.querySelectorAll(".week-nav-btn").forEach((button) => {
+    button.disabled = loading;
+  });
+}
+
+function showScheduleStatus(message, type = "error") {
+  const status = document.getElementById("scheduleStatus");
+  if (!status) return;
+
+  status.textContent = message;
+  status.className = `schedule-status ${type}`;
+}
+
+function clearScheduleStatus() {
+  const status = document.getElementById("scheduleStatus");
+  if (!status) return;
+
+  status.textContent = "";
+  status.className = "schedule-status hidden";
+}
+
+function prefersReducedMotion() {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
+function wait(milliseconds) {
+  return new Promise((resolve) => window.setTimeout(resolve, milliseconds));
+}
+
 function formatDayName(date) {
   return new Intl.DateTimeFormat(getLocale(), {
     weekday: "long",
@@ -926,11 +1247,4 @@ function formatDateLabel(date) {
     day: "numeric",
     month: "short",
   }).format(date);
-}
-
-function toDateKey(date) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
 }

@@ -25,106 +25,15 @@ export const config = {
 };
 ```
 
-### 3. Create Supabase Tables
+### 3. Create or Upgrade the Supabase Database
 
-Run this SQL in your Supabase SQL Editor:
+Open the Supabase SQL Editor and run the complete migration from:
 
-```sql
--- Create slots table
-create table slots (
-  id            uuid primary key default gen_random_uuid(),
-  day_key       date    not null,
-  day_name      text    not null,
-  time          text    not null,
-  capacity      integer not null default 14,
-  booking_count integer not null default 0,
-  is_day_locked boolean not null default false,
-  constraint slots_day_time_unique unique (day_key, time)
-);
+`supabase/migrations/20260804_harden_booking.sql`
 
--- Create bookings table
-create table bookings (
-  id         uuid        primary key default gen_random_uuid(),
-  slot_id    uuid        not null references slots (id) on delete cascade,
-  name       text        not null,
-  phone      text,
-  created_at timestamptz not null default now()
-);
-
-create unique index bookings_slot_name_unique on bookings (slot_id, lower(name));
-
--- Trigger to auto-update booking_count
-create or replace function update_slot_booking_count()
-returns trigger language plpgsql as $$
-begin
-  if TG_OP = 'INSERT' then
-    update slots set booking_count = booking_count + 1 where id = NEW.slot_id;
-  elsif TG_OP = 'DELETE' then
-    update slots set booking_count = booking_count - 1 where id = OLD.slot_id;
-  end if;
-  return null;
-end;
-$$;
-
-create trigger booking_count_trigger
-after insert or delete on bookings
-for each row execute function update_slot_booking_count();
-
--- RLS policies
-alter table slots enable row level security;
-alter table bookings enable row level security;
-
-create policy "Anyone reads slots" on slots for select using (true);
-create policy "Authenticated manages slots" on slots for all to authenticated using (true) with check (true);
-create policy "Anyone can book" on bookings for insert with check (true);
-create policy "Anyone reads bookings" on bookings for select using (true);
-
--- Add this if your slots table already exists from an older setup
-alter table slots
-add column if not exists is_day_locked boolean not null default false;
-
-alter table slots
-alter column capacity set default 14;
-
-update slots
-set capacity = 14;
-
--- Prevent bookings from being inserted for locked days
-create or replace function prevent_booking_for_locked_day()
-returns trigger language plpgsql as $$
-begin
-  if exists (
-    select 1
-    from slots s
-    where s.id = NEW.slot_id
-      and s.is_day_locked = true
-  ) then
-    raise exception 'Bookings are locked for this day.';
-  end if;
-
-  return NEW;
-end;
-$$;
-
-create trigger prevent_locked_day_booking_trigger
-before insert on bookings
-for each row execute function prevent_booking_for_locked_day();
-
--- RPC function for phone privacy
-create or replace function get_bookings_with_phone(p_slot_id uuid)
-returns table(id uuid, name text, phone text, created_at timestamptz)
-language plpgsql security definer as $$
-begin
-  if auth.role() = 'authenticated' then
-    return query select b.id, b.name, b.phone, b.created_at
-                 from bookings b where b.slot_id = p_slot_id order by b.created_at;
-  else
-    return query select b.id, b.name, null::text, b.created_at
-                 from bookings b where b.slot_id = p_slot_id order by b.created_at;
-  end if;
-end;
-$$;
-```
+The migration is safe for both a new project and the existing tables. It adds
+owner-only administration, private phone data, atomic capacity checks, protected
+week generation, and exact booking counts.
 
 ### 4. Create Owner Account
 
@@ -132,6 +41,14 @@ In Supabase Dashboard → Authentication → Users:
 1. Click "Add user" → "Create new user"
 2. Enter your owner email and password
 3. Check "Auto Confirm User"
+
+Then register that user as the database admin in the SQL Editor:
+
+```sql
+insert into public.app_admins (user_id)
+select id from auth.users where email = 'YOUR_OWNER_EMAIL'
+on conflict (user_id) do nothing;
+```
 
 ### 5. Run the App
 
@@ -146,9 +63,11 @@ python -m http.server 5500
 
 - ✅ **Dynamic weekly schedule** - automatically displays current week (Mon-Sun)
 - ✅ **Anonymous booking** - anyone can book slots with name (and optional phone)
-- ✅ **Phone privacy** - phone numbers only visible to authenticated owner
+- ✅ **Phone privacy** - phone numbers only visible to the registered database admin
 - ✅ **Persistent data** - bookings stored in Supabase
-- ✅ **Real-time counts** - accurate slot availability
+- ✅ **Atomic capacity** - the database prevents booking beyond 14 places
+- ✅ **Protected schedule** - past sessions and locked days cannot be booked
+- ✅ **Admin export** - weekly attendance can be exported to CSV
 - ✅ **Responsive design** - mobile-friendly interface
 
 ## Deployment to Vercel
@@ -173,11 +92,16 @@ In Vercel project settings → Environment Variables, add:
 | `SUPABASE_URL` | Your Supabase project URL |
 | `SUPABASE_ANON_KEY` | Your Supabase anon/public key |
 | `OWNER_EMAIL` | Admin email address |
+| `EMAILJS_PUBLIC_KEY` | EmailJS public key (optional) |
+| `EMAILJS_SERVICE_ID` | EmailJS service ID (optional) |
+| `EMAILJS_TEMPLATE_ID` | EmailJS template ID (optional) |
 
 ### 4. Deploy
 Vercel will automatically run `npm run build` which generates `config.js` from your environment variables.
 
-**Note**: The build script (`build-config.js`) generates `js/config.js` from environment variables during deployment. Your secrets stay secure and never get committed to Git!
+**Note**: The build script (`build-config.js`) generates `js/config.js` from
+environment variables during deployment. The Supabase anon key and EmailJS public
+key are intentionally browser-visible; database security is enforced with RLS.
 
 ### Local Development
 For local development, create `js/config.js` from the example:

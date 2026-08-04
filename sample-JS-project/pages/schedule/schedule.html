@@ -7,18 +7,28 @@
                 Choose a slot and save your spot.
             </p>
         </div>
-        <div id="weekNavControls" class="week-nav-controls"></div>
+        <div class="schedule-header-actions">
+            <div id="weekNavControls" class="week-nav-controls"></div>
+            <div id="adminScheduleActions" class="admin-schedule-actions"></div>
+        </div>
     </div>
 
+    <p id="scheduleStatus" class="schedule-status hidden" role="status" aria-live="polite"></p>
     <div id="weekGrid" class="week-grid"></div>
 
-    <div id="slotSpinner" class="slot-spinner hidden">
-        <div class="spinner-circle"></div>
+    <div id="slotSpinner" class="slot-spinner hidden" aria-hidden="true">
+        <div class="gym-loader" role="status" aria-label="Loading schedule">
+            <span class="gym-loader-ring" aria-hidden="true"></span>
+            <i class="fa-solid fa-dumbbell gym-loader-icon" aria-hidden="true"></i>
+            <span class="gym-loader-shadow" aria-hidden="true"></span>
+        </div>
     </div>
 
     <dialog id="slotDialog" class="slot-dialog">
         <form method="dialog" class="dialog-shell">
-            <button class="dialog-close" id="closeDialogBtn" type="submit">×</button>
+            <button class="dialog-close" id="closeDialogBtn" type="submit" aria-label="Close booking form">
+                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+            </button>
 
             <p id="dialogDay" class="dialog-day"></p>
             <h2 id="dialogTime" class="dialog-time"></h2>
