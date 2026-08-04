@@ -826,7 +826,7 @@ img { max-width: 100%; height: auto; }
   gap: 16px;
   transform-origin: center;
   will-change: transform, opacity;
-  touch-action: pan-y;
+  touch-action: pan-y pinch-zoom;
 }
 
 .week-grid-exit-next {
@@ -2754,7 +2754,14 @@ img { max-width: 100%; height: auto; }
 
   .dialog-time { font-size: 1.55rem; }
 
-  .dialog-field input { height: 46px; font-size: 16px; }
+  .dialog-field input,
+  .schedule-page .booking-search-control input,
+  .recurring-weeks-label select,
+  .managed-move-select {
+    font-size: 16px;
+  }
+
+  .dialog-field input { height: 46px; }
 
   .page { padding: 22px 16px; border-radius: 22px; }
 

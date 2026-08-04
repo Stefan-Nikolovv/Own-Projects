@@ -326,17 +326,47 @@ function bindWeekSwipe() {
   if (!weekGrid) return;
 
   let startPoint = null;
+  let touchIdentifier = null;
+
+  const resetSwipe = () => {
+    startPoint = null;
+    touchIdentifier = null;
+  };
+
+  const isSwipeBlocked = (target) => {
+    const element = target instanceof Element ? target : target?.parentElement;
+    return Boolean(
+      document.querySelector("dialog[open]") ||
+        element?.closest("button, a, input, select, textarea, label, [role='button']")
+    );
+  };
 
   weekGrid.addEventListener(
     "touchstart",
     (event) => {
-      if (event.target.closest("button") || event.touches.length !== 1) {
-        startPoint = null;
+      if (event.touches.length !== 1 || isSwipeBlocked(event.target)) {
+        resetSwipe();
         return;
       }
 
       const touch = event.touches[0];
       startPoint = { x: touch.clientX, y: touch.clientY };
+      touchIdentifier = touch.identifier;
+    },
+    { passive: true }
+  );
+
+  weekGrid.addEventListener(
+    "touchmove",
+    (event) => {
+      if (!startPoint) return;
+
+      const activeTouch = Array.from(event.touches).find(
+        (touch) => touch.identifier === touchIdentifier
+      );
+      if (event.touches.length !== 1 || !activeTouch || isSwipeBlocked(event.target)) {
+        resetSwipe();
+      }
     },
     { passive: true }
   );
@@ -344,12 +374,22 @@ function bindWeekSwipe() {
   weekGrid.addEventListener(
     "touchend",
     (event) => {
-      if (!startPoint || event.changedTouches.length !== 1) return;
+      if (!startPoint) return;
 
-      const touch = event.changedTouches[0];
+      const touch = Array.from(event.changedTouches).find(
+        (item) => item.identifier === touchIdentifier
+      );
+      const viewportIsZoomed =
+        window.visualViewport && Math.abs(window.visualViewport.scale - 1) > 0.01;
+
+      if (!touch || event.touches.length !== 0 || viewportIsZoomed) {
+        resetSwipe();
+        return;
+      }
+
       const deltaX = touch.clientX - startPoint.x;
       const deltaY = touch.clientY - startPoint.y;
-      startPoint = null;
+      resetSwipe();
 
       if (Math.abs(deltaX) < 70 || Math.abs(deltaX) < Math.abs(deltaY) * 1.35) {
         return;
@@ -359,6 +399,8 @@ function bindWeekSwipe() {
     },
     { passive: true }
   );
+
+  weekGrid.addEventListener("touchcancel", resetSwipe, { passive: true });
 }
 
 function createWeekNavButton(labelKey, iconClass) {
@@ -707,7 +749,9 @@ async function openSlot(dayKey, time) {
   clearDialogMessage();
 
   if (dialog && !dialog.open) dialog.showModal();
-  if (clientName) clientName.focus();
+  if (clientName && window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+    clientName.focus({ preventScroll: true });
+  }
 }
 
 function bindDialogActions() {
