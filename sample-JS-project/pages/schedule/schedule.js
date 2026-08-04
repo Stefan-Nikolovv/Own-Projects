@@ -74,7 +74,12 @@ async function loadSchedule() {
       });
 
     if (upsertError) {
-      console.error("Upsert error:", upsertError);
+      console.error("Could not create generated schedule slots:", {
+        code: upsertError.code,
+        message: upsertError.message,
+        details: upsertError.details,
+        hint: upsertError.hint,
+      });
     }
   }
 
