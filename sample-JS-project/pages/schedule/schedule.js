@@ -59,7 +59,6 @@ export async function init() {
     renderWeek({ animate: true });
     renderAdminActions();
     bindDialogActions();
-    bindWeekSwipe();
     resetBookingForm();
     initScheduleFeatures({
       isOwner,
@@ -319,88 +318,6 @@ function renderAdminActions() {
   buttonGroup.append(dashboardButton, exportButton);
 
   actions.append(summary, buttonGroup);
-}
-
-function bindWeekSwipe() {
-  const weekGrid = document.getElementById("weekGrid");
-  if (!weekGrid) return;
-
-  let startPoint = null;
-  let touchIdentifier = null;
-
-  const resetSwipe = () => {
-    startPoint = null;
-    touchIdentifier = null;
-  };
-
-  const isSwipeBlocked = (target) => {
-    const element = target instanceof Element ? target : target?.parentElement;
-    return Boolean(
-      document.querySelector("dialog[open]") ||
-        element?.closest("button, a, input, select, textarea, label, [role='button']")
-    );
-  };
-
-  weekGrid.addEventListener(
-    "touchstart",
-    (event) => {
-      if (event.touches.length !== 1 || isSwipeBlocked(event.target)) {
-        resetSwipe();
-        return;
-      }
-
-      const touch = event.touches[0];
-      startPoint = { x: touch.clientX, y: touch.clientY };
-      touchIdentifier = touch.identifier;
-    },
-    { passive: true }
-  );
-
-  weekGrid.addEventListener(
-    "touchmove",
-    (event) => {
-      if (!startPoint) return;
-
-      const activeTouch = Array.from(event.touches).find(
-        (touch) => touch.identifier === touchIdentifier
-      );
-      if (event.touches.length !== 1 || !activeTouch || isSwipeBlocked(event.target)) {
-        resetSwipe();
-      }
-    },
-    { passive: true }
-  );
-
-  weekGrid.addEventListener(
-    "touchend",
-    (event) => {
-      if (!startPoint) return;
-
-      const touch = Array.from(event.changedTouches).find(
-        (item) => item.identifier === touchIdentifier
-      );
-      const viewportIsZoomed =
-        window.visualViewport && Math.abs(window.visualViewport.scale - 1) > 0.01;
-
-      if (!touch || event.touches.length !== 0 || viewportIsZoomed) {
-        resetSwipe();
-        return;
-      }
-
-      const deltaX = touch.clientX - startPoint.x;
-      const deltaY = touch.clientY - startPoint.y;
-      resetSwipe();
-
-      if (Math.abs(deltaX) < 70 || Math.abs(deltaX) < Math.abs(deltaY) * 1.35) {
-        return;
-      }
-
-      changeWeek(deltaX < 0 ? 1 : -1);
-    },
-    { passive: true }
-  );
-
-  weekGrid.addEventListener("touchcancel", resetSwipe, { passive: true });
 }
 
 function createWeekNavButton(labelKey, iconClass) {
@@ -749,9 +666,6 @@ async function openSlot(dayKey, time) {
   clearDialogMessage();
 
   if (dialog && !dialog.open) dialog.showModal();
-  if (clientName && window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
-    clientName.focus({ preventScroll: true });
-  }
 }
 
 function bindDialogActions() {
@@ -823,25 +737,21 @@ async function saveSpot() {
 
   if (!name) {
     showDialogMessage(t("msg_enter_name"));
-    nameInput.focus();
     return;
   }
 
   if (name.length < 2 || name.length > 80) {
     showDialogMessage(t("msg_enter_valid_name"));
-    nameInput.focus();
     return;
   }
 
   if (phone && phone.length > 30) {
     showDialogMessage(t("msg_phone_invalid"));
-    phoneInput?.focus();
     return;
   }
 
   if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     showDialogMessage(t("msg_email_invalid"));
-    emailInput.focus();
     return;
   }
 
@@ -866,7 +776,6 @@ async function saveSpot() {
 
   if (duplicateBooking) {
     showDialogMessage(t("msg_duplicate"));
-    nameInput.focus();
     return;
   }
 
@@ -889,7 +798,6 @@ async function saveSpot() {
       if (error) {
         console.error(error);
         showDialogMessage(t("msg_update_failed"));
-        nameInput.focus();
         return;
       }
 
@@ -916,7 +824,6 @@ async function saveSpot() {
       if (error) {
         console.error(error);
         showDialogMessage(t(mapBookingError(error)));
-        nameInput.focus();
         return;
       }
 
@@ -1253,10 +1160,6 @@ function handleEditBooking(currentUser) {
     block: "center",
   });
 
-  setTimeout(() => {
-    nameEl?.focus({ preventScroll: true });
-    nameEl?.select?.();
-  }, 250);
 }
 
 function handleRemoveBooking(currentUser) {

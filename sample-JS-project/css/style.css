@@ -826,7 +826,7 @@ img { max-width: 100%; height: auto; }
   gap: 16px;
   transform-origin: center;
   will-change: transform, opacity;
-  touch-action: pan-y pinch-zoom;
+  touch-action: auto;
 }
 
 .week-grid-exit-next {
