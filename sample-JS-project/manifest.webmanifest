@@ -1,6 +1,6 @@
 {
   "name": "Emotion in Motion",
-  "short_name": "EIM Training",
+  "short_name": "Emotion in Motion",
   "description": "Book and manage Emotion in Motion training sessions.",
   "start_url": "/#schedule",
   "display": "standalone",
