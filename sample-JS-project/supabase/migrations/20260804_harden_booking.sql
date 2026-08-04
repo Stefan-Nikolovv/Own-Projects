@@ -46,8 +46,8 @@ as $$
   );
 $$;
 
-revoke all on function public.is_app_admin() from public;
-grant execute on function public.is_app_admin() to anon, authenticated;
+revoke all on function public.is_app_admin() from public, anon, authenticated;
+grant execute on function public.is_app_admin() to authenticated;
 
 drop policy if exists "Admins read own membership" on public.app_admins;
 create policy "Admins read own membership"
@@ -162,6 +162,8 @@ begin
 end;
 $$;
 
+revoke all on function public.sync_slot_booking_count() from public, anon, authenticated;
+
 drop trigger if exists booking_count_trigger on public.bookings;
 drop trigger if exists sync_slot_booking_count_trigger on public.bookings;
 create trigger sync_slot_booking_count_trigger
@@ -200,7 +202,7 @@ begin
 end;
 $$;
 
-revoke all on function public.ensure_week_slots(date) from public;
+revoke all on function public.ensure_week_slots(date) from public, anon, authenticated;
 grant execute on function public.ensure_week_slots(date) to anon, authenticated;
 
 -- Public users receive names only; the registered admin also receives phones.
@@ -221,7 +223,7 @@ as $$
   order by b.created_at;
 $$;
 
-revoke all on function public.get_slot_bookings(uuid) from public;
+revoke all on function public.get_slot_bookings(uuid) from public, anon, authenticated;
 grant execute on function public.get_slot_bookings(uuid) to anon, authenticated;
 
 -- Capacity, lock, date, and insert happen inside one transaction.
@@ -292,7 +294,7 @@ begin
 end;
 $$;
 
-revoke all on function public.book_slot(uuid, text, text) from public;
+revoke all on function public.book_slot(uuid, text, text) from public, anon, authenticated;
 grant execute on function public.book_slot(uuid, text, text) to anon, authenticated;
 
 -- Admin lock updates are atomic and cannot be called by normal authenticated users.
@@ -313,7 +315,7 @@ begin
 end;
 $$;
 
-revoke all on function public.set_day_lock(date, boolean) from public;
+revoke all on function public.set_day_lock(date, boolean) from public, anon, authenticated;
 grant execute on function public.set_day_lock(date, boolean) to authenticated;
 
 -- Old function is replaced so callers cannot treat every authenticated user as admin.

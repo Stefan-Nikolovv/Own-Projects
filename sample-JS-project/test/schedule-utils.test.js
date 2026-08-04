@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 
 import {
   addDays,
+  buildCalendarFile,
+  getAvailabilityLevel,
   getStartOfWeek,
   isDateInPast,
   isSlotInPast,
@@ -33,5 +35,29 @@ test("booking database errors map to translated UI messages", () => {
   assert.equal(mapBookingError({ message: "SLOT_FULL" }), "msg_full");
   assert.equal(mapBookingError({ message: "DAY_LOCKED" }), "msg_day_locked");
   assert.equal(mapBookingError({ code: "23505" }), "msg_duplicate");
+  assert.equal(
+    mapBookingError({ message: "BOOKING_CUTOFF" }),
+    "msg_booking_cutoff"
+  );
   assert.equal(mapBookingError({ message: "unexpected" }), "msg_save_failed");
+});
+
+test("availability signals full and nearly full sessions", () => {
+  assert.equal(getAvailabilityLevel(8), "available");
+  assert.equal(getAvailabilityLevel(3), "almost-full");
+  assert.equal(getAvailabilityLevel(0), "full");
+});
+
+test("calendar export creates a valid event shell", () => {
+  const calendar = buildCalendarFile({
+    dayKey: "2026-08-05",
+    time: "17:00",
+    title: "Emotion in Motion Training",
+  });
+
+  assert.match(calendar, /BEGIN:VCALENDAR/);
+  assert.match(calendar, /BEGIN:VEVENT/);
+  assert.match(calendar, /UID:2026-08-05-1700@emotion-in-motion/);
+  assert.match(calendar, /SUMMARY:Emotion in Motion Training/);
+  assert.match(calendar, /END:VCALENDAR/);
 });

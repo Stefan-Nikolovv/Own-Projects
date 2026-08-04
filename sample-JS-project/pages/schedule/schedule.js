@@ -1,4 +1,4 @@
-import { supabase, OWNER_EMAIL } from "../../js/supabase.js";
+import { supabase } from "../../js/supabase.js";
 import { t, getLocale, applyTranslations } from "../../js/i18n.js";
 import { config } from "../../js/config.js";
 import emailjs from "https://cdn.jsdelivr.net/npm/@emailjs/browser@4/+esm";
@@ -8,12 +8,22 @@ import {
   addDays,
   getStableDayKey,
   getStartOfWeek,
+  getAvailabilityLevel,
   isDateInPast,
   isSlotInPast,
   isToday,
   mapBookingError,
   toDateKey,
 } from "./schedule-utils.js";
+import {
+  getRecurringWeeks,
+  initScheduleFeatures,
+  openAdminDashboard,
+  rememberBookingAccess,
+  setAttendance,
+  setBookingDialogAvailability,
+  setSelectedSlotContext,
+} from "./schedule-features.js";
 
 let editingBookingId = null;
 let pendingRemoveBooking = null;
@@ -37,9 +47,10 @@ export async function init() {
     const { data: adminAccess, error: adminError } = await supabase.rpc(
       "is_app_admin"
     );
-    isOwner = adminError
-      ? user?.email === OWNER_EMAIL
-      : Boolean(adminAccess);
+    isOwner = Boolean(user && !adminError && adminAccess);
+    if (adminError) {
+      console.warn("Admin access could not be verified:", adminError.message);
+    }
     visibleWeekStart ??= getStartOfWeek(new Date());
 
     setScheduleLoading(true);
@@ -50,6 +61,14 @@ export async function init() {
     bindDialogActions();
     bindWeekSwipe();
     resetBookingForm();
+    initScheduleFeatures({
+      isOwner,
+      getState: () => state,
+      getWeekStart: () => visibleWeekStart ?? getStartOfWeek(new Date()),
+      refreshSchedule: () => refreshScheduleView(),
+      showStatus: showScheduleStatus,
+      verifyAdmin: isCurrentUserAdmin,
+    });
     setScheduleLoading(false);
   } catch (err) {
     setScheduleLoading(false);
@@ -278,7 +297,7 @@ function renderAdminActions() {
 
   const exportButton = document.createElement("button");
   exportButton.type = "button";
-  exportButton.className = "admin-export-btn";
+  exportButton.className = "admin-toolbar-btn admin-export-btn";
   exportButton.innerHTML = '<i class="fa-solid fa-file-export" aria-hidden="true"></i>';
 
   const exportLabel = document.createElement("span");
@@ -286,7 +305,20 @@ function renderAdminActions() {
   exportButton.appendChild(exportLabel);
   exportButton.addEventListener("click", () => exportWeekCsv(exportButton));
 
-  actions.append(summary, exportButton);
+  const dashboardButton = document.createElement("button");
+  dashboardButton.type = "button";
+  dashboardButton.className = "admin-toolbar-btn admin-dashboard-btn";
+  dashboardButton.innerHTML = '<i class="fa-solid fa-table-cells-large" aria-hidden="true"></i>';
+  const dashboardLabel = document.createElement("span");
+  dashboardLabel.textContent = t("weekly_dashboard");
+  dashboardButton.appendChild(dashboardLabel);
+  dashboardButton.addEventListener("click", openAdminDashboard);
+
+  const buttonGroup = document.createElement("div");
+  buttonGroup.className = "admin-action-buttons";
+  buttonGroup.append(dashboardButton, exportButton);
+
+  actions.append(summary, buttonGroup);
 }
 
 function bindWeekSwipe() {
@@ -490,16 +522,17 @@ function renderWeek({ animate = false, direction = 0 } = {}) {
     } else {
       day.slots.forEach((slot) => {
         const spotsLeft = slot.capacity - slot.bookingCount;
+        const availability = getAvailabilityLevel(spotsLeft);
         const slotIsPast = isSlotInPast(day.key, slot.time);
 
         const slotBtn = document.createElement("button");
         slotBtn.className = "slot-btn";
+        slotBtn.classList.add(`slot-${availability}`);
         if (day.locked) {
           slotBtn.classList.add("slot-btn-locked");
         }
         slotBtn.type = "button";
-        slotBtn.disabled =
-          day.locked || ((slotIsPast || spotsLeft <= 0) && !isOwner);
+        slotBtn.disabled = day.locked || (slotIsPast && !isOwner);
 
         const top = document.createElement("div");
         top.className = "slot-top";
@@ -515,8 +548,10 @@ function renderWeek({ animate = false, direction = 0 } = {}) {
           : day.locked
           ? t("day_locked_badge")
           : spotsLeft > 0
-          ? t("spots_left", { count: spotsLeft })
-          : t("full");
+          ? availability === "almost-full"
+            ? t("almost_full", { count: spotsLeft })
+            : t("spots_left", { count: spotsLeft })
+          : t("join_waitlist_short");
 
         top.append(time, badge);
 
@@ -645,6 +680,7 @@ async function openSlot(dayKey, time) {
   renderWeek();
   renderAdminActions();
   selectedSlot = { dayKey, time };
+  setSelectedSlotContext({ day, slot });
 
   const dialogDay = document.getElementById("dialogDay");
   const dialogTime = document.getElementById("dialogTime");
@@ -666,6 +702,7 @@ async function openSlot(dayKey, time) {
   if (clientEmail) clientEmail.value = "";
 
   resetBookingForm();
+  setBookingDialogAvailability(slot.bookingCount >= slot.capacity && !isOwner);
   renderSavedNames(slot.bookedUsers);
   clearDialogMessage();
 
@@ -713,6 +750,7 @@ function bindDialogActions() {
     dialog.addEventListener("close", () => {
       clearDialogMessage();
       selectedSlot = null;
+      setSelectedSlotContext(null);
       resetBookingForm();
     });
   }
@@ -737,6 +775,7 @@ async function saveSpot() {
   const name = nameInput.value.trim();
   const phone = phoneInput?.value.trim() || null;
   const email = emailInput?.value.trim() || null;
+  const recurringWeeks = getRecurringWeeks();
 
   if (!name) {
     showDialogMessage(t("msg_enter_name"));
@@ -822,7 +861,13 @@ async function saveSpot() {
 
       showDialogMessage(t("msg_updated"), "success");
     } else {
-      const { booking, error } = await createBooking(slot.id, name, phone);
+      const { booking, error } = await createBooking(
+        slot.id,
+        name,
+        phone,
+        email,
+        recurringWeeks
+      );
 
       if (error) {
         console.error(error);
@@ -837,9 +882,16 @@ async function saveSpot() {
         phone: isOwner ? booking.phone : null,
       });
       newBookingId = booking.id;
+      rememberBookingAccess(booking.booked_slots ?? [booking]);
 
       slot.bookingCount = booking.booking_count ?? slot.bookedUsers.length;
-      showDialogMessage(t("msg_saved"), "success");
+      const createdCount = booking.booked_slots?.length ?? 1;
+      showDialogMessage(
+        createdCount > 1
+          ? t("recurring_saved", { count: createdCount })
+          : t("msg_saved"),
+        "success"
+      );
 
       if (email) {
         const day = state.find((item) => item.key === selectedSlot.dayKey);
@@ -884,29 +936,49 @@ async function sendConfirmationEmail(email, name, dayName, dateLabel, time) {
   }
 }
 
-async function createBooking(slotId, name, phone) {
-  let { data, error } = await supabase.rpc("book_slot", {
+async function createBooking(slotId, name, phone, email, recurringWeeks) {
+  let { data, error } = await supabase.rpc("book_slot_v2", {
     p_slot_id: slotId,
     p_name: name,
     p_phone: phone,
+    p_email: email,
+    p_recurring_weeks: recurringWeeks,
   });
 
   if (!error) {
     return { booking: data?.[0], error: null };
   }
 
-  // Temporary compatibility path until the migration is installed.
+  // Compatibility with the first hardened migration and the legacy schema.
   if (error.code === "PGRST202" || error.code === "42883") {
-    const fallback = await supabase
-      .from("bookings")
-      .insert({ slot_id: slotId, name, phone })
-      .select("id, name, phone")
-      .single();
+    if (recurringWeeks > 1) {
+      return {
+        booking: null,
+        error: { message: "FEATURE_MIGRATION_REQUIRED" },
+      };
+    }
 
-    data = fallback.data
-      ? [{ ...fallback.data, booking_count: undefined }]
-      : null;
-    error = fallback.error;
+    const rpcFallback = await supabase.rpc("book_slot", {
+      p_slot_id: slotId,
+      p_name: name,
+      p_phone: phone,
+    });
+
+    if (!isMissingRpc(rpcFallback.error)) {
+      data = rpcFallback.data;
+      error = rpcFallback.error;
+    } else {
+      const fallback = await supabase
+        .from("bookings")
+        .insert({ slot_id: slotId, name, phone })
+        .select("id, name, phone")
+        .single();
+
+      data = fallback.data
+        ? [{ ...fallback.data, booking_count: undefined }]
+        : null;
+      error = fallback.error;
+    }
   }
 
   return { booking: data?.[0] ?? null, error };
@@ -949,26 +1021,29 @@ async function exportWeekCsv(button) {
   clearScheduleStatus();
 
   try {
-    const rows = [["Date", "Day", "Time", "Name", "Phone"]];
-    const slots = state.flatMap((day) =>
-      day.slots.filter((slot) => slot.id).map((slot) => ({ day, slot }))
-    );
-    const bookingResults = await Promise.all(
-      slots.map(({ slot }) => fetchSlotBookings(slot.id))
-    );
+    if (!(await isCurrentUserAdmin())) {
+      isOwner = false;
+      renderAdminActions();
+      showScheduleStatus(t("admin_required"), "error");
+      return;
+    }
 
-    bookingResults.forEach((result, index) => {
-      if (result.error) throw result.error;
-      const { day, slot } = slots[index];
-      (result.data ?? []).forEach((booking) => {
-        rows.push([
-          day.key,
-          day.dayName,
-          slot.time,
-          booking.name,
-          booking.phone || "",
-        ]);
-      });
+    const rows = [["Date", "Day", "Time", "Name", "Phone", "Email", "Attendance"]];
+    const { data, error } = await supabase.rpc("get_admin_week_export", {
+      p_week_start: toDateKey(visibleWeekStart ?? getStartOfWeek(new Date())),
+    });
+
+    if (error) throw error;
+    (data ?? []).forEach((booking) => {
+      rows.push([
+        booking.day_key,
+        booking.day_name,
+        booking.time,
+        booking.name,
+        booking.phone || "",
+        booking.email || "",
+        booking.attendance || "",
+      ]);
     });
 
     const csv = rows
@@ -991,10 +1066,23 @@ async function exportWeekCsv(button) {
     showScheduleStatus(t("admin_export_ready"), "success");
   } catch (error) {
     console.error("Could not export week:", error);
-    showScheduleStatus(t("admin_export_failed"), "error");
+    showScheduleStatus(
+      t(isMissingRpc(error) ? "feature_migration_required" : "admin_export_failed"),
+      "error"
+    );
   } finally {
     button.disabled = false;
   }
+}
+
+async function isCurrentUserAdmin() {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return false;
+
+  const { data, error } = await supabase.rpc("is_app_admin");
+  return !error && Boolean(data);
 }
 
 function renderSavedNames(bookings, highlightedBookingId = null) {
@@ -1046,7 +1134,28 @@ function renderSavedNames(bookings, highlightedBookingId = null) {
       btnEdit.addEventListener("click", () => handleEditBooking(booking));
       btnRemove.addEventListener("click", () => handleRemoveBooking(booking));
 
-      actions.append(btnEdit, btnRemove);
+      const attendance = document.createElement("div");
+      attendance.className = "attendance-controls";
+      [
+        ["present", "fa-check", "attendance_present"],
+        ["absent", "fa-xmark", "attendance_absent"],
+      ].forEach(([value, icon, labelKey]) => {
+        const attendanceButton = document.createElement("button");
+        attendanceButton.type = "button";
+        attendanceButton.className = `attendance-btn ${value}`;
+        attendanceButton.classList.toggle("active", booking.attendance === value);
+        attendanceButton.setAttribute("aria-label", t(labelKey));
+        attendanceButton.title = t(labelKey);
+        attendanceButton.innerHTML = `<i class="fa-solid ${icon}" aria-hidden="true"></i>`;
+        attendanceButton.addEventListener("click", async () => {
+          if (await setAttendance(booking, value, attendanceButton)) {
+            renderSavedNames(bookings);
+          }
+        });
+        attendance.appendChild(attendanceButton);
+      });
+
+      actions.append(attendance, btnEdit, btnRemove);
       item.appendChild(actions);
     }
 
@@ -1175,10 +1284,12 @@ function resetBookingForm() {
   const emailEl = document.getElementById("clientEmail");
   const saveBtn = document.getElementById("saveSpotBtn");
   const cancelEditBtn = document.getElementById("cancelEditBtn");
+  const recurringBooking = document.getElementById("recurringBooking");
 
   if (nameEl) nameEl.value = "";
   if (telEl) telEl.value = "";
   if (emailEl) emailEl.value = "";
+  if (recurringBooking) recurringBooking.checked = false;
 
   if (saveBtn) saveBtn.textContent = t("dialog_save");
   if (cancelEditBtn) cancelEditBtn.classList.add("hidden");

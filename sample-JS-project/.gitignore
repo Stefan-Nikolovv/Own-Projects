@@ -1,6 +1,7 @@
 # Dependencies
 node_modules/
 package-lock.json
+public/
 
 # OS files
 .DS_Store

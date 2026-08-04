@@ -31,9 +31,17 @@ Open the Supabase SQL Editor and run the complete migration from:
 
 `supabase/migrations/20260804_harden_booking.sql`
 
+Then run the booking experience migration:
+
+`supabase/migrations/20260804_booking_experience.sql`
+
 The migration is safe for both a new project and the existing tables. It adds
 owner-only administration, private phone data, atomic capacity checks, protected
 week generation, and exact booking counts.
+
+The second migration adds secure self-service booking management, recurring
+reservations, automatic waitlist promotion, a two-hour change cutoff, attendance
+tracking, and admin dashboard reporting. Run the files in the order shown.
 
 ### 4. Create Owner Account
 
@@ -68,6 +76,11 @@ python -m http.server 5500
 - ✅ **Atomic capacity** - the database prevents booking beyond 14 places
 - ✅ **Protected schedule** - past sessions and locked days cannot be booked
 - ✅ **Admin export** - weekly attendance can be exported to CSV
+- ✅ **My bookings** - clients can cancel, move, and add reservations to their calendar
+- ✅ **Waiting list** - full sessions accept a queue and promote the next client automatically
+- ✅ **Recurring bookings** - reserve the same training time for up to six weeks
+- ✅ **Attendance dashboard** - admin check-in controls and weekly totals
+- ✅ **Reminders and PWA** - installable mobile experience with local notifications
 - ✅ **Responsive design** - mobile-friendly interface
 
 ## Deployment to Vercel

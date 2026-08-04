@@ -6,7 +6,7 @@
   "scripts": {
     "build": "node build-config.js",
     "test": "node --test",
-    "check": "node --check pages/schedule/schedule.js && node --check js/i18n.js"
+    "check": "node --check build-config.js && node --check pages/schedule/schedule.js && node --check pages/schedule/schedule-features.js && node --check js/i18n.js && node --check js/script.js && node --check service-worker.js"
   },
   "author": "",
   "license": "ISC",

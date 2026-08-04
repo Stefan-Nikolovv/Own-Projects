@@ -13,6 +13,21 @@
         </div>
     </div>
 
+    <div class="schedule-feature-bar" aria-label="Schedule tools">
+        <button id="myBookingsBtn" type="button" class="feature-action">
+            <i class="fa-solid fa-ticket" aria-hidden="true"></i>
+            <span data-i18n="my_bookings">My bookings</span>
+        </button>
+        <button id="notificationsBtn" type="button" class="feature-action">
+            <i class="fa-solid fa-bell" aria-hidden="true"></i>
+            <span data-i18n="reminders">Reminders</span>
+        </button>
+        <button id="installAppBtn" type="button" class="feature-action hidden">
+            <i class="fa-solid fa-mobile-screen-button" aria-hidden="true"></i>
+            <span data-i18n="install_app">Install app</span>
+        </button>
+    </div>
+
     <p id="scheduleStatus" class="schedule-status hidden" role="status" aria-live="polite"></p>
     <div id="weekGrid" class="week-grid"></div>
 
@@ -54,8 +69,31 @@
 
             <p id="dialogMessage" class="dialog-message hidden"></p>
 
+            <div id="recurringOptions" class="recurring-options">
+                <label class="toggle-row" for="recurringBooking">
+                    <span data-i18n="recurring_booking">Repeat this booking</span>
+                    <input id="recurringBooking" type="checkbox" />
+                    <span class="toggle-control" aria-hidden="true"></span>
+                </label>
+                <label class="recurring-weeks-label" for="recurringWeeks">
+                    <span data-i18n="recurring_weeks">Weeks</span>
+                    <select id="recurringWeeks">
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4" selected>4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                    </select>
+                </label>
+            </div>
+
             <button id="saveSpotBtn" type="button" class="save-spot-btn" data-i18n="dialog_save">
                 Save your spot
+            </button>
+
+            <button id="joinWaitlistBtn" type="button" class="waitlist-btn hidden">
+                <i class="fa-solid fa-list-ol" aria-hidden="true"></i>
+                <span data-i18n="join_waitlist">Join waiting list</span>
             </button>
 
             <button id="cancelEditBtn" type="button" class="cancel-edit-btn hidden" data-i18n="dialog_cancel_edit">
@@ -67,6 +105,48 @@
                 <ul id="savedNamesList" class="saved-names-list"></ul>
             </div>
         </form>
+    </dialog>
+
+    <dialog id="myBookingsDialog" class="feature-dialog">
+        <div class="feature-dialog-shell">
+            <button id="closeMyBookingsBtn" type="button" class="dialog-close" aria-label="Close">
+                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+            </button>
+            <p class="dialog-day" data-i18n="booking_tools">Booking tools</p>
+            <h2 data-i18n="my_bookings">My bookings</h2>
+            <p class="feature-dialog-copy" data-i18n="my_bookings_hint">
+                Reservations made on this device appear here.
+            </p>
+            <form id="myBookingsSearchForm" class="booking-search-form">
+                <label for="myBookingsSearchInput" data-i18n="booking_search_label">Find by phone or email</label>
+                <div class="booking-search-control">
+                    <input id="myBookingsSearchInput" type="search"
+                        data-i18n-placeholder="booking_search_placeholder" placeholder="Phone or email" />
+                    <button id="myBookingsSearchBtn" type="submit" class="booking-search-btn">
+                        <i class="fa-solid fa-magnifying-glass booking-search-icon" aria-hidden="true"></i>
+                        <span class="booking-search-label" data-i18n="search">Search</span>
+                        <span class="search-gym-spinner" aria-hidden="true">
+                            <span class="search-gym-ring"></span>
+                            <i class="fa-solid fa-dumbbell"></i>
+                        </span>
+                    </button>
+                </div>
+                <p id="myBookingsSearchMessage" class="booking-search-message hidden" role="status" aria-live="polite"></p>
+            </form>
+            <p id="myBookingsEmpty" class="empty-state"></p>
+            <div id="myBookingsList" class="managed-bookings-list"></div>
+        </div>
+    </dialog>
+
+    <dialog id="adminDashboardDialog" class="feature-dialog">
+        <div class="feature-dialog-shell">
+            <button id="closeAdminDashboardBtn" type="button" class="dialog-close" aria-label="Close">
+                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+            </button>
+            <p class="dialog-day" data-i18n="admin_overview">Admin overview</p>
+            <h2 data-i18n="weekly_dashboard">Weekly dashboard</h2>
+            <div id="adminDashboardGrid" class="admin-dashboard-grid"></div>
+        </div>
     </dialog>
 
     <dialog id="removeConfirmDialog" class="confirm-dialog">

@@ -2,6 +2,20 @@ import { router } from "./router.js";
 import { supabase } from "./supabase.js";
 import { applyTranslations, initLanguageSwitcher, initThemeToggle, t } from "./i18n.js";
 
+window.addEventListener("beforeinstallprompt", (event) => {
+  event.preventDefault();
+  window.deferredInstallPrompt = event;
+  window.dispatchEvent(new CustomEvent("app-install-ready"));
+});
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/service-worker.js").catch((error) => {
+      console.warn("Service worker registration failed:", error.message);
+    });
+  });
+}
+
 async function updateAuthNav() {
   const authLink = document.getElementById("authNavLink");
   if (!authLink) {

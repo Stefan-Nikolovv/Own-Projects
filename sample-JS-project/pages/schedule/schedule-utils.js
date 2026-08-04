@@ -71,8 +71,49 @@ export function mapBookingError(error) {
   if (message.includes("SLOT_FULL")) return "msg_full";
   if (message.includes("DAY_LOCKED")) return "msg_day_locked";
   if (message.includes("SLOT_IN_PAST")) return "msg_past_slot";
+  if (message.includes("BOOKING_CUTOFF")) return "msg_booking_cutoff";
   if (message.includes("INVALID_NAME")) return "msg_enter_valid_name";
   if (message.includes("INVALID_PHONE")) return "msg_phone_invalid";
+  if (message.includes("FEATURE_MIGRATION_REQUIRED")) {
+    return "feature_migration_required";
+  }
 
   return "msg_save_failed";
+}
+
+export function getAvailabilityLevel(spotsLeft) {
+  if (spotsLeft <= 0) return "full";
+  if (spotsLeft <= 3) return "almost-full";
+  return "available";
+}
+
+export function buildCalendarFile({
+  dayKey,
+  time,
+  title,
+  durationMinutes = 60,
+}) {
+  const start = new Date(`${dayKey}T${time}:00`);
+  const end = new Date(start.getTime() + durationMinutes * 60 * 1000);
+  const stamp = (date) =>
+    date
+      .toISOString()
+      .replaceAll("-", "")
+      .replaceAll(":", "")
+      .replace(/\.\d{3}Z$/, "Z");
+
+  return [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//Emotion in Motion//Schedule//EN",
+    "BEGIN:VEVENT",
+    `UID:${dayKey}-${time.replace(":", "")}@emotion-in-motion`,
+    `DTSTAMP:${stamp(new Date())}`,
+    `DTSTART:${stamp(start)}`,
+    `DTEND:${stamp(end)}`,
+    `SUMMARY:${String(title).replaceAll(",", "\\,")}`,
+    "END:VEVENT",
+    "END:VCALENDAR",
+    "",
+  ].join("\r\n");
 }

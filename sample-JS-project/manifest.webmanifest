@@ -1,0 +1,17 @@
+{
+  "name": "Emotion in Motion",
+  "short_name": "EIM Training",
+  "description": "Book and manage Emotion in Motion training sessions.",
+  "start_url": "/#schedule",
+  "display": "standalone",
+  "background_color": "#101112",
+  "theme_color": "#d7f43b",
+  "icons": [
+    {
+      "src": "/assets/img/output-image.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
