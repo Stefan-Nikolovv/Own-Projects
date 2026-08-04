@@ -1128,8 +1128,12 @@ function renderSavedNames(bookings, highlightedBookingId = null) {
       btnRemove.className = "user-remove-btn";
       btnRemove.type = "button";
 
-      btnEdit.textContent = t("edit_btn");
-      btnRemove.textContent = t("remove_btn_small");
+      btnEdit.innerHTML = '<i class="fa-solid fa-pen" aria-hidden="true"></i>';
+      btnEdit.setAttribute("aria-label", t("edit_btn"));
+      btnEdit.title = t("edit_btn");
+      btnRemove.innerHTML = '<i class="fa-solid fa-trash-can" aria-hidden="true"></i>';
+      btnRemove.setAttribute("aria-label", t("remove_btn_small"));
+      btnRemove.title = t("remove_btn_small");
 
       btnEdit.addEventListener("click", () => handleEditBooking(booking));
       btnRemove.addEventListener("click", () => handleRemoveBooking(booking));
@@ -1155,7 +1159,11 @@ function renderSavedNames(bookings, highlightedBookingId = null) {
         attendance.appendChild(attendanceButton);
       });
 
-      actions.append(attendance, btnEdit, btnRemove);
+      const management = document.createElement("div");
+      management.className = "booking-management-controls";
+      management.append(btnEdit, btnRemove);
+
+      actions.append(attendance, management);
       item.appendChild(actions);
     }
 
