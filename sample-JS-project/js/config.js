@@ -4,8 +4,6 @@
 export const config = {
   supabaseUrl: "https://pghirikwblrhemnqcbmw.supabase.co",
   supabaseAnonKey: "sb_publishable_yy_9eYxhcDQGxlIo4jgy3A_1Z165ZNp",
-  ownerEmail: "emotioninmotion@gmail.com",
-
   // EmailJS — https://www.emailjs.com
   // 1. Create a free account, add an Email Service, and create a Template.
   // 2. Template variables used: {{email}}, {{name}}, {{title}}

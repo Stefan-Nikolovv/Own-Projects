@@ -14,23 +14,17 @@ const staticEntries = [
   "service-worker.js",
 ];
 
-const requiredEnvironment = ["SUPABASE_URL", "SUPABASE_ANON_KEY", "OWNER_EMAIL"];
-const missingEnvironment = requiredEnvironment.filter((name) => !process.env[name]);
-
-if (process.env.VERCEL && missingEnvironment.length) {
-  throw new Error(
-    `Missing required Vercel environment variables: ${missingEnvironment.join(", ")}`
-  );
-}
-
 const config = {
   supabaseUrl: process.env.SUPABASE_URL || localConfig.supabaseUrl,
   supabaseAnonKey: process.env.SUPABASE_ANON_KEY || localConfig.supabaseAnonKey,
-  ownerEmail: process.env.OWNER_EMAIL || localConfig.ownerEmail,
   emailjsPublicKey: process.env.EMAILJS_PUBLIC_KEY || localConfig.emailjsPublicKey || "",
   emailjsServiceId: process.env.EMAILJS_SERVICE_ID || localConfig.emailjsServiceId || "",
   emailjsTemplateId: process.env.EMAILJS_TEMPLATE_ID || localConfig.emailjsTemplateId || "",
 };
+
+if (!config.supabaseUrl || !config.supabaseAnonKey) {
+  throw new Error("Supabase URL and public key are missing from the environment and js/config.js");
+}
 
 const content = `// Auto-generated config file
 export const config = ${JSON.stringify(config, null, 2)};

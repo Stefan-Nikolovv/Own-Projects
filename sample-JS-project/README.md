@@ -20,8 +20,7 @@ Edit `js/config.js` with your Supabase credentials:
 ```javascript
 export const config = {
   supabaseUrl: "YOUR_SUPABASE_URL",           // From Supabase Project Settings → API
-  supabaseAnonKey: "YOUR_SUPABASE_ANON_KEY",  // From Supabase Project Settings → API  
-  ownerEmail: "YOUR_OWNER_EMAIL",             // Admin email for viewing phone numbers
+  supabaseAnonKey: "YOUR_SUPABASE_ANON_KEY",  // From Supabase Project Settings → API
 };
 ```
 
@@ -97,24 +96,25 @@ git push origin main
 2. Click "Add New" → "Project"
 3. Import your GitHub repository
 
-### 3. Configure Environment Variables
-In Vercel project settings → Environment Variables, add:
+### 3. Optional Environment Overrides
+The committed public client configuration is enough to deploy this project. To
+override it for another Supabase project, add these in Vercel project settings:
 
 | Name | Value |
 |------|-------|
 | `SUPABASE_URL` | Your Supabase project URL |
 | `SUPABASE_ANON_KEY` | Your Supabase anon/public key |
-| `OWNER_EMAIL` | Admin email address |
 | `EMAILJS_PUBLIC_KEY` | EmailJS public key (optional) |
 | `EMAILJS_SERVICE_ID` | EmailJS service ID (optional) |
 | `EMAILJS_TEMPLATE_ID` | EmailJS template ID (optional) |
 
 ### 4. Deploy
-Vercel will automatically run `npm run build` which generates `config.js` from your environment variables.
+Vercel automatically runs `npm run build`, using environment overrides when
+present and otherwise using `js/config.js`.
 
-**Note**: The build script (`build-config.js`) generates `js/config.js` from
-environment variables during deployment. The Supabase anon key and EmailJS public
-key are intentionally browser-visible; database security is enforced with RLS.
+**Note**: The build script generates the deployed `js/config.js`. Supabase and
+EmailJS public keys are intentionally browser-visible; database security and admin
+access are enforced by Supabase RLS and `public.app_admins`.
 
 ### Local Development
 For local development, create `js/config.js` from the example:
