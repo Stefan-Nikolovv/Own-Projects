@@ -2,9 +2,11 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
+  DAY_SLOT_MAP,
   addDays,
   buildCalendarFile,
   getAvailabilityLevel,
+  getManagedBookingStatus,
   getStartOfWeek,
   isDateInPast,
   isSlotInPast,
@@ -12,6 +14,13 @@ import {
   mapBookingError,
   toDateKey,
 } from "../pages/schedule/schedule-utils.js";
+
+test("weekly timetable includes the expanded training hours", () => {
+  assert.deepEqual(DAY_SLOT_MAP.Tuesday, ["17:00", "18:00"]);
+  assert.deepEqual(DAY_SLOT_MAP.Thursday, ["17:00", "18:00"]);
+  assert.deepEqual(DAY_SLOT_MAP.Saturday, ["10:00", "11:00", "12:00"]);
+  assert.deepEqual(DAY_SLOT_MAP.Sunday, ["12:00"]);
+});
 
 test("getStartOfWeek returns Monday for weekdays and Sunday", () => {
   assert.equal(toDateKey(getStartOfWeek(new Date(2026, 7, 5))), "2026-08-03");
@@ -31,9 +40,40 @@ test("past and today checks compare local date keys", () => {
   assert.equal(isSlotInPast("2026-08-04", "12:30", now), false);
 });
 
+test("managed bookings do not label past pending sessions as upcoming", () => {
+  const now = new Date(2026, 7, 17, 12, 0, 0);
+
+  assert.deepEqual(
+    getManagedBookingStatus(
+      {
+        item_type: "booking",
+        attendance: "pending",
+        day_key: "2026-05-02",
+        time: "10:00",
+      },
+      now
+    ),
+    { key: "booking_past", isPast: true }
+  );
+
+  assert.deepEqual(
+    getManagedBookingStatus(
+      {
+        item_type: "booking",
+        attendance: "pending",
+        day_key: "2026-08-18",
+        time: "17:00",
+      },
+      now
+    ),
+    { key: "attendance_pending", isPast: false }
+  );
+});
+
 test("booking database errors map to translated UI messages", () => {
   assert.equal(mapBookingError({ message: "SLOT_FULL" }), "msg_full");
   assert.equal(mapBookingError({ message: "DAY_LOCKED" }), "msg_day_locked");
+  assert.equal(mapBookingError({ message: "SLOT_LOCKED" }), "msg_slot_locked");
   assert.equal(mapBookingError({ code: "23505" }), "msg_duplicate");
   assert.equal(
     mapBookingError({ message: "BOOKING_CUTOFF" }),

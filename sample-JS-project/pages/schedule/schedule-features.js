@@ -1,6 +1,10 @@
 import { supabase } from "../../js/supabase.js";
 import { t, getLocale } from "../../js/i18n.js";
-import { buildCalendarFile, toDateKey } from "./schedule-utils.js";
+import {
+  buildCalendarFile,
+  getManagedBookingStatus,
+  toDateKey,
+} from "./schedule-utils.js";
 
 const ACCESS_KEY = "emotion_booking_access";
 const REMINDER_KEY = "emotion_booking_reminders";
@@ -225,6 +229,8 @@ function setSearchLoading(button, isLoading) {
 function createManagedBooking(item, readOnly = false) {
   const card = document.createElement("article");
   card.className = "managed-booking";
+  const bookingStatus = getManagedBookingStatus(item);
+  card.classList.toggle("is-past", bookingStatus.isPast);
 
   const date = new Date(`${item.day_key}T12:00:00`);
   const dateLabel = new Intl.DateTimeFormat(getLocale(), {
@@ -238,11 +244,12 @@ function createManagedBooking(item, readOnly = false) {
   const title = document.createElement("strong");
   title.textContent = `${dateLabel} · ${item.time}`;
   const status = document.createElement("span");
-  status.className = `managed-status ${item.item_type}`;
-  status.textContent =
-    item.item_type === "waitlist"
-      ? t("waitlist_position", { position: item.queue_position })
-      : t(`attendance_${item.attendance || "pending"}`);
+  status.className = `managed-status ${
+    bookingStatus.key === "booking_past" ? "past" : item.item_type
+  }`;
+  status.textContent = t(bookingStatus.key, {
+    position: item.queue_position,
+  });
   top.append(title, status);
 
   const name = document.createElement("p");
@@ -251,7 +258,7 @@ function createManagedBooking(item, readOnly = false) {
   const actions = document.createElement("div");
   actions.className = "managed-booking-actions";
 
-  if (!readOnly && item.item_type === "booking") {
+  if (!readOnly && !bookingStatus.isPast && item.item_type === "booking") {
     actions.appendChild(createIconButton("fa-calendar-plus", t("add_calendar"), () => {
       downloadCalendar(item);
     }));
@@ -265,14 +272,14 @@ function createManagedBooking(item, readOnly = false) {
     }
   }
 
-  if (!readOnly) {
+  if (!readOnly && !bookingStatus.isPast) {
     actions.appendChild(createIconButton("fa-trash", t("cancel_booking"), () => {
       manageItem(item, "cancel");
     }, "danger"));
   }
 
   card.append(top, name);
-  if (!readOnly) card.append(actions);
+  if (!readOnly && !bookingStatus.isPast) card.append(actions);
   return card;
 }
 
@@ -282,6 +289,7 @@ function buildMoveSelect(item) {
       .filter((slot) =>
         slot.id &&
         !day.locked &&
+        !slot.locked &&
         slot.bookingCount < slot.capacity &&
         `${day.key}T${slot.time}` !== `${item.day_key}T${item.time}` &&
         new Date(`${day.key}T${slot.time}:00`) > new Date(Date.now() + 2 * 60 * 60 * 1000)

@@ -86,12 +86,18 @@ async function loadSchedule() {
 
   let { data: slotsData, error } = await supabase
     .from("slots")
-    .select("id, day_key, time, capacity, booking_count, is_day_locked")
+    .select(
+      "id, day_key, time, capacity, booking_count, is_day_locked, is_slot_locked"
+    )
     .in("day_key", weekDayKeys);
 
-  if (error && error.message?.includes("is_day_locked")) {
+  if (
+    error &&
+    (error.message?.includes("is_day_locked") ||
+      error.message?.includes("is_slot_locked"))
+  ) {
     console.warn(
-      "Missing slots.is_day_locked column. Run the README SQL migration."
+      "Missing schedule lock columns. Run the latest Supabase migration."
     );
 
     const fallback = await supabase
@@ -102,6 +108,7 @@ async function loadSchedule() {
     slotsData = fallback.data?.map((slot) => ({
       ...slot,
       is_day_locked: false,
+      is_slot_locked: false,
     }));
     error = fallback.error;
   }
@@ -134,6 +141,7 @@ async function loadSchedule() {
           id: dbSlot?.id ?? null,
           time,
           capacity: CAPACITY,
+          locked: Boolean(dbSlot?.is_slot_locked),
           bookingCount: legacyBookingCounts
             ? legacyBookingCounts.get(dbSlot?.id) ?? 0
             : dbSlot?.booking_count ?? 0,
@@ -238,6 +246,7 @@ function buildEmptyWeek(weekDates) {
         id: null,
         time,
         capacity: CAPACITY,
+        locked: false,
         bookingCount: 0,
         bookedUsers: [],
       })),
@@ -483,15 +492,19 @@ function renderWeek({ animate = false, direction = 0 } = {}) {
         const spotsLeft = slot.capacity - slot.bookingCount;
         const availability = getAvailabilityLevel(spotsLeft);
         const slotIsPast = isSlotInPast(day.key, slot.time);
+        const slotIsLocked = day.locked || slot.locked;
+
+        const slotRow = document.createElement("div");
+        slotRow.className = "slot-row";
 
         const slotBtn = document.createElement("button");
         slotBtn.className = "slot-btn";
         slotBtn.classList.add(`slot-${availability}`);
-        if (day.locked) {
+        if (slotIsLocked) {
           slotBtn.classList.add("slot-btn-locked");
         }
         slotBtn.type = "button";
-        slotBtn.disabled = day.locked || (slotIsPast && !isOwner);
+        slotBtn.disabled = slotIsLocked || (slotIsPast && !isOwner);
 
         const top = document.createElement("div");
         top.className = "slot-top";
@@ -506,6 +519,8 @@ function renderWeek({ animate = false, direction = 0 } = {}) {
           ? t("past")
           : day.locked
           ? t("day_locked_badge")
+          : slot.locked
+          ? t("slot_locked_badge")
           : spotsLeft > 0
           ? availability === "almost-full"
             ? t("almost_full", { count: spotsLeft })
@@ -522,17 +537,68 @@ function renderWeek({ animate = false, direction = 0 } = {}) {
         });
 
         slotBtn.append(top, meta);
-        if (!day.locked && (!slotIsPast || isOwner)) {
+        if (!slotIsLocked && (!slotIsPast || isOwner)) {
           slotBtn.addEventListener("click", () => openSlot(day.key, slot.time));
         }
 
-        slotList.appendChild(slotBtn);
+        slotRow.appendChild(slotBtn);
+        if (isOwner) {
+          slotRow.classList.add("slot-row-admin");
+          slotRow.appendChild(createSlotLockButton(day, slot));
+        }
+        slotList.appendChild(slotRow);
       });
     }
 
     dayCard.append(header, slotList);
     weekGrid.appendChild(dayCard);
   });
+}
+
+function createSlotLockButton(day, slot) {
+  const label = slot.locked ? t("unlock_slot") : t("lock_slot");
+  const hint = slot.locked ? t("unlock_slot_hint") : t("lock_slot_hint");
+  const button = document.createElement("button");
+
+  button.type = "button";
+  button.className = slot.locked
+    ? "slot-lock-btn slot-lock-btn-unlock"
+    : "slot-lock-btn";
+  button.setAttribute("aria-label", `${label}: ${slot.time}`);
+  button.setAttribute("aria-pressed", String(slot.locked));
+  button.title = `${hint}: ${slot.time}`;
+  button.innerHTML = slot.locked
+    ? '<i class="fa-solid fa-lock" aria-hidden="true"></i>'
+    : '<i class="fa-solid fa-lock-open" aria-hidden="true"></i>';
+  button.addEventListener("click", () => toggleSlotLock(day.key, slot.id, button));
+
+  return button;
+}
+
+async function toggleSlotLock(dayKey, slotId, button) {
+  const day = state.find((item) => item.key === dayKey);
+  const slot = day?.slots.find((item) => item.id === slotId);
+  if (!isOwner || !day || !slot?.id) return;
+
+  button.disabled = true;
+  button.classList.add("is-changing");
+  const nextLocked = !slot.locked;
+
+  try {
+    const { error } = await supabase.rpc("set_slot_lock", {
+      p_slot_id: slot.id,
+      p_locked: nextLocked,
+    });
+    if (error) throw error;
+
+    slot.locked = nextLocked;
+    renderWeek();
+  } catch (error) {
+    console.error("Failed to update slot lock:", error);
+    button.disabled = false;
+    button.classList.remove("is-changing");
+    renderDayLockFeedback(day, t("slot_lock_failed"), "error");
+  }
 }
 
 function createDayLockButton(day) {
@@ -760,11 +826,18 @@ async function saveSpot() {
 
   if (!day || !slot || !slot.id) return;
 
-  const isLocked = day.locked || (await isDayLocked(day.key));
-  if (isLocked && !editingBookingId) {
+  const lockState = await getSlotLockState(slot.id);
+  if ((day.locked || lockState.dayLocked) && !editingBookingId) {
     day.locked = true;
     renderWeek();
     showDialogMessage(t("msg_day_locked"));
+    return;
+  }
+
+  if ((slot.locked || lockState.slotLocked) && !editingBookingId) {
+    slot.locked = true;
+    renderWeek();
+    showDialogMessage(t("msg_slot_locked"));
     return;
   }
 
@@ -935,20 +1008,22 @@ async function createBooking(slotId, name, phone, email, recurringWeeks) {
   return { booking: data?.[0] ?? null, error };
 }
 
-async function isDayLocked(dayKey) {
+async function getSlotLockState(slotId) {
   const { data, error } = await supabase
     .from("slots")
-    .select("is_day_locked")
-    .eq("day_key", dayKey)
-    .eq("is_day_locked", true)
-    .limit(1);
+    .select("is_day_locked, is_slot_locked")
+    .eq("id", slotId)
+    .maybeSingle();
 
   if (error) {
-    console.warn("Failed to check day lock:", error.message);
-    return false;
+    console.warn("Failed to check slot locks:", error.message);
+    return { dayLocked: false, slotLocked: false };
   }
 
-  return Boolean(data?.length);
+  return {
+    dayLocked: Boolean(data?.is_day_locked),
+    slotLocked: Boolean(data?.is_slot_locked),
+  };
 }
 
 function isMissingRpc(error) {

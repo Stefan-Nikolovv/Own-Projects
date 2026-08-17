@@ -2,12 +2,12 @@ export const CAPACITY = 14;
 
 export const DAY_SLOT_MAP = {
   Monday: ["17:00", "18:00"],
-  Tuesday: ["18:00"],
+  Tuesday: ["17:00", "18:00"],
   Wednesday: ["17:00", "18:00"],
-  Thursday: ["18:00"],
+  Thursday: ["17:00", "18:00"],
   Friday: ["17:00", "18:00"],
-  Saturday: ["10:00", "11:00"],
-  Sunday: [],
+  Saturday: ["10:00", "11:00", "12:00"],
+  Sunday: ["12:00"],
 };
 
 export function getStartOfWeek(date) {
@@ -50,6 +50,21 @@ export function isToday(dayKey, now = new Date()) {
   return dayKey === toDateKey(now);
 }
 
+export function getManagedBookingStatus(item, now = new Date()) {
+  const isPast = isSlotInPast(item.day_key, item.time, now);
+  const attendance = item.attendance || "pending";
+
+  if (isPast && (item.item_type === "waitlist" || attendance === "pending")) {
+    return { key: "booking_past", isPast };
+  }
+
+  if (item.item_type === "waitlist") {
+    return { key: "waitlist_position", isPast };
+  }
+
+  return { key: `attendance_${attendance}`, isPast };
+}
+
 export function getStableDayKey(date) {
   return [
     "Sunday",
@@ -69,6 +84,7 @@ export function mapBookingError(error) {
     return "msg_duplicate";
   }
   if (message.includes("SLOT_FULL")) return "msg_full";
+  if (message.includes("SLOT_LOCKED")) return "msg_slot_locked";
   if (message.includes("DAY_LOCKED")) return "msg_day_locked";
   if (message.includes("SLOT_IN_PAST")) return "msg_past_slot";
   if (message.includes("BOOKING_CUTOFF")) return "msg_booking_cutoff";
