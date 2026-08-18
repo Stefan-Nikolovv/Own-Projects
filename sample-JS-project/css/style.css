@@ -3732,17 +3732,17 @@ body.is-offline .schedule-page .booking-search-btn {
   .schedule-page .week-range-label { min-width: 0; font-size: 0.80rem; }
 
   .booking-search-control {
-    grid-template-columns: minmax(0, 1fr) 52px;
+    grid-template-columns: minmax(0, 1fr) 56px;
     gap: 8px;
   }
   .schedule-page .booking-search-control input,
   .schedule-page .booking-search-btn {
-    height: 52px;
-    min-height: 52px;
+    height: 56px;
+    min-height: 56px;
   }
   .schedule-page .booking-search-btn {
-    width: 52px;
-    min-width: 52px;
+    width: 56px;
+    min-width: 56px;
     padding: 0;
     border-radius: 8px;
     display: grid;
@@ -3857,11 +3857,11 @@ body.is-offline .schedule-page .booking-search-btn {
   .schedule-page .slot-roster-search input,
   .recurring-weeks-label select,
   .managed-move-select {
-    font-size: 16px;
+    font-size: 18px;
   }
 
   .schedule-page .slot-roster-search input {
-    height: 52px;
+    height: 56px;
     padding-left: 44px;
   }
 
@@ -3872,8 +3872,8 @@ body.is-offline .schedule-page .booking-search-btn {
 
   .dialog-field input {
     width: 100%;
-    height: 52px;
-    min-height: 52px;
+    height: 56px;
+    min-height: 56px;
   }
 
   .schedule-page .slot-roster-trigger {
@@ -4418,6 +4418,10 @@ html.is-route-transitioning #app {
 }
 
 @media (max-width: 768px), (hover: none) and (pointer: coarse) and (max-width: 1024px) {
+  html {
+    font-size: 18px;
+  }
+
   body {
     padding-bottom: calc(76px + env(safe-area-inset-bottom));
   }
@@ -4653,7 +4657,26 @@ html.is-route-transitioning #app {
   }
 }
 
-@media (min-width: 769px) {
+@media (hover: none) and (pointer: coarse) and (min-width: 769px) and (max-width: 1024px) {
+  html {
+    font-size: 20px;
+  }
+
+  .slot-dialog {
+    width: min(680px, calc(100% - 32px));
+    max-width: calc(100% - 32px);
+  }
+
+  .dialog-field input,
+  .schedule-page .booking-search-control input,
+  .schedule-page .slot-roster-search input,
+  .recurring-weeks-label select,
+  .managed-move-select {
+    font-size: 20px;
+  }
+}
+
+@media (min-width: 1025px), (min-width: 769px) and (hover: hover) and (pointer: fine) {
   .mobile-bookings-link {
     display: none;
   }

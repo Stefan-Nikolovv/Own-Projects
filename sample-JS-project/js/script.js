@@ -7,6 +7,40 @@ let reloadForUpdate = false;
 let connectionWasOffline = !navigator.onLine;
 let connectionStatusTimer = null;
 
+function initMobileInputZoomGuard() {
+  if (!window.matchMedia("(pointer: coarse)").matches) return;
+
+  const viewport = document.querySelector('meta[name="viewport"]');
+  if (!viewport) return;
+
+  const originalContent = viewport.content;
+  const lockedContent = `${originalContent.replace(
+    /,\s*maximum-scale\s*=\s*[^,]+/i,
+    ""
+  )}, maximum-scale=1`;
+  const isFormControl = (target) =>
+    target instanceof Element &&
+    Boolean(target.closest("input, textarea, select, [contenteditable='true']"));
+
+  document.addEventListener(
+    "pointerdown",
+    (event) => {
+      if (isFormControl(event.target)) viewport.content = lockedContent;
+    },
+    { capture: true, passive: true }
+  );
+  document.addEventListener("focusin", (event) => {
+    if (isFormControl(event.target)) viewport.content = lockedContent;
+  });
+  document.addEventListener("focusout", () => {
+    window.setTimeout(() => {
+      if (!isFormControl(document.activeElement)) {
+        viewport.content = originalContent;
+      }
+    }, 250);
+  });
+}
+
 window.addEventListener("beforeinstallprompt", (event) => {
   event.preventDefault();
   window.deferredInstallPrompt = event;
@@ -169,6 +203,7 @@ async function updateAuthNav() {
 
 window.addEventListener("DOMContentLoaded", async () => {
   bindPwaUpdateActions();
+  initMobileInputZoomGuard();
   if (!navigator.onLine) showConnectionStatus(false);
   initLanguageSwitcher(async () => {
     await router();
