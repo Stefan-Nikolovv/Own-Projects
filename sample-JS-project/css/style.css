@@ -1010,7 +1010,7 @@ img { max-width: 100%; height: auto; }
 }
 
 .slot-row-admin .slot-top {
-  padding-right: 38px;
+  padding-right: 34px;
 }
 
 .schedule-page .slot-btn {
@@ -1061,10 +1061,10 @@ img { max-width: 100%; height: auto; }
   position: absolute;
   z-index: 2;
   top: -11px;
-  right: -17px;
-  width: 34px;
-  height: 34px;
-  min-height: 34px;
+  right: -6px;
+  width: 31px;
+  height: 31px;
+  min-height: 31px;
   margin: 0;
   padding: 0;
   display: grid;
@@ -1074,7 +1074,7 @@ img { max-width: 100%; height: auto; }
   background: #24101d;
   color: #ff8db5;
   cursor: pointer;
-  font-size: 0.82rem;
+  font-size: 0.74rem;
   box-shadow: 0 5px 14px rgba(0, 0, 0, 0.34);
   transition: transform var(--motion-fast), background var(--motion-fast), border-color var(--motion-fast), box-shadow var(--motion-fast);
   touch-action: manipulation;
@@ -1084,6 +1084,25 @@ img { max-width: 100%; height: auto; }
   border-color: rgba(0, 212, 255, 0.28);
   background: #0d2631;
   color: var(--cyan);
+}
+
+.schedule-page .slot-lock-btn i,
+.schedule-page .day-lock-btn i {
+  width: 1em;
+  height: 1em;
+  display: grid;
+  place-items: center;
+  line-height: 1;
+}
+
+.schedule-page .slot-lock-btn .fa-lock-open,
+.schedule-page .day-lock-btn .fa-lock-open {
+  translate: -0.8px 0.5px;
+}
+
+.schedule-page .slot-lock-btn .fa-lock,
+.schedule-page .day-lock-btn .fa-lock {
+  translate: 0 0.35px;
 }
 
 .schedule-page .slot-lock-btn:hover {
