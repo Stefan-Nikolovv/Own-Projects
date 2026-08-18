@@ -33,14 +33,14 @@ export function getBookingReference(bookingId) {
   return shortId ? `EIM-${shortId.toUpperCase()}` : "EIM";
 }
 
-export function buildTicketPayload({ id, day_key: dayKey, time }) {
-  return JSON.stringify({
-    type: "emotion-in-motion-booking",
-    version: 1,
-    bookingId: id,
-    day: dayKey,
-    time,
-  });
+export function buildTicketPayload(
+  { id },
+  origin = "https://emotion-in-motion.invalid"
+) {
+  const url = new URL("/", origin);
+  url.searchParams.set("ticket", id);
+  url.hash = "schedule";
+  return url.toString();
 }
 
 function dedupeAccess(records) {

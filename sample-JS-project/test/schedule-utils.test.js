@@ -12,6 +12,7 @@ import {
   addDays,
   applySlotRealtimeUpdate,
   buildCalendarFile,
+  buildGoogleCalendarUrl,
   findNextAvailableSlot,
   getAvailabilityLevel,
   getManagedBookingStatus,
@@ -198,6 +199,21 @@ test("calendar export creates a valid event shell", () => {
   assert.match(calendar, /END:VCALENDAR/);
 });
 
+test("Google Calendar link contains the training time and title", () => {
+  const calendarUrl = new URL(
+    buildGoogleCalendarUrl({
+      dayKey: "2026-08-19",
+      time: "17:00",
+      title: "Emotion in Motion Training",
+    })
+  );
+
+  assert.equal(calendarUrl.hostname, "calendar.google.com");
+  assert.equal(calendarUrl.searchParams.get("action"), "TEMPLATE");
+  assert.equal(calendarUrl.searchParams.get("text"), "Emotion in Motion Training");
+  assert.match(calendarUrl.searchParams.get("dates"), /^\d{8}T\d{6}Z\/\d{8}T\d{6}Z$/);
+});
+
 test("next workout selects the nearest future active booking", () => {
   const now = new Date(2026, 7, 18, 12, 0, 0);
   const items = [
@@ -217,9 +233,15 @@ test("ticket QR payload excludes the private booking access token", () => {
     day_key: "2026-08-19",
     time: "17:00",
   };
-  const payload = buildTicketPayload(ticket);
+  const payload = buildTicketPayload(ticket, "https://app.example.com");
 
   assert.equal(getBookingReference(ticket.id), "EIM-53DC8E4E");
-  assert.match(payload, /53dc8e4e-c482-44c2-9f52-16cc7bc78066/);
+  const ticketUrl = new URL(payload);
+  assert.equal(ticketUrl.origin, "https://app.example.com");
+  assert.equal(ticketUrl.hash, "#schedule");
+  assert.equal(
+    ticketUrl.searchParams.get("ticket"),
+    "53dc8e4e-c482-44c2-9f52-16cc7bc78066"
+  );
   assert.doesNotMatch(payload, /private-token/);
 });

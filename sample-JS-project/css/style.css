@@ -1675,6 +1675,92 @@ img { max-width: 100%; height: auto; }
   text-align: center;
 }
 
+.ticket-checkin-shell {
+  min-height: 0;
+}
+
+.ticket-checkin-details {
+  margin-top: 18px;
+  padding: 16px 0;
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  border-top: 1px dashed var(--border);
+  border-bottom: 1px dashed var(--border);
+}
+
+.ticket-checkin-details.hidden,
+.ticket-checkin-actions.hidden {
+  display: none;
+}
+
+.ticket-checkin-icon {
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--cyan-dim);
+  border: 1px solid rgba(0, 212, 255, 0.26);
+  color: var(--cyan);
+}
+
+.ticket-checkin-details strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 1rem;
+}
+
+.ticket-checkin-details p {
+  margin: 0 0 8px;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  line-height: 1.4;
+  text-transform: capitalize;
+}
+
+.ticket-checkin-details .managed-status.absent {
+  border-color: rgba(255, 45, 120, 0.30);
+  background: var(--pink-dim);
+  color: #ff8db5;
+}
+
+.ticket-checkin-actions {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.schedule-page .ticket-checkin-btn {
+  min-width: 0;
+  min-height: 48px;
+  margin: 0;
+  padding: 0 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid rgba(0, 229, 176, 0.30);
+  border-radius: 8px;
+  background: var(--teal-dim);
+  color: var(--teal);
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.schedule-page .ticket-checkin-btn.absent {
+  border-color: rgba(255, 45, 120, 0.30);
+  background: var(--pink-dim);
+  color: #ff8db5;
+}
+
+.schedule-page .ticket-checkin-btn:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
 @keyframes dialog-backdrop-in {
   from { opacity: 0; }
   to { opacity: 1; }

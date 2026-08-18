@@ -12,6 +12,7 @@ import {
   DAY_SLOT_MAP,
   addDays,
   applySlotRealtimeUpdate,
+  buildGoogleCalendarUrl,
   getStableDayKey,
   getStartOfWeek,
   getAvailabilityLevel,
@@ -41,6 +42,7 @@ let isOwner = false;
 let visibleWeekStart = null;
 let weekChangeInProgress = false;
 let activeTicket = null;
+let scannedBooking = null;
 
 export async function init() {
   try {
@@ -79,6 +81,7 @@ export async function init() {
       applySlotChange: applyRealtimeSlotChange,
     });
     setScheduleLoading(false);
+    await handleScannedTicket();
   } catch (err) {
     setScheduleLoading(false);
     console.error("Schedule init error:", err);
@@ -835,6 +838,8 @@ function bindDialogActions() {
   const ticketDialog = document.getElementById("bookingTicketDialog");
   const ticketCalendarBtn = document.getElementById("ticketCalendarBtn");
   const ticketShareBtn = document.getElementById("ticketShareBtn");
+  const ticketCheckinDialog = document.getElementById("ticketCheckinDialog");
+  const closeTicketCheckinBtn = document.getElementById("closeTicketCheckinBtn");
 
   if (saveBtn) {
     saveBtn.addEventListener("click", saveSpot);
@@ -857,6 +862,15 @@ function bindDialogActions() {
   ticketShareBtn?.addEventListener("click", shareBookingTicket);
   ticketDialog?.addEventListener("close", () => {
     activeTicket = null;
+  });
+  closeTicketCheckinBtn?.addEventListener("click", () => {
+    ticketCheckinDialog?.close();
+  });
+  ticketCheckinDialog?.addEventListener("close", clearScannedTicketUrl);
+  document.querySelectorAll(".ticket-checkin-btn").forEach((button) => {
+    button.addEventListener("click", () => {
+      updateScannedTicketAttendance(button.dataset.attendance);
+    });
   });
 
   if (clientName) {
@@ -1075,12 +1089,16 @@ async function showBookingTicket() {
   shareStatus?.classList.add("hidden");
 
   try {
-    await QRCode.toCanvas(canvas, buildTicketPayload(activeTicket), {
+    await QRCode.toCanvas(
+      canvas,
+      buildTicketPayload(activeTicket, window.location.origin),
+      {
       width: 148,
       margin: 1,
       errorCorrectionLevel: "M",
       color: { dark: "#060810", light: "#ffffff" },
-    });
+      }
+    );
   } catch (error) {
     console.warn("Booking QR code could not be rendered:", error.message);
   }
@@ -1098,7 +1116,12 @@ function closeBookingTicket() {
 function downloadBookingTicketCalendar() {
   if (!activeTicket) return;
 
-  downloadCalendarFile(activeTicket);
+  const calendarUrl = buildGoogleCalendarUrl({
+    dayKey: activeTicket.day_key,
+    time: activeTicket.time,
+    title: "Emotion in Motion Training",
+  });
+  window.open(calendarUrl, "_blank", "noopener,noreferrer");
 }
 
 async function shareBookingTicket() {
@@ -1136,24 +1159,118 @@ async function shareBookingTicket() {
   }
 }
 
-function downloadCalendarFile(ticket) {
-  const calendar = buildCalendarFile({
-    dayKey: ticket.day_key,
-    time: ticket.time,
-    title: "Emotion in Motion Training",
+async function handleScannedTicket() {
+  const bookingId = new URL(window.location.href).searchParams.get("ticket");
+  if (!bookingId) return;
+
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(bookingId)) {
+    showScheduleStatus(t("ticket_checkin_invalid"), "error");
+    clearScannedTicketUrl();
+    return;
+  }
+
+  if (!isOwner) {
+    showScheduleStatus(t("ticket_checkin_admin"), "error");
+    return;
+  }
+
+  const dialog = document.getElementById("ticketCheckinDialog");
+  const loading = document.getElementById("ticketCheckinLoading");
+  const details = document.getElementById("ticketCheckinDetails");
+  const actions = document.getElementById("ticketCheckinActions");
+  if (!dialog || !loading || !details || !actions) return;
+
+  loading.textContent = t("ticket_checkin_loading");
+  loading.classList.remove("hidden");
+  details.classList.add("hidden");
+  actions.classList.add("hidden");
+  if (!dialog.open) dialog.showModal();
+
+  const { data: booking, error: bookingError } = await supabase
+    .from("bookings")
+    .select("id, name, attendance, slot_id")
+    .eq("id", bookingId)
+    .maybeSingle();
+
+  if (bookingError || !booking) {
+    loading.textContent = t("ticket_checkin_invalid");
+    return;
+  }
+
+  const { data: slot, error: slotError } = await supabase
+    .from("slots")
+    .select("day_key, time")
+    .eq("id", booking.slot_id)
+    .maybeSingle();
+
+  if (slotError || !slot) {
+    loading.textContent = t("ticket_checkin_invalid");
+    return;
+  }
+
+  scannedBooking = { ...booking, ...slot };
+  const date = new Date(`${slot.day_key}T${slot.time}:00`);
+  document.getElementById("ticketCheckinName").textContent = booking.name;
+  document.getElementById("ticketCheckinDate").textContent =
+    new Intl.DateTimeFormat(getLocale(), {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(date);
+  renderScannedTicketAttendance();
+  loading.classList.add("hidden");
+  details.classList.remove("hidden");
+  actions.classList.remove("hidden");
+}
+
+function renderScannedTicketAttendance() {
+  const status = document.getElementById("ticketCheckinStatus");
+  if (!status || !scannedBooking) return;
+  const statusKey = `attendance_${scannedBooking.attendance || "pending"}`;
+  status.textContent = t(statusKey);
+  status.className = `managed-status ${scannedBooking.attendance || "booking"}`;
+}
+
+async function updateScannedTicketAttendance(attendance) {
+  if (!scannedBooking || !["present", "absent"].includes(attendance)) return;
+
+  const buttons = document.querySelectorAll(".ticket-checkin-btn");
+  buttons.forEach((button) => {
+    button.disabled = true;
   });
-  const blob = new Blob([calendar], { type: "text/calendar;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = `emotion-in-motion-${ticket.day_key}-${ticket.time.replace(":", "")}.ics`;
-  link.hidden = true;
-  document.body.appendChild(link);
-  link.click();
-  window.setTimeout(() => {
-    link.remove();
-    URL.revokeObjectURL(url);
-  }, 0);
+  const { error } = await supabase.rpc("set_booking_attendance", {
+    p_booking_id: scannedBooking.id,
+    p_attendance: attendance,
+  });
+  buttons.forEach((button) => {
+    button.disabled = false;
+  });
+
+  const message = document.getElementById("ticketCheckinMessage");
+  if (error) {
+    if (message) {
+      message.textContent = t("attendance_failed");
+      message.classList.remove("hidden");
+    }
+    return;
+  }
+
+  scannedBooking.attendance = attendance;
+  renderScannedTicketAttendance();
+  if (message) {
+    message.textContent = t("ticket_checkin_saved");
+    message.classList.remove("hidden");
+  }
+}
+
+function clearScannedTicketUrl() {
+  scannedBooking = null;
+  const url = new URL(window.location.href);
+  if (!url.searchParams.has("ticket")) return;
+  url.searchParams.delete("ticket");
+  window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
 }
 
 async function sendConfirmationEmail(email, name, dayName, dateLabel, time) {

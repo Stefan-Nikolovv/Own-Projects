@@ -4,7 +4,7 @@ import {
   findNextWorkout,
   readBookingAccess,
 } from "../../js/booking-access.js";
-import { buildCalendarFile } from "../schedule/schedule-utils.js";
+import { buildGoogleCalendarUrl } from "../schedule/schedule-utils.js";
 
 let nextWorkout = null;
 
@@ -84,23 +84,12 @@ function updateCountdown(startsAt, panel) {
 function downloadNextWorkout() {
   if (!nextWorkout) return;
 
-  const calendar = buildCalendarFile({
+  const calendarUrl = buildGoogleCalendarUrl({
     dayKey: nextWorkout.day_key,
     time: nextWorkout.time,
     title: "Emotion in Motion Training",
   });
-  const blob = new Blob([calendar], { type: "text/calendar;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = `emotion-in-motion-${nextWorkout.day_key}-${nextWorkout.time.replace(":", "")}.ics`;
-  link.hidden = true;
-  document.body.appendChild(link);
-  link.click();
-  window.setTimeout(() => {
-    link.remove();
-    URL.revokeObjectURL(url);
-  }, 0);
+  window.open(calendarUrl, "_blank", "noopener,noreferrer");
 }
 
 function openBookingManager() {

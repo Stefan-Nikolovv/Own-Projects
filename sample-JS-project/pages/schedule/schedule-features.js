@@ -5,7 +5,7 @@ import {
   writeBookingAccess,
 } from "../../js/booking-access.js";
 import {
-  buildCalendarFile,
+  buildGoogleCalendarUrl,
   getManagedBookingStatus,
   toDateKey,
 } from "./schedule-utils.js";
@@ -338,24 +338,13 @@ async function manageItem(item, action, targetSlotId = null) {
 }
 
 function downloadCalendar(item) {
-  const calendar = buildCalendarFile({
+  const calendarUrl = buildGoogleCalendarUrl({
     dayKey: item.day_key,
     time: item.time,
     title: "Emotion in Motion Training",
     durationMinutes: 60,
   });
-  const blob = new Blob([calendar], { type: "text/calendar;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = `emotion-in-motion-${item.day_key}-${item.time.replace(":", "")}.ics`;
-  link.hidden = true;
-  document.body.appendChild(link);
-  link.click();
-  window.setTimeout(() => {
-    link.remove();
-    URL.revokeObjectURL(url);
-  }, 0);
+  window.open(calendarUrl, "_blank", "noopener,noreferrer");
 }
 
 function bindAdminDashboard() {

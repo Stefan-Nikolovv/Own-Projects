@@ -173,3 +173,24 @@ export function buildCalendarFile({
     "",
   ].join("\r\n");
 }
+
+export function buildGoogleCalendarUrl({
+  dayKey,
+  time,
+  title,
+  durationMinutes = 60,
+}) {
+  const start = new Date(`${dayKey}T${time}:00`);
+  const end = new Date(start.getTime() + durationMinutes * 60 * 1000);
+  const stamp = (date) =>
+    date
+      .toISOString()
+      .replaceAll("-", "")
+      .replaceAll(":", "")
+      .replace(/\.\d{3}Z$/, "Z");
+  const url = new URL("https://calendar.google.com/calendar/render");
+  url.searchParams.set("action", "TEMPLATE");
+  url.searchParams.set("text", title);
+  url.searchParams.set("dates", `${stamp(start)}/${stamp(end)}`);
+  return url.toString();
+}

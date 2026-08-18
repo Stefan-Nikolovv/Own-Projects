@@ -152,6 +152,40 @@
         </div>
     </dialog>
 
+    <dialog id="ticketCheckinDialog" class="feature-dialog ticket-checkin-dialog">
+        <div class="feature-dialog-shell ticket-checkin-shell">
+            <button id="closeTicketCheckinBtn" type="button" class="dialog-close" data-i18n-title="close">
+                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+            </button>
+            <p class="dialog-day" data-i18n="ticket_checkin_eyebrow">Ticket check-in</p>
+            <h2 data-i18n="ticket_checkin_title">Training attendance</h2>
+            <p id="ticketCheckinLoading" class="feature-dialog-copy" data-i18n="ticket_checkin_loading">
+                Checking this ticket...
+            </p>
+            <div id="ticketCheckinDetails" class="ticket-checkin-details hidden">
+                <div class="ticket-checkin-icon" aria-hidden="true">
+                    <i class="fa-solid fa-ticket"></i>
+                </div>
+                <div>
+                    <strong id="ticketCheckinName"></strong>
+                    <p id="ticketCheckinDate"></p>
+                    <span id="ticketCheckinStatus" class="managed-status booking"></span>
+                </div>
+            </div>
+            <div id="ticketCheckinActions" class="ticket-checkin-actions hidden">
+                <button type="button" class="ticket-checkin-btn present" data-attendance="present">
+                    <i class="fa-solid fa-check" aria-hidden="true"></i>
+                    <span data-i18n="attendance_present">Present</span>
+                </button>
+                <button type="button" class="ticket-checkin-btn absent" data-attendance="absent">
+                    <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                    <span data-i18n="attendance_absent">Absent</span>
+                </button>
+            </div>
+            <p id="ticketCheckinMessage" class="ticket-share-status hidden" role="status" aria-live="polite"></p>
+        </div>
+    </dialog>
+
     <dialog id="myBookingsDialog" class="feature-dialog">
         <div class="feature-dialog-shell">
             <button id="closeMyBookingsBtn" type="button" class="dialog-close" aria-label="Close">
