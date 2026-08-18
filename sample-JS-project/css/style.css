@@ -1871,7 +1871,7 @@ img { max-width: 100%; height: auto; }
   animation: spots-pop 520ms var(--motion-spring);
 }
 
-.slot-roster-trigger {
+.schedule-page .slot-roster-trigger {
   width: 100%;
   min-height: 46px;
   margin: -6px 0 18px;
@@ -1890,14 +1890,14 @@ img { max-width: 100%; height: auto; }
   transition: transform var(--motion-fast), border-color var(--motion-fast), background var(--motion-fast);
 }
 
-.slot-roster-trigger > i:last-child { color: var(--text-muted); justify-self: end; }
-.slot-roster-trigger > i {
+.schedule-page .slot-roster-trigger > i:last-child { color: var(--text-muted); justify-self: end; }
+.schedule-page .slot-roster-trigger > i {
   display: inline-grid;
   place-items: center;
   opacity: 1;
   visibility: visible;
 }
-.slot-roster-trigger > i:first-child {
+.schedule-page .slot-roster-trigger > i:first-child {
   width: 30px;
   height: 30px;
   border: 1px solid rgba(0, 212, 255, 0.22);
@@ -1905,9 +1905,18 @@ img { max-width: 100%; height: auto; }
   background: rgba(0, 212, 255, 0.11);
   color: var(--cyan) !important;
 }
-.slot-roster-trigger:hover { background: rgba(0, 212, 255, 0.13); border-color: rgba(0, 212, 255, 0.42); }
-.slot-roster-trigger:active { transform: scale(0.985); }
-.slot-roster-trigger.hidden { display: none; }
+.schedule-page .slot-roster-trigger:hover {
+  transform: translateY(-1px);
+  background: rgba(0, 212, 255, 0.12);
+  border-color: rgba(0, 212, 255, 0.42);
+  box-shadow: 0 6px 18px rgba(0, 212, 255, 0.10);
+}
+.schedule-page .slot-roster-trigger:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
+.schedule-page .slot-roster-trigger:active { transform: scale(0.985); }
+.schedule-page .slot-roster-trigger.hidden { display: none; }
 
 @keyframes spots-pop {
   0% { transform: scale(1); }
