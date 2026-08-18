@@ -1,6 +1,6 @@
 import { applyTranslations, t } from "./i18n.js";
 
-const APP_VERSION = "20260804-50";
+const APP_VERSION = "20260804-51";
 
 const routes = {
   "#home": {

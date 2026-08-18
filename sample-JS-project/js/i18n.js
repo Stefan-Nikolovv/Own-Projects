@@ -9,6 +9,10 @@ export const translations = {
     nav_login: "Login",
     nav_logout: "Logout",
     brand_subtitle: "Personal Training",
+    pwa_update_title: "New version ready",
+    pwa_update_text: "Update now for the latest improvements.",
+    pwa_update_action: "Update",
+    pwa_update_later: "Later",
 
     home_title: "Train with Silviya Mihaylova",
     home_subtitle: "Personal Training",
@@ -230,6 +234,10 @@ export const translations = {
     nav_login: "Влизане",
     nav_logout: "Изход",
     brand_subtitle: "Персонални тренировки",
+    pwa_update_title: "Има нова версия",
+    pwa_update_text: "Обнови сега за последните подобрения.",
+    pwa_update_action: "Обнови",
+    pwa_update_later: "По-късно",
 
     home_title: "Тренирай със Силвия Михайлова",
     home_subtitle: "Персонални тренировки",

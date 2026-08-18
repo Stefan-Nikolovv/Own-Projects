@@ -1,4 +1,4 @@
-const CACHE_NAME = "emotion-in-motion-v50";
+const CACHE_NAME = "emotion-in-motion-v51";
 const APP_SHELL = [
   "/",
   "/index.html",
@@ -83,7 +83,12 @@ self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL))
   );
-  self.skipWaiting();
+});
+
+self.addEventListener("message", (event) => {
+  if (event.data?.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
 });
 
 self.addEventListener("activate", (event) => {

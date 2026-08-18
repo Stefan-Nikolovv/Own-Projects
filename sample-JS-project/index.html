@@ -13,7 +13,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" />
-    <link rel="stylesheet" href="css/style.css?v=20260804-50" />
+    <link rel="stylesheet" href="css/style.css?v=20260804-51" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
         integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -116,7 +116,24 @@
         </div>
 
     </footer>
-    <script type="module" src="js/script.js?v=20260804-50" defer></script>
+    <aside id="pwaUpdateToast" class="pwa-update-toast hidden" role="status" aria-live="polite" aria-atomic="true">
+        <span class="pwa-update-icon" aria-hidden="true">
+            <i class="fa-solid fa-rotate"></i>
+        </span>
+        <span class="pwa-update-copy">
+            <strong data-i18n="pwa_update_title">New version ready</strong>
+            <span data-i18n="pwa_update_text">Update now for the latest improvements.</span>
+        </span>
+        <button id="applyPwaUpdateBtn" type="button" class="pwa-update-action">
+            <i class="fa-solid fa-rotate" aria-hidden="true"></i>
+            <span data-i18n="pwa_update_action">Update</span>
+        </button>
+        <button id="dismissPwaUpdateBtn" type="button" class="pwa-update-dismiss" data-i18n-title="pwa_update_later">
+            <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+            <span class="sr-only" data-i18n="pwa_update_later">Later</span>
+        </button>
+    </aside>
+    <script type="module" src="js/script.js?v=20260804-51" defer></script>
 </body>
 
 </html>
