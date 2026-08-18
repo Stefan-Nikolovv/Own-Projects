@@ -3765,11 +3765,12 @@ body.is-offline .schedule-page .booking-search-btn {
   .slot-badge { padding: 5px 9px; }
 
   .slot-dialog {
-    width: 100%;
-    max-width: 100%;
-    max-height: 92dvh;
-    inset: auto 0 0;
-    margin: 0;
+    width: min(560px, calc(100% - 24px));
+    max-width: calc(100% - 24px);
+    max-height: calc(100dvh - 32px);
+    inset: 0;
+    margin: auto;
+    border-radius: 18px;
   }
 
   .booking-ticket-dialog {
@@ -3818,27 +3819,38 @@ body.is-offline .schedule-page .booking-search-btn {
     width: 100%;
     min-width: 0;
     max-width: 100%;
-    max-height: 92dvh;
+    max-height: calc(100dvh - 32px);
     overflow-x: hidden;
     overflow-y: auto;
     overscroll-behavior: contain;
-    padding: 30px 16px calc(20px + env(safe-area-inset-bottom));
-    border-radius: 22px 22px 0 0;
+    padding: 28px 20px 24px;
+    border-radius: 18px;
+    scrollbar-gutter: stable;
   }
 
   .dialog-shell::after {
-    content: '';
-    position: absolute;
-    top: 9px;
-    left: 50%;
-    width: 38px;
-    height: 4px;
-    border-radius: 4px;
-    background: rgba(238, 242, 255, 0.22);
-    transform: translateX(-50%);
+    display: none;
   }
 
-  .dialog-time { font-size: 1.55rem; }
+  .schedule-page .dialog-close {
+    width: 44px;
+    height: 44px;
+    top: 12px;
+    right: 12px;
+    font-size: 1.3rem;
+  }
+
+  .dialog-day { font-size: 0.92rem; }
+  .dialog-time { font-size: 1.8rem; }
+  .dialog-spots { font-size: 0.96rem; }
+
+  .dialog-field {
+    gap: 9px;
+    margin-bottom: 16px;
+  }
+
+  .dialog-field label { font-size: 0.92rem; }
+  .dialog-field-hint { font-size: 0.82rem; line-height: 1.45; }
 
   .dialog-field input,
   .schedule-page .booking-search-control input,
@@ -3858,7 +3870,32 @@ body.is-offline .schedule-page .booking-search-btn {
     font-size: 1.05rem;
   }
 
-  .dialog-field input { height: 46px; }
+  .dialog-field input {
+    width: 100%;
+    height: 52px;
+    min-height: 52px;
+  }
+
+  .schedule-page .slot-roster-trigger {
+    min-height: 52px;
+    font-size: 0.92rem;
+  }
+
+  .remember-details-row,
+  .recurring-options {
+    min-height: 52px;
+  }
+
+  .remember-details-row > label,
+  .toggle-row,
+  .recurring-weeks-label {
+    font-size: 0.88rem;
+  }
+
+  .save-spot-btn {
+    height: 54px;
+    font-size: 0.98rem;
+  }
 
   .page { padding: 22px 16px; border-radius: 22px; }
 

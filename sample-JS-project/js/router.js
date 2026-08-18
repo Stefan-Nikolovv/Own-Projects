@@ -1,6 +1,6 @@
 import { applyTranslations, t } from "./i18n.js";
 
-const APP_VERSION = "20260804-57";
+const APP_VERSION = "20260804-58";
 
 let activePageModule = null;
 let navigationId = 0;
