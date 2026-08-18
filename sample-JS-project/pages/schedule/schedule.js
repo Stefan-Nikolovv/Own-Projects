@@ -29,6 +29,7 @@ import {
   toDateKey,
 } from "./schedule-utils.js";
 import {
+  destroyScheduleFeatures,
   getRecurringWeeks,
   initScheduleFeatures,
   openAdminDashboard,
@@ -99,9 +100,25 @@ export async function init() {
     console.error("Schedule init error:", err);
     const app = document.getElementById("app");
     if (app) {
-      app.innerHTML = `<div class="page"><h1>Error loading schedule</h1><p>${err.message}</p></div>`;
+      const page = document.createElement("div");
+      const heading = document.createElement("h1");
+      page.className = "page";
+      heading.textContent = t("load_failed");
+      page.append(heading);
+      app.replaceChildren(page);
     }
   }
+}
+
+export async function destroy() {
+  await destroyScheduleFeatures();
+  selectedSlot = null;
+  activeTicket = null;
+  scannedBooking = null;
+  editingBookingId = null;
+  pendingRemoveBooking = null;
+  bookingSaveInProgress = false;
+  weekChangeInProgress = false;
 }
 
 async function loadSchedule() {

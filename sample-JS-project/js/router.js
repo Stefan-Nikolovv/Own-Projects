@@ -1,6 +1,10 @@
 import { applyTranslations, t } from "./i18n.js";
 
-const APP_VERSION = "20260804-53";
+const APP_VERSION = "20260804-54";
+
+let activePageModule = null;
+let navigationId = 0;
+let navigationQueue = Promise.resolve();
 
 const routes = {
   "#home": {
@@ -34,12 +38,30 @@ function setActiveLink(currentRoute) {
   });
 }
 
-export async function router() {
+async function cleanupActivePage() {
+  const pageModule = activePageModule;
+  activePageModule = null;
+  await pageModule?.destroy?.();
+}
+
+export function router() {
+  const currentNavigationId = ++navigationId;
+  navigationQueue = navigationQueue
+    .catch(() => {})
+    .then(() => runRoute(currentNavigationId));
+  return navigationQueue;
+}
+
+async function runRoute(currentNavigationId) {
+  if (currentNavigationId !== navigationId) return;
+
   const app = document.getElementById("app");
   const routeName = window.location.hash.replace("#", "") || "home";
   const route = routes[`#${routeName}`];
 
   if (!route) {
+    await cleanupActivePage();
+    if (currentNavigationId !== navigationId) return;
     app.textContent = t("not_found");
     return;
   }
@@ -53,6 +75,11 @@ export async function router() {
     const doc = parser.parseFromString(htmlText, "text/html");
 
     const pageModule = await import(`${route.js}?v=${APP_VERSION}`);
+    if (currentNavigationId !== navigationId) return;
+
+    await cleanupActivePage();
+    if (currentNavigationId !== navigationId) return;
+
     const renderRoute = () => {
       app.replaceChildren(...doc.body.childNodes);
       applyTranslations(app);
@@ -73,6 +100,7 @@ export async function router() {
       renderRoute();
     }
 
+    activePageModule = pageModule;
     if (pageModule.init) {
       if (routeName === "bookings") {
         sessionStorage.setItem("emotion_open_my_bookings", "1");
@@ -82,7 +110,11 @@ export async function router() {
 
     applyTranslations(app);
   } catch (error) {
+    if (currentNavigationId !== navigationId) return;
     console.error("Router error:", error);
+    await cleanupActivePage().catch((cleanupError) => {
+      console.error("Page cleanup error:", cleanupError);
+    });
     app.textContent = t("load_failed");
   }
 }

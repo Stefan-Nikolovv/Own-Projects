@@ -15,6 +15,7 @@ const REMINDER_KEY = "emotion_booking_reminders";
 let featureContext = null;
 let selectedContext = null;
 let realtimeChannel = null;
+let installReadyHandler = null;
 
 export function initScheduleFeatures(context) {
   featureContext = context;
@@ -32,6 +33,22 @@ export function initScheduleFeatures(context) {
     sessionStorage.removeItem("emotion_open_my_bookings");
     window.setTimeout(openMyBookings, 0);
   }
+}
+
+export async function destroyScheduleFeatures() {
+  if (installReadyHandler) {
+    window.removeEventListener("app-install-ready", installReadyHandler);
+    installReadyHandler = null;
+  }
+
+  if (realtimeChannel) {
+    const channel = realtimeChannel;
+    realtimeChannel = null;
+    await supabase.removeChannel(channel);
+  }
+
+  featureContext = null;
+  selectedContext = null;
 }
 
 export function setSelectedSlotContext(context) {
@@ -501,7 +518,11 @@ function syncInstallButton() {
   if (!button) return;
   const standalone = window.matchMedia("(display-mode: standalone)").matches;
   button.classList.toggle("hidden", standalone || !window.deferredInstallPrompt);
-  window.addEventListener("app-install-ready", () => button.classList.remove("hidden"), { once: true });
+  if (installReadyHandler) {
+    window.removeEventListener("app-install-ready", installReadyHandler);
+  }
+  installReadyHandler = () => button.classList.remove("hidden");
+  window.addEventListener("app-install-ready", installReadyHandler, { once: true });
 }
 
 async function installApp() {
