@@ -1,4 +1,4 @@
-const CACHE_NAME = "emotion-in-motion-v47";
+const CACHE_NAME = "emotion-in-motion-v49";
 const APP_SHELL = [
   "/",
   "/index.html",
@@ -56,6 +56,16 @@ async function networkFirstNavigation(request) {
   }
 }
 
+async function networkFirstAsset(request, key = request) {
+  try {
+    const response = await fetch(request);
+    await cacheResponse(key, response);
+    return response;
+  } catch {
+    return (await caches.match(key)) || Response.error();
+  }
+}
+
 async function staleWhileRevalidate(request, key = request) {
   const cache = await caches.open(CACHE_NAME);
   const cached = await cache.match(key);
@@ -102,7 +112,7 @@ self.addEventListener("fetch", (event) => {
 
   if (url.origin === self.location.origin) {
     event.respondWith(
-      staleWhileRevalidate(event.request, normalizedCacheKey(event.request))
+      networkFirstAsset(event.request, normalizedCacheKey(event.request))
     );
     return;
   }

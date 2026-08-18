@@ -4,6 +4,7 @@ export const translations = {
   en: {
     nav_home: "Home",
     nav_schedule: "Schedule",
+    nav_bookings: "Bookings",
     nav_contact: "Contact",
     nav_login: "Login",
     nav_logout: "Logout",
@@ -222,6 +223,7 @@ export const translations = {
   bg: {
     nav_home: "Начало",
     nav_schedule: "График",
+    nav_bookings: "Записвания",
     nav_contact: "Контакти",
     nav_login: "Влизане",
     nav_logout: "Изход",

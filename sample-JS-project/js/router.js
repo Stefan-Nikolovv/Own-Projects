@@ -1,6 +1,6 @@
 import { applyTranslations, t } from "./i18n.js";
 
-const APP_VERSION = "20260804-47";
+const APP_VERSION = "20260804-49";
 
 const routes = {
   "#home": {
@@ -8,6 +8,10 @@ const routes = {
     js: "/pages/home/home.js",
   },
   "#schedule": {
+    html: "/pages/schedule/schedule.html",
+    js: "/pages/schedule/schedule.js",
+  },
+  "#bookings": {
     html: "/pages/schedule/schedule.html",
     js: "/pages/schedule/schedule.js",
   },
@@ -70,6 +74,9 @@ export async function router() {
     }
 
     if (pageModule.init) {
+      if (routeName === "bookings") {
+        sessionStorage.setItem("emotion_open_my_bookings", "1");
+      }
       await pageModule.init();
     }
 

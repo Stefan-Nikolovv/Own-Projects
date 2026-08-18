@@ -4076,7 +4076,7 @@ html.is-route-transitioning #app {
     height: calc(64px + env(safe-area-inset-bottom));
     padding: 6px 8px env(safe-area-inset-bottom);
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 4px;
     background: rgba(6, 8, 16, 0.94);
     border-top: 1px solid rgba(0, 212, 255, 0.18);
@@ -4096,7 +4096,7 @@ html.is-route-transitioning #app {
     justify-content: center;
     gap: 4px;
     color: var(--text-muted);
-    font-size: 0.67rem;
+    font-size: 0.62rem;
     line-height: 1;
     overflow: visible;
   }
@@ -4117,6 +4117,10 @@ html.is-route-transitioning #app {
   .nav-icon {
     display: block;
     font-size: 1rem;
+  }
+
+  .nav-links .nav-primary a.active .nav-icon {
+    transform: translateY(-1px) scale(1.08);
   }
 
   .nav-label {
@@ -4186,6 +4190,12 @@ html.is-route-transitioning #app {
 
   .site-footer {
     margin-bottom: 0;
+  }
+}
+
+@media (min-width: 769px) {
+  .mobile-bookings-link {
+    display: none;
   }
 }
 

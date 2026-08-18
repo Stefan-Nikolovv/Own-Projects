@@ -120,9 +120,17 @@ function bindWaitlistAction() {
 }
 
 function bindMyBookingsDialog() {
+  const dialog = document.getElementById("myBookingsDialog");
   document.getElementById("myBookingsSearchForm")?.addEventListener("submit", (event) => {
     event.preventDefault();
     searchMyBookings();
+  });
+  dialog?.addEventListener("close", () => {
+    if (window.location.hash === "#bookings") {
+      window.history.replaceState(null, "", "#schedule");
+      document.querySelector('.navbar a[href="#bookings"]')?.classList.remove("active");
+      document.querySelector('.navbar a[href="#schedule"]')?.classList.add("active");
+    }
   });
 }
 
