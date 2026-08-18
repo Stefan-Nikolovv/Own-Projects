@@ -19,7 +19,7 @@ test("weekly timetable includes the expanded training hours", () => {
   assert.deepEqual(DAY_SLOT_MAP.Tuesday, ["17:00", "18:00"]);
   assert.deepEqual(DAY_SLOT_MAP.Thursday, ["17:00", "18:00"]);
   assert.deepEqual(DAY_SLOT_MAP.Saturday, ["10:00", "11:00", "12:00"]);
-  assert.deepEqual(DAY_SLOT_MAP.Sunday, ["12:00"]);
+  assert.deepEqual(DAY_SLOT_MAP.Sunday, []);
 });
 
 test("getStartOfWeek returns Monday for weekdays and Sunday", () => {
@@ -50,6 +50,19 @@ test("managed bookings do not label past pending sessions as upcoming", () => {
         attendance: "pending",
         day_key: "2026-05-02",
         time: "10:00",
+      },
+      now
+    ),
+    { key: "booking_past", isPast: true }
+  );
+
+  assert.deepEqual(
+    getManagedBookingStatus(
+      {
+        item_type: "booking",
+        attendance: "present",
+        day_key: "2026-08-12",
+        time: "17:00",
       },
       now
     ),

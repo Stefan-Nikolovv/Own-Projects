@@ -426,6 +426,8 @@ function renderWeek({ animate = false, direction = 0 } = {}) {
   weekGrid.replaceChildren();
 
   state.forEach((day, dayIndex) => {
+    if (!day.slots.length) return;
+
     const dayCard = document.createElement("article");
     dayCard.className = "day-card";
     dayCard.dataset.dayKey = day.key;

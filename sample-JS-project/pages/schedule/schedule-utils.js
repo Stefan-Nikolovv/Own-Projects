@@ -7,7 +7,7 @@ export const DAY_SLOT_MAP = {
   Thursday: ["17:00", "18:00"],
   Friday: ["17:00", "18:00"],
   Saturday: ["10:00", "11:00", "12:00"],
-  Sunday: ["12:00"],
+  Sunday: [],
 };
 
 export function getStartOfWeek(date) {
@@ -54,7 +54,7 @@ export function getManagedBookingStatus(item, now = new Date()) {
   const isPast = isSlotInPast(item.day_key, item.time, now);
   const attendance = item.attendance || "pending";
 
-  if (isPast && (item.item_type === "waitlist" || attendance === "pending")) {
+  if (isPast) {
     return { key: "booking_past", isPast };
   }
 

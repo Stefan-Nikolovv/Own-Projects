@@ -822,11 +822,17 @@ img { max-width: 100%; height: auto; }
 
 .week-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
   transform-origin: center;
   will-change: transform, opacity;
   touch-action: auto;
+}
+
+@media (min-width: 769px) and (max-width: 980px) {
+  .week-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .week-grid-exit-next {
