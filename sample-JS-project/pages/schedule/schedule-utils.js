@@ -120,6 +120,17 @@ export function findNextAvailableSlot(days, now = new Date()) {
     )[0] ?? null;
 }
 
+export function filterRosterBookings(bookings, query) {
+  const needle = String(query ?? "").trim().toLocaleLowerCase();
+  if (!needle) return bookings ?? [];
+
+  return (bookings ?? []).filter((booking) =>
+    [booking.name, booking.phone].some((value) =>
+      String(value ?? "").toLocaleLowerCase().includes(needle)
+    )
+  );
+}
+
 export function applySlotRealtimeUpdate(days, record) {
   if (!record?.id || !record.day_key) return false;
 

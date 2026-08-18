@@ -53,6 +53,12 @@
             <h2 id="dialogTime" class="dialog-time"></h2>
             <p id="dialogSpots" class="dialog-spots"></p>
 
+            <button id="openSlotRosterBtn" type="button" class="slot-roster-trigger hidden">
+                <i class="fa-solid fa-users" aria-hidden="true"></i>
+                <span id="slotRosterTriggerLabel"></span>
+                <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+            </button>
+
             <div class="dialog-field">
                 <label for="clientName" data-i18n="dialog_name_label">Your name</label>
                 <input id="clientName" type="text" autocomplete="name" data-i18n-placeholder="dialog_name_label" placeholder="Your name" />
@@ -104,11 +110,31 @@
                 Cancel edit
             </button>
 
-            <div class="saved-list-wrap">
-                <h3 data-i18n="dialog_saved_names">Saved names</h3>
-                <ul id="savedNamesList" class="saved-names-list"></ul>
-            </div>
         </form>
+    </dialog>
+
+    <dialog id="slotRosterDialog" class="feature-dialog slot-roster-dialog">
+        <div class="feature-dialog-shell slot-roster-shell">
+            <button id="closeSlotRosterBtn" type="button" class="dialog-close" data-i18n-title="close">
+                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                <span class="sr-only" data-i18n="close">Close</span>
+            </button>
+            <p class="dialog-day" data-i18n="slot_roster_eyebrow">Session participants</p>
+            <h2 id="slotRosterTitle" data-i18n="slot_roster_title">Session roster</h2>
+            <div class="slot-roster-summary">
+                <span id="slotRosterCount"></span>
+                <span id="slotRosterCapacity"></span>
+            </div>
+            <label class="slot-roster-search" for="slotRosterSearch">
+                <span data-i18n="slot_roster_search_label">Find a participant</span>
+                <span class="slot-roster-search-control">
+                    <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                    <input id="slotRosterSearch" type="search" autocomplete="off"
+                        data-i18n-placeholder="slot_roster_search_placeholder" placeholder="Name or phone" />
+                </span>
+            </label>
+            <ul id="savedNamesList" class="saved-names-list slot-roster-list"></ul>
+        </div>
     </dialog>
 
     <dialog id="bookingTicketDialog" class="booking-ticket-dialog">

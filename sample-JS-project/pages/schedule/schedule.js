@@ -17,6 +17,7 @@ import {
   getStartOfWeek,
   getAvailabilityLevel,
   findNextAvailableSlot,
+  filterRosterBookings,
   isDateInPast,
   isSlotInPast,
   isToday,
@@ -813,13 +814,14 @@ async function openSlot(dayKey, time) {
     dialogSpots.textContent = `${spotsLeft} / ${slot.capacity}`;
   }
 
+  updateSlotRoster(slot);
+
   if (clientName) clientName.value = "";
   if (clientPhone) clientPhone.value = "";
   if (clientEmail) clientEmail.value = "";
 
   resetBookingForm();
   setBookingDialogAvailability(slot.bookingCount >= slot.capacity && !isOwner);
-  renderSavedNames(slot.bookedUsers);
   clearDialogMessage();
 
   if (dialog && !dialog.open) dialog.showModal();
@@ -830,6 +832,10 @@ function bindDialogActions() {
   const clientName = document.getElementById("clientName");
   const dialog = document.getElementById("slotDialog");
   const cancelEditBtn = document.getElementById("cancelEditBtn");
+  const openRosterBtn = document.getElementById("openSlotRosterBtn");
+  const closeRosterBtn = document.getElementById("closeSlotRosterBtn");
+  const rosterDialog = document.getElementById("slotRosterDialog");
+  const rosterSearch = document.getElementById("slotRosterSearch");
 
   const removeConfirmDialog = document.getElementById("removeConfirmDialog");
   const cancelRemoveBtn = document.getElementById("cancelRemoveBtn");
@@ -848,6 +854,10 @@ function bindDialogActions() {
   if (cancelEditBtn) {
     cancelEditBtn.addEventListener("click", resetBookingForm);
   }
+
+  openRosterBtn?.addEventListener("click", openSlotRoster);
+  closeRosterBtn?.addEventListener("click", () => rosterDialog?.close());
+  rosterSearch?.addEventListener("input", () => renderCurrentRoster());
 
   if (cancelRemoveBtn) {
     cancelRemoveBtn.addEventListener("click", closeRemoveConfirmDialog);
@@ -889,6 +899,7 @@ function bindDialogActions() {
       selectedSlot = null;
       setSelectedSlotContext(null);
       resetBookingForm();
+      if (rosterDialog?.open) rosterDialog.close();
     });
   }
 
@@ -1051,7 +1062,7 @@ async function saveSpot() {
       dialogSpots.textContent = `${spotsLeft} / ${slot.capacity}`;
     }
 
-    renderSavedNames(slot.bookedUsers, newBookingId);
+    updateSlotRoster(slot, newBookingId);
     renderWeek();
     renderAdminActions();
     resetBookingForm();
@@ -1529,6 +1540,65 @@ function renderSavedNames(bookings, highlightedBookingId = null) {
   });
 }
 
+function updateSlotRoster(slot, highlightedBookingId = null) {
+  const trigger = document.getElementById("openSlotRosterBtn");
+  const triggerLabel = document.getElementById("slotRosterTriggerLabel");
+  const count = document.getElementById("slotRosterCount");
+  const capacity = document.getElementById("slotRosterCapacity");
+
+  trigger?.classList.toggle("hidden", !isOwner);
+  if (!isOwner) return;
+
+  const bookingCount = slot?.bookedUsers?.length ?? 0;
+  if (triggerLabel) {
+    triggerLabel.textContent = t("slot_roster_trigger", { count: bookingCount });
+  }
+  if (count) count.textContent = t("slot_roster_count", { count: bookingCount });
+  if (capacity) {
+    capacity.textContent = t("slot_roster_capacity", {
+      count: Math.max(0, (slot?.capacity ?? 0) - bookingCount),
+    });
+  }
+
+  renderCurrentRoster(highlightedBookingId);
+}
+
+function renderCurrentRoster(highlightedBookingId = null) {
+  if (!isOwner || !selectedSlot) return;
+
+  const day = state.find((item) => item.key === selectedSlot.dayKey);
+  const slot = day?.slots.find((item) => item.time === selectedSlot.time);
+  const search = document.getElementById("slotRosterSearch");
+  const filteredBookings = filterRosterBookings(
+    slot?.bookedUsers ?? [],
+    search?.value
+  );
+
+  renderSavedNames(filteredBookings, highlightedBookingId);
+
+  if (search?.value.trim() && filteredBookings.length === 0) {
+    const empty = document.querySelector("#savedNamesList .empty-state");
+    if (empty) empty.textContent = t("slot_roster_no_results");
+  }
+}
+
+function openSlotRoster() {
+  if (!isOwner || !selectedSlot) return;
+
+  const day = state.find((item) => item.key === selectedSlot.dayKey);
+  const slot = day?.slots.find((item) => item.time === selectedSlot.time);
+  const dialog = document.getElementById("slotRosterDialog");
+  const title = document.getElementById("slotRosterTitle");
+  const search = document.getElementById("slotRosterSearch");
+  if (!day || !slot || !dialog) return;
+
+  if (title) title.textContent = `${day.dayName} · ${day.dateLabel} · ${slot.time}`;
+  if (search) search.value = "";
+  updateSlotRoster(slot);
+  if (!dialog.open) dialog.showModal();
+  window.setTimeout(() => search?.focus(), 80);
+}
+
 function playBookingSuccess(button, spotsElement) {
   if (!button) return;
 
@@ -1560,6 +1630,9 @@ function handleEditBooking(currentUser) {
   if (cancelEditBtn) cancelEditBtn.classList.remove("hidden");
 
   clearDialogMessage();
+
+  const rosterDialog = document.getElementById("slotRosterDialog");
+  if (rosterDialog?.open) rosterDialog.close();
 
   const fieldToScroll = nameEl || telEl;
   fieldToScroll?.scrollIntoView({
@@ -1631,7 +1704,7 @@ async function confirmRemoveBooking() {
     dialogSpots.textContent = `${spotsLeft} / ${slot.capacity}`;
   }
 
-  renderSavedNames(slot.bookedUsers);
+  updateSlotRoster(slot);
   renderWeek();
   renderAdminActions();
   closeRemoveConfirmDialog();

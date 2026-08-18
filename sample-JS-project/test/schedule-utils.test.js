@@ -14,6 +14,7 @@ import {
   buildCalendarFile,
   buildGoogleCalendarUrl,
   findNextAvailableSlot,
+  filterRosterBookings,
   getAvailabilityLevel,
   getManagedBookingStatus,
   getStartOfWeek,
@@ -132,6 +133,18 @@ test("nearest available slot skips past, locked, and full sessions", () => {
   ];
 
   assert.equal(findNextAvailableSlot(days, now)?.slot.id, 4);
+});
+
+test("admin roster search matches a participant by name or phone", () => {
+  const bookings = [
+    { id: "one", name: "Роси", phone: "0878698298" },
+    { id: "two", name: "Test User", phone: "09888545390" },
+  ];
+
+  assert.deepEqual(filterRosterBookings(bookings, "рос"), [bookings[0]]);
+  assert.deepEqual(filterRosterBookings(bookings, "45390"), [bookings[1]]);
+  assert.deepEqual(filterRosterBookings(bookings, "  "), bookings);
+  assert.deepEqual(filterRosterBookings(bookings, "missing"), []);
 });
 
 test("realtime slot updates patch only the matching visible session", () => {

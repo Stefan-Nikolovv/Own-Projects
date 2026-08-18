@@ -1871,6 +1871,31 @@ img { max-width: 100%; height: auto; }
   animation: spots-pop 520ms var(--motion-spring);
 }
 
+.slot-roster-trigger {
+  width: 100%;
+  min-height: 46px;
+  margin: -6px 0 18px;
+  padding: 0 13px;
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) 18px;
+  align-items: center;
+  gap: 9px;
+  border: 1px solid rgba(0, 212, 255, 0.24);
+  border-radius: 8px;
+  background: rgba(0, 212, 255, 0.08);
+  color: var(--text);
+  font: 700 0.84rem 'Inter', sans-serif;
+  text-align: left;
+  cursor: pointer;
+  transition: transform var(--motion-fast), border-color var(--motion-fast), background var(--motion-fast);
+}
+
+.slot-roster-trigger > i:first-child { color: var(--cyan); }
+.slot-roster-trigger > i:last-child { color: var(--text-muted); justify-self: end; }
+.slot-roster-trigger:hover { background: rgba(0, 212, 255, 0.13); border-color: rgba(0, 212, 255, 0.42); }
+.slot-roster-trigger:active { transform: scale(0.985); }
+.slot-roster-trigger.hidden { display: none; }
+
 @keyframes spots-pop {
   0% { transform: scale(1); }
   45% { transform: scale(1.18); }
@@ -2086,19 +2111,6 @@ img { max-width: 100%; height: auto; }
   border-color: rgba(255, 255, 255, 0.22);
 }
 
-.saved-list-wrap {
-  overflow: visible;
-}
-
-.saved-list-wrap h3 {
-  margin-bottom: 10px;
-  font-size: 0.78rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.10em;
-  color: var(--text-muted);
-}
-
 .saved-names-list {
   width: 100%;
   min-width: 0;
@@ -2109,6 +2121,79 @@ img { max-width: 100%; height: auto; }
   overflow-x: hidden;
   overflow-y: auto;
   padding-right: 2px;
+}
+
+.slot-roster-shell {
+  display: grid;
+  grid-template-rows: auto auto auto auto minmax(0, 1fr);
+  overflow: hidden;
+}
+
+.slot-roster-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 2px 0 18px;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.slot-roster-summary span {
+  padding: 6px 9px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.slot-roster-search {
+  display: grid;
+  gap: 7px;
+  margin-bottom: 14px;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.slot-roster-search-control {
+  position: relative;
+  display: block;
+}
+
+.slot-roster-search-control > i {
+  position: absolute;
+  left: 13px;
+  top: 50%;
+  z-index: 1;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.schedule-page .slot-roster-search input {
+  width: 100%;
+  min-width: 0;
+  height: 48px;
+  margin: 0;
+  padding: 0 13px 0 40px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  outline: none;
+  background: #111521;
+  color: var(--text);
+  font: 600 0.9rem 'Inter', sans-serif;
+}
+
+.schedule-page .slot-roster-search input:focus {
+  border-color: rgba(0, 212, 255, 0.44);
+  box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.09);
+}
+
+.slot-roster-list {
+  max-height: none;
+  min-height: 90px;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
 }
 
 .saved-names-list li:not(.saved-user-item) {
@@ -3056,6 +3141,11 @@ img { max-width: 100%; height: auto; }
     padding: 24px 16px calc(24px + env(safe-area-inset-bottom));
   }
 
+  .slot-roster-shell {
+    min-height: 68vh;
+    max-height: 88vh;
+  }
+
   .managed-booking-actions { display: grid; grid-template-columns: 1fr 1fr; }
   .managed-move-select { grid-column: 1 / -1; width: 100%; min-height: 44px; font-size: 16px; }
   .managed-action { min-height: 44px; justify-content: center; }
@@ -3074,7 +3164,8 @@ img { max-width: 100%; height: auto; }
 [data-theme="light"] .feature-dialog-shell,
 [data-theme="light"] .recurring-weeks-label select,
 [data-theme="light"] .managed-move-select,
-[data-theme="light"] .booking-search-control input {
+[data-theme="light"] .booking-search-control input,
+[data-theme="light"] .slot-roster-search input {
   background: #f7f9fc;
   color: #131722;
 }
