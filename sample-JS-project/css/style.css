@@ -865,6 +865,16 @@ img { max-width: 100%; height: auto; }
   color: var(--teal);
 }
 
+.schedule-status.info {
+  border-color: rgba(255, 207, 51, 0.28);
+  background: rgba(255, 207, 51, 0.08);
+  color: #ffdf6b;
+}
+
+[data-theme="light"] .schedule-status.info {
+  color: #7a5d00;
+}
+
 .schedule-page .week-nav-controls {
   display: grid;
   grid-template-columns: 44px minmax(162px, auto) 44px;
@@ -1386,6 +1396,61 @@ img { max-width: 100%; height: auto; }
 /* PWA UPDATE                                                          */
 /* ------------------------------------------------------------------ */
 
+.connection-status {
+  position: fixed;
+  z-index: 510;
+  top: 84px;
+  left: 50%;
+  width: min(430px, calc(100vw - 32px));
+  min-height: 58px;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  padding: 10px 13px;
+  border: 1px solid;
+  border-radius: 8px;
+  background: rgba(11, 14, 24, 0.97);
+  color: var(--text);
+  box-shadow: 0 14px 38px rgba(0, 0, 0, 0.40);
+  transform: translateX(-50%);
+  animation: connection-status-enter 360ms var(--motion-spring) both;
+}
+
+.connection-status.hidden { display: none; }
+
+.connection-status > i {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+}
+
+.connection-status > span {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.connection-status strong { font-size: 0.80rem; }
+.connection-status small { color: var(--text-muted); font-size: 0.70rem; line-height: 1.35; }
+
+.connection-status.is-offline { border-color: rgba(255, 207, 51, 0.30); }
+.connection-status.is-offline > i { background: rgba(255, 207, 51, 0.11); color: #ffdf6b; }
+.connection-status.is-online { border-color: rgba(0, 229, 176, 0.30); }
+.connection-status.is-online > i { background: rgba(0, 229, 176, 0.10); color: var(--teal); }
+
+@keyframes connection-status-enter {
+  from { opacity: 0; transform: translate(-50%, -12px); }
+}
+
+body.is-offline .schedule-page .save-spot-btn,
+body.is-offline .schedule-page .waitlist-btn,
+body.is-offline .schedule-page .booking-search-btn {
+  filter: saturate(0.45);
+}
+
 .pwa-update-toast {
   position: fixed;
   z-index: 500;
@@ -1479,6 +1544,11 @@ img { max-width: 100%; height: auto; }
 }
 
 @media (max-width: 768px) {
+  .connection-status {
+    top: 70px;
+    width: calc(100vw - 24px);
+  }
+
   .pwa-update-toast {
     right: 12px;
     bottom: calc(76px + env(safe-area-inset-bottom));
@@ -1500,9 +1570,16 @@ img { max-width: 100%; height: auto; }
   box-shadow: 0 16px 42px rgba(10, 16, 30, 0.16);
 }
 
+[data-theme="light"] .connection-status {
+  background: rgba(255, 255, 255, 0.98);
+  color: var(--text);
+  box-shadow: 0 12px 34px rgba(10, 16, 30, 0.14);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .pwa-update-toast,
-  .pwa-update-action.is-updating i {
+  .pwa-update-action.is-updating i,
+  .connection-status {
     animation: none;
   }
 }

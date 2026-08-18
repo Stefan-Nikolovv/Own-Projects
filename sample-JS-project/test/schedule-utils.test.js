@@ -13,6 +13,7 @@ import {
   applySlotRealtimeUpdate,
   buildCalendarFile,
   buildGoogleCalendarUrl,
+  createPublicScheduleSnapshot,
   findNextAvailableSlot,
   filterRosterBookings,
   getAvailabilityLevel,
@@ -145,6 +146,36 @@ test("admin roster search matches a participant by name or phone", () => {
   assert.deepEqual(filterRosterBookings(bookings, "45390"), [bookings[1]]);
   assert.deepEqual(filterRosterBookings(bookings, "  "), bookings);
   assert.deepEqual(filterRosterBookings(bookings, "missing"), []);
+});
+
+test("offline schedule snapshots contain no client details", () => {
+  const snapshot = createPublicScheduleSnapshot(
+    [
+      {
+        key: "2026-08-19",
+        stableDayKey: "Wednesday",
+        locked: false,
+        slots: [
+          {
+            id: "slot-a",
+            time: "17:00",
+            capacity: 14,
+            bookingCount: 2,
+            locked: false,
+            bookedUsers: [
+              { name: "Private Name", phone: "0888123456", email: "private@example.com" },
+            ],
+          },
+        ],
+      },
+    ],
+    "2026-08-17",
+    123
+  );
+
+  assert.equal(snapshot.weekStart, "2026-08-17");
+  assert.equal(snapshot.days[0].slots[0].bookingCount, 2);
+  assert.doesNotMatch(JSON.stringify(snapshot), /Private Name|0888123456|private@example/);
 });
 
 test("realtime slot updates patch only the matching visible session", () => {

@@ -131,6 +131,25 @@ export function filterRosterBookings(bookings, query) {
   );
 }
 
+export function createPublicScheduleSnapshot(days, weekStart, savedAt = Date.now()) {
+  return {
+    weekStart,
+    savedAt,
+    days: (days ?? []).map((day) => ({
+      key: day.key,
+      stableDayKey: day.stableDayKey,
+      locked: Boolean(day.locked),
+      slots: (day.slots ?? []).map((slot) => ({
+        id: slot.id,
+        time: slot.time,
+        capacity: slot.capacity,
+        bookingCount: slot.bookingCount,
+        locked: Boolean(slot.locked),
+      })),
+    })),
+  };
+}
+
 export function applySlotRealtimeUpdate(days, record) {
   if (!record?.id || !record.day_key) return false;
 

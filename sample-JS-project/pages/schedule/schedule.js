@@ -13,6 +13,7 @@ import {
   addDays,
   applySlotRealtimeUpdate,
   buildGoogleCalendarUrl,
+  createPublicScheduleSnapshot,
   getStableDayKey,
   getStartOfWeek,
   getAvailabilityLevel,
@@ -45,6 +46,9 @@ let weekChangeInProgress = false;
 let activeTicket = null;
 let scannedBooking = null;
 let bookingSaveInProgress = false;
+let scheduleLoadedFromSnapshot = false;
+
+const SCHEDULE_SNAPSHOT_KEY = "emotion_public_schedule_snapshot_v1";
 
 export async function init() {
   try {
@@ -69,6 +73,9 @@ export async function init() {
     state = await loadSchedule();
     renderWeekNav();
     renderWeek({ animate: true });
+    if (scheduleLoadedFromSnapshot) {
+      showScheduleStatus(t("offline_schedule_snapshot"), "info");
+    }
     renderAdminActions();
     bindNextAvailableAction();
     bindDialogActions();
@@ -130,12 +137,14 @@ async function loadSchedule() {
 
   if (error) {
     console.error("Failed to load schedule:", error.message);
-    return buildEmptyWeek(weekDates);
+    const snapshot = readScheduleSnapshot(weekDates);
+    scheduleLoadedFromSnapshot = Boolean(snapshot);
+    return snapshot ?? buildEmptyWeek(weekDates);
   }
 
   const legacyBookingCounts = await loadLegacyBookingCounts(slotsData);
 
-  return weekDates.map((date) => {
+  const nextState = weekDates.map((date) => {
     const dayKey = toDateKey(date);
     const stableDayKey = getStableDayKey(date);
     const times = DAY_SLOT_MAP[stableDayKey] || [];
@@ -165,6 +174,57 @@ async function loadSchedule() {
       }),
     };
   });
+
+  scheduleLoadedFromSnapshot = false;
+  saveScheduleSnapshot(nextState, weekDates[0]);
+  return nextState;
+}
+
+function saveScheduleSnapshot(days, weekStartDate) {
+  try {
+    const snapshot = createPublicScheduleSnapshot(
+      days,
+      toDateKey(weekStartDate)
+    );
+    localStorage.setItem(SCHEDULE_SNAPSHOT_KEY, JSON.stringify(snapshot));
+  } catch (error) {
+    console.warn("Schedule snapshot could not be saved:", error.message);
+  }
+}
+
+function readScheduleSnapshot(weekDates) {
+  try {
+    const snapshot = JSON.parse(localStorage.getItem(SCHEDULE_SNAPSHOT_KEY));
+    if (!snapshot || snapshot.weekStart !== toDateKey(weekDates[0])) return null;
+
+    return weekDates.map((date) => {
+      const dayKey = toDateKey(date);
+      const stableDayKey = getStableDayKey(date);
+      const cachedDay = snapshot.days?.find((day) => day.key === dayKey);
+
+      return {
+        key: dayKey,
+        stableDayKey,
+        dayName: formatDayName(date),
+        dateLabel: formatDateLabel(date),
+        locked: Boolean(cachedDay?.locked),
+        slots: (DAY_SLOT_MAP[stableDayKey] || []).map((time) => {
+          const cachedSlot = cachedDay?.slots?.find((slot) => slot.time === time);
+          return {
+            id: cachedSlot?.id ?? null,
+            time,
+            capacity: cachedSlot?.capacity ?? CAPACITY,
+            locked: Boolean(cachedSlot?.locked),
+            bookingCount: cachedSlot?.bookingCount ?? 0,
+            bookedUsers: [],
+          };
+        }),
+      };
+    });
+  } catch (error) {
+    console.warn("Schedule snapshot could not be read:", error.message);
+    return null;
+  }
 }
 
 async function loadLegacyBookingCounts(slotsData) {
@@ -772,6 +832,11 @@ function showDayLockConfirmation(dayKey, locked) {
 }
 
 async function openSlot(dayKey, time) {
+  if (!navigator.onLine) {
+    showScheduleStatus(t("offline_read_only"), "info");
+    return;
+  }
+
   const spinner = document.getElementById("slotSpinner");
   if (spinner) spinner.classList.remove("hidden");
 
@@ -924,6 +989,11 @@ function bindDialogActions() {
 
 async function saveSpot() {
   if (!selectedSlot || bookingSaveInProgress) return;
+
+  if (!navigator.onLine) {
+    showDialogMessage(t("offline_action"));
+    return;
+  }
 
   const nameInput = document.getElementById("clientName");
   const phoneInput = document.getElementById("clientPhone");
