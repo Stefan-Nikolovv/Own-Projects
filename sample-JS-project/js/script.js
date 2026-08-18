@@ -21,12 +21,18 @@ function initMobileInputZoomGuard() {
   const isFormControl = (target) =>
     target instanceof Element &&
     Boolean(target.closest("input, textarea, select, [contenteditable='true']"));
+  const lockZoomForControl = (event) => {
+    if (isFormControl(event.target)) viewport.content = lockedContent;
+  };
 
   document.addEventListener(
     "pointerdown",
-    (event) => {
-      if (isFormControl(event.target)) viewport.content = lockedContent;
-    },
+    lockZoomForControl,
+    { capture: true, passive: true }
+  );
+  document.addEventListener(
+    "touchstart",
+    lockZoomForControl,
     { capture: true, passive: true }
   );
   document.addEventListener("focusin", (event) => {

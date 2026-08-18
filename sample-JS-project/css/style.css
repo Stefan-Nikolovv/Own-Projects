@@ -50,6 +50,8 @@ body {
 html {
   max-width: 100%;
   overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 /* Aurora animated background blobs */
@@ -4428,7 +4430,9 @@ html.is-route-transitioning #app {
 
   .navbar {
     min-height: 62px;
-    padding: 8px 12px;
+    padding: calc(8px + env(safe-area-inset-top))
+      max(12px, env(safe-area-inset-right)) 8px
+      max(12px, env(safe-area-inset-left));
     flex-direction: row;
     align-items: center;
     gap: 10px;
@@ -4501,7 +4505,8 @@ html.is-route-transitioning #app {
     right: 0;
     bottom: 0;
     height: calc(72px + env(safe-area-inset-bottom));
-    padding: 6px 8px env(safe-area-inset-bottom);
+    padding: 6px max(8px, env(safe-area-inset-right))
+      env(safe-area-inset-bottom) max(8px, env(safe-area-inset-left));
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 4px;
@@ -4559,7 +4564,8 @@ html.is-route-transitioning #app {
 
   #app {
     min-height: calc(100dvh - 126px);
-    padding: 16px 12px 28px;
+    padding: 16px max(12px, env(safe-area-inset-right)) 28px
+      max(12px, env(safe-area-inset-left));
   }
 
   .schedule-header {
@@ -4654,6 +4660,30 @@ html.is-route-transitioning #app {
 
   .site-footer {
     margin-bottom: 0;
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+}
+
+@media (max-width: 768px), (hover: none) and (pointer: coarse) and (max-width: 1024px) {
+  .slot-dialog {
+    width: min(
+      560px,
+      calc(100% - 24px - env(safe-area-inset-left) - env(safe-area-inset-right))
+    );
+    max-width: calc(
+      100% - 24px - env(safe-area-inset-left) - env(safe-area-inset-right)
+    );
+    max-height: calc(
+      100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom)
+    );
+  }
+
+  .dialog-shell {
+    max-height: calc(
+      100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom)
+    );
+    padding-bottom: calc(24px + env(safe-area-inset-bottom));
   }
 }
 
@@ -4663,8 +4693,13 @@ html.is-route-transitioning #app {
   }
 
   .slot-dialog {
-    width: min(680px, calc(100% - 32px));
-    max-width: calc(100% - 32px);
+    width: min(
+      680px,
+      calc(100% - 32px - env(safe-area-inset-left) - env(safe-area-inset-right))
+    );
+    max-width: calc(
+      100% - 32px - env(safe-area-inset-left) - env(safe-area-inset-right)
+    );
   }
 
   .dialog-field input,
