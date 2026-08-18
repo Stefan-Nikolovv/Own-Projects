@@ -1,4 +1,28 @@
 <section class="page home-page">
+    <section id="nextWorkoutPanel" class="next-workout-panel hidden" aria-live="polite">
+        <div class="next-workout-icon" aria-hidden="true">
+            <i class="fa-solid fa-bolt"></i>
+        </div>
+        <div class="next-workout-main">
+            <div class="next-workout-heading">
+                <p data-i18n="next_workout_title">Your next workout</p>
+                <span id="nextWorkoutCountdown" class="next-workout-countdown"></span>
+            </div>
+            <strong id="nextWorkoutDate" class="next-workout-date"></strong>
+            <span id="nextWorkoutName" class="next-workout-name"></span>
+        </div>
+        <div class="next-workout-actions">
+            <button id="nextWorkoutCalendarBtn" type="button" class="next-workout-action" data-i18n-title="add_calendar">
+                <i class="fa-solid fa-calendar-plus" aria-hidden="true"></i>
+                <span data-i18n="add_calendar">Add to calendar</span>
+            </button>
+            <button id="nextWorkoutManageBtn" type="button" class="next-workout-action next-workout-manage">
+                <i class="fa-solid fa-sliders" aria-hidden="true"></i>
+                <span data-i18n="manage_booking">Manage</span>
+            </button>
+        </div>
+    </section>
+
     <section class="hero-card">
         <div class="hero-media">
             <img src="./assets/img/633924370_33756133897334957_3532156883998730759_n.jpg" alt="Trainer visit card"

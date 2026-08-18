@@ -1,6 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
+import { findNextWorkout } from "../js/booking-access.js";
+
 import {
   DAY_SLOT_MAP,
   addDays,
@@ -190,4 +192,16 @@ test("calendar export creates a valid event shell", () => {
   assert.match(calendar, /UID:2026-08-05-1700@emotion-in-motion/);
   assert.match(calendar, /SUMMARY:Emotion in Motion Training/);
   assert.match(calendar, /END:VCALENDAR/);
+});
+
+test("next workout selects the nearest future active booking", () => {
+  const now = new Date(2026, 7, 18, 12, 0, 0);
+  const items = [
+    { item_type: "waitlist", day_key: "2026-08-18", time: "17:00" },
+    { item_type: "booking", day_key: "2026-08-20", time: "18:00" },
+    { item_type: "booking", day_key: "2026-08-19", time: "17:00" },
+    { item_type: "booking", day_key: "2026-08-17", time: "17:00" },
+  ];
+
+  assert.equal(findNextWorkout(items, now)?.day_key, "2026-08-19");
 });

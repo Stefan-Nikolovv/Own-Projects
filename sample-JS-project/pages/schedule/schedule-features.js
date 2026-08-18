@@ -1,12 +1,15 @@
 import { supabase } from "../../js/supabase.js";
 import { t, getLocale } from "../../js/i18n.js";
 import {
+  readBookingAccess,
+  writeBookingAccess,
+} from "../../js/booking-access.js";
+import {
   buildCalendarFile,
   getManagedBookingStatus,
   toDateKey,
 } from "./schedule-utils.js";
 
-const ACCESS_KEY = "emotion_booking_access";
 const REMINDER_KEY = "emotion_booking_reminders";
 
 let featureContext = null;
@@ -25,6 +28,10 @@ export function initScheduleFeatures(context) {
   syncInstallButton();
   bindRealtimeNotifications();
   if (readAccessRecords().length) loadMyBookings();
+  if (sessionStorage.getItem("emotion_open_my_bookings") === "1") {
+    sessionStorage.removeItem("emotion_open_my_bookings");
+    window.setTimeout(openMyBookings, 0);
+  }
 }
 
 export function setSelectedSlotContext(context) {
@@ -525,15 +532,11 @@ function createIconButton(icon, label, action, tone = "") {
 }
 
 function readAccessRecords() {
-  try {
-    return dedupeAccess(JSON.parse(localStorage.getItem(ACCESS_KEY) || "[]"));
-  } catch {
-    return [];
-  }
+  return readBookingAccess();
 }
 
 function writeAccessRecords(records) {
-  localStorage.setItem(ACCESS_KEY, JSON.stringify(dedupeAccess(records).slice(-40)));
+  writeBookingAccess(records);
 }
 
 function dedupeAccess(records) {

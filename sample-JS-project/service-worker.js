@@ -1,4 +1,4 @@
-const CACHE_NAME = "emotion-in-motion-v40";
+const CACHE_NAME = "emotion-in-motion-v41";
 const APP_SHELL = [
   "/",
   "/index.html",
@@ -6,6 +6,7 @@ const APP_SHELL = [
   "/service-worker.js",
   "/css/style.css",
   "/js/config.js",
+  "/js/booking-access.js",
   "/js/i18n.js",
   "/js/main.js",
   "/js/router.js",

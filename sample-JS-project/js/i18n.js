@@ -22,6 +22,11 @@ export const translations = {
       "Choose a day, open the slot, enter your name, and save your spot.",
     home_weekly_plan_title: "Weekly plan",
     home_weekly_plan_text: "Clear day-by-day schedule from Monday to Sunday.",
+    next_workout_title: "Your next workout",
+    next_workout_in_hours: "In {count}h",
+    next_workout_tomorrow: "Tomorrow",
+    next_workout_in_days: "In {count} days",
+    manage_booking: "Manage",
 
     schedule_title: "Weekly Schedule",
     schedule_subtitle: "Choose a slot and save your spot.",
@@ -211,6 +216,11 @@ export const translations = {
       "Избери ден, отвори часа, въведи името си и запази място.",
     home_weekly_plan_title: "Седмичен план",
     home_weekly_plan_text: "Ясен график по дни от понеделник до неделя.",
+    next_workout_title: "Следваща тренировка",
+    next_workout_in_hours: "След {count} ч.",
+    next_workout_tomorrow: "Утре",
+    next_workout_in_days: "След {count} дни",
+    manage_booking: "Управление",
 
     schedule_title: "Седмичен график",
     schedule_subtitle: "Избери час и запази своето място.",
@@ -420,6 +430,10 @@ export function applyTranslations(root = document) {
 
   root.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
     el.setAttribute("placeholder", t(el.dataset.i18nPlaceholder));
+  });
+
+  root.querySelectorAll("[data-i18n-title]").forEach((el) => {
+    el.setAttribute("title", t(el.dataset.i18nTitle));
   });
 }
 
