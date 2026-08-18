@@ -4437,7 +4437,7 @@ html.is-route-transitioning #app {
 
 @media (max-width: 768px), (hover: none) and (pointer: coarse) and (max-width: 1024px) {
   html {
-    font-size: 18px;
+    font-size: 19px;
   }
 
   body {
@@ -4585,13 +4585,13 @@ html.is-route-transitioning #app {
 
   #app {
     min-height: calc(100dvh - 126px);
-    padding: 16px max(12px, env(safe-area-inset-right)) 28px
-      max(12px, env(safe-area-inset-left));
+    padding: 18px max(18px, env(safe-area-inset-right)) 32px
+      max(18px, env(safe-area-inset-left));
   }
 
   .schedule-header {
     gap: 12px;
-    margin-bottom: 12px;
+    margin-bottom: 16px;
   }
 
   .schedule-header > div:first-child {
@@ -4605,7 +4605,7 @@ html.is-route-transitioning #app {
 
   .schedule-page h1 {
     margin: 0;
-    font-size: 1.78rem;
+    font-size: 1.9rem;
   }
 
   .schedule-page .week-nav-controls {
@@ -4634,49 +4634,56 @@ html.is-route-transitioning #app {
 
   .schedule-page .next-available-btn {
     grid-column: 1 / -1;
-    min-height: 54px;
-    font-size: 0.94rem;
+    min-height: 58px;
+    font-size: 1rem;
   }
 
   .schedule-page .feature-action {
-    min-height: 52px;
-    font-size: 0.9rem;
+    min-height: 56px;
+    font-size: 0.96rem;
   }
 
   .schedule-page .feature-action i,
   .schedule-page .next-available-btn i {
-    font-size: 1.08rem;
+    font-size: 1.18rem;
+  }
+
+  .week-grid {
+    gap: 18px;
   }
 
   .day-card {
-    padding: 18px;
-    border-radius: 12px;
+    padding: 20px;
+    border-radius: 16px;
   }
 
-  .day-name { font-size: 1.05rem; }
-  .day-date { font-size: 0.9rem; }
-  .today-badge { font-size: 0.7rem; }
+  .day-card-header { margin-bottom: 18px; }
+  .day-name { font-size: 1.12rem; }
+  .day-date { font-size: 0.95rem; }
+  .today-badge { font-size: 0.74rem; }
+  .slot-list { gap: 12px; }
 
   .schedule-page .slot-btn {
-    padding: 16px;
+    min-height: 86px;
+    padding: 18px;
   }
 
-  .slot-time { font-size: 1.12rem; }
-  .slot-meta { font-size: 0.92rem; }
-  .slot-badge { font-size: 0.76rem; }
-  .day-locked-message { font-size: 0.94rem; }
+  .slot-time { font-size: 1.2rem; }
+  .slot-meta { font-size: 1rem; }
+  .slot-badge { font-size: 0.82rem; }
+  .day-locked-message { font-size: 1rem; }
 
   .schedule-page .day-lock-btn {
-    width: 52px;
-    height: 52px;
-    font-size: 1.15rem;
+    width: 56px;
+    height: 56px;
+    font-size: 1.22rem;
   }
 
   .schedule-page .slot-lock-btn {
-    width: 36px;
-    height: 36px;
-    min-height: 36px;
-    font-size: 0.86rem;
+    width: 40px;
+    height: 40px;
+    min-height: 40px;
+    font-size: 0.92rem;
   }
 
   .site-footer {
@@ -4802,11 +4809,36 @@ html.is-route-transitioning #app {
   #myBookingsDialog .booking-search-form > label {
     font-size: 0.94rem;
   }
+
+  .dialog-field input,
+  .schedule-page .booking-search-control input,
+  .schedule-page .slot-roster-search input,
+  .recurring-weeks-label select,
+  .managed-move-select {
+    font-size: 19px;
+  }
+
+  .dialog-field input,
+  .schedule-page .booking-search-control input,
+  .schedule-page .booking-search-btn,
+  .schedule-page .slot-roster-search input {
+    height: 58px;
+    min-height: 58px;
+  }
+
+  .booking-search-control {
+    grid-template-columns: minmax(0, 1fr) 58px;
+  }
+
+  .schedule-page .booking-search-btn {
+    width: 58px;
+    min-width: 58px;
+  }
 }
 
 @media (hover: none) and (pointer: coarse) and (min-width: 769px) and (max-width: 1024px) {
   html {
-    font-size: 20px;
+    font-size: 21px;
   }
 
   .slot-dialog {
@@ -4824,7 +4856,7 @@ html.is-route-transitioning #app {
   .schedule-page .slot-roster-search input,
   .recurring-weeks-label select,
   .managed-move-select {
-    font-size: 20px;
+    font-size: 21px;
   }
 }
 

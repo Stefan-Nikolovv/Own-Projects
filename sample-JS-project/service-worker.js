@@ -1,4 +1,4 @@
-const CACHE_NAME = "emotion-in-motion-v61";
+const CACHE_NAME = "emotion-in-motion-v62";
 const APP_SHELL = [
   "/",
   "/index.html",
