@@ -77,6 +77,21 @@
                 <small class="dialog-field-hint" data-i18n="dialog_email_hint">A confirmation email will be sent to this address.</small>
             </div>
 
+            <div id="rememberDetailsRow" class="remember-details-row">
+                <label for="rememberBookingDetails">
+                    <input id="rememberBookingDetails" type="checkbox" />
+                    <span class="remember-check" aria-hidden="true">
+                        <i class="fa-solid fa-check"></i>
+                    </span>
+                    <span data-i18n="remember_details">Remember details on this device</span>
+                </label>
+                <button id="clearRememberedDetailsBtn" type="button" class="remember-details-clear hidden"
+                    data-i18n-title="clear_remembered_details">
+                    <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
+                    <span class="sr-only" data-i18n="clear_remembered_details">Clear remembered details</span>
+                </button>
+            </div>
+
             <p id="dialogMessage" class="dialog-message hidden"></p>
 
             <div id="recurringOptions" class="recurring-options">

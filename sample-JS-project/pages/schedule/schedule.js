@@ -5,7 +5,10 @@ import emailjs from "https://cdn.jsdelivr.net/npm/@emailjs/browser@4/+esm";
 import QRCode from "https://cdn.jsdelivr.net/npm/qrcode@1.5.4/+esm";
 import {
   buildTicketPayload,
+  clearRememberedBookingProfile,
   getBookingReference,
+  readRememberedBookingProfile,
+  writeRememberedBookingProfile,
 } from "../../js/booking-access.js";
 import {
   CAPACITY,
@@ -887,6 +890,7 @@ async function openSlot(dayKey, time) {
   if (clientEmail) clientEmail.value = "";
 
   resetBookingForm();
+  hydrateRememberedBookingProfile();
   setBookingDialogAvailability(slot.bookingCount >= slot.capacity && !isOwner);
   clearDialogMessage();
 
@@ -907,6 +911,7 @@ function bindDialogActions() {
   const closeRosterBtn = document.getElementById("closeSlotRosterBtn");
   const rosterDialog = document.getElementById("slotRosterDialog");
   const rosterSearch = document.getElementById("slotRosterSearch");
+  const clearRememberedBtn = document.getElementById("clearRememberedDetailsBtn");
 
   const removeConfirmDialog = document.getElementById("removeConfirmDialog");
   const cancelRemoveBtn = document.getElementById("cancelRemoveBtn");
@@ -929,6 +934,7 @@ function bindDialogActions() {
   openRosterBtn?.addEventListener("click", openSlotRoster);
   closeRosterBtn?.addEventListener("click", () => rosterDialog?.close());
   rosterSearch?.addEventListener("input", () => renderCurrentRoster());
+  clearRememberedBtn?.addEventListener("click", clearRememberedDetails);
 
   if (cancelRemoveBtn) {
     cancelRemoveBtn.addEventListener("click", closeRemoveConfirmDialog);
@@ -1119,6 +1125,7 @@ async function saveSpot() {
       });
       newBookingId = booking.id;
       rememberBookingAccess(booking.booked_slots ?? [booking]);
+      persistRememberedBookingProfile({ name, phone, email });
 
       slot.bookingCount = booking.booking_count ?? slot.bookedUsers.length;
       const createdCount = booking.booked_slots?.length ?? 1;
@@ -1748,6 +1755,57 @@ function triggerHaptic(type) {
   } catch {
     // Haptics are an optional enhancement and must never block booking.
   }
+}
+
+function hydrateRememberedBookingProfile() {
+  const row = document.getElementById("rememberDetailsRow");
+  const checkbox = document.getElementById("rememberBookingDetails");
+  const clearButton = document.getElementById("clearRememberedDetailsBtn");
+  const nameInput = document.getElementById("clientName");
+  const phoneInput = document.getElementById("clientPhone");
+  const emailInput = document.getElementById("clientEmail");
+
+  row?.classList.toggle("hidden", isOwner);
+  if (isOwner) return;
+
+  const profile = readRememberedBookingProfile();
+  if (checkbox) checkbox.checked = Boolean(profile);
+  clearButton?.classList.toggle("hidden", !profile);
+  if (!profile) return;
+
+  if (nameInput) nameInput.value = profile.name;
+  if (phoneInput) phoneInput.value = profile.phone;
+  if (emailInput) emailInput.value = profile.email;
+}
+
+function persistRememberedBookingProfile(profile) {
+  if (isOwner) return;
+
+  const shouldRemember = document.getElementById("rememberBookingDetails")?.checked;
+  if (shouldRemember) {
+    writeRememberedBookingProfile(profile);
+    return;
+  }
+
+  clearRememberedBookingProfile();
+}
+
+function clearRememberedDetails() {
+  clearRememberedBookingProfile();
+  const checkbox = document.getElementById("rememberBookingDetails");
+  const clearButton = document.getElementById("clearRememberedDetailsBtn");
+  const nameInput = document.getElementById("clientName");
+  const phoneInput = document.getElementById("clientPhone");
+  const emailInput = document.getElementById("clientEmail");
+
+  if (checkbox) checkbox.checked = false;
+  if (nameInput) nameInput.value = "";
+  if (phoneInput) phoneInput.value = "";
+  if (emailInput) emailInput.value = "";
+  clearButton?.classList.add("hidden");
+  showDialogMessage(t("remembered_details_cleared"), "success");
+  nameInput?.focus();
+  triggerHaptic("selection");
 }
 
 function showInputError(input, message) {

@@ -3,8 +3,11 @@ import assert from "node:assert/strict";
 
 import {
   buildTicketPayload,
+  clearRememberedBookingProfile,
   findNextWorkout,
   getBookingReference,
+  readRememberedBookingProfile,
+  writeRememberedBookingProfile,
 } from "../js/booking-access.js";
 
 import {
@@ -288,4 +291,31 @@ test("ticket QR payload excludes the private booking access token", () => {
     "53dc8e4e-c482-44c2-9f52-16cc7bc78066"
   );
   assert.doesNotMatch(payload, /private-token/);
+});
+
+test("remembered booking details require an explicit write and expire", () => {
+  const values = new Map();
+  const storage = {
+    getItem: (key) => values.get(key) ?? null,
+    setItem: (key, value) => values.set(key, value),
+    removeItem: (key) => values.delete(key),
+  };
+
+  assert.equal(readRememberedBookingProfile(storage, 100), null);
+  writeRememberedBookingProfile(
+    { name: "  Test User  ", phone: " 0888123456 ", email: " test@example.com " },
+    storage,
+    100
+  );
+  assert.deepEqual(readRememberedBookingProfile(storage, 101), {
+    name: "Test User",
+    phone: "0888123456",
+    email: "test@example.com",
+    savedAt: 100,
+  });
+  assert.equal(readRememberedBookingProfile(storage, 100 + 91 * 86400000), null);
+
+  writeRememberedBookingProfile({ name: "Again" }, storage, 200);
+  clearRememberedBookingProfile(storage);
+  assert.equal(readRememberedBookingProfile(storage, 201), null);
 });
