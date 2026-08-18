@@ -1957,6 +1957,19 @@ img { max-width: 100%; height: auto; }
   transform: translateY(-1px);
 }
 
+.dialog-field input[aria-invalid="true"] {
+  border-color: rgba(255, 45, 120, 0.62);
+  background: rgba(255, 45, 120, 0.06);
+  box-shadow: 0 0 0 3px rgba(255, 45, 120, 0.10);
+  animation: invalid-field-nudge 280ms var(--motion-spring);
+}
+
+@keyframes invalid-field-nudge {
+  0%, 100% { transform: translateX(0); }
+  35% { transform: translateX(-4px); }
+  70% { transform: translateX(4px); }
+}
+
 .dialog-field input::placeholder { color: rgba(238, 242, 255, 0.30); }
 
 .dialog-field-hint {
@@ -2103,6 +2116,46 @@ img { max-width: 100%; height: auto; }
 
 .save-spot-btn:active:not(:disabled) {
   transform: scale(0.975);
+}
+
+.save-spot-btn:disabled {
+  cursor: wait;
+}
+
+.save-spot-btn.is-loading {
+  background: rgba(0, 212, 255, 0.82) !important;
+  box-shadow: 0 0 0 4px rgba(0, 212, 255, 0.08);
+}
+
+.save-gym-spinner {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  display: inline-grid;
+  place-items: center;
+}
+
+.save-gym-spinner span {
+  position: absolute;
+  inset: 1px;
+  border: 2px solid rgba(6, 8, 16, 0.22);
+  border-top-color: #060810;
+  border-radius: 50%;
+  animation: save-spinner-ring 760ms linear infinite;
+}
+
+.save-gym-spinner i {
+  position: relative;
+  font-size: 0.68rem;
+  animation: save-spinner-lift 520ms ease-in-out infinite alternate;
+}
+
+@keyframes save-spinner-ring {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes save-spinner-lift {
+  to { transform: translateY(-1px) rotate(-8deg); }
 }
 
 .save-spot-btn.is-success {
@@ -3642,6 +3695,9 @@ img { max-width: 100%; height: auto; }
   .save-spot-btn,
   .save-spot-btn.is-success,
   .save-spot-btn.is-success i,
+  .save-gym-spinner span,
+  .save-gym-spinner i,
+  .dialog-field input[aria-invalid="true"],
   .theme-toggle,
   .theme-icon-dark,
   .theme-icon-light {

@@ -44,6 +44,7 @@ let visibleWeekStart = null;
 let weekChangeInProgress = false;
 let activeTicket = null;
 let scannedBooking = null;
+let bookingSaveInProgress = false;
 
 export async function init() {
   try {
@@ -824,12 +825,17 @@ async function openSlot(dayKey, time) {
   setBookingDialogAvailability(slot.bookingCount >= slot.capacity && !isOwner);
   clearDialogMessage();
 
-  if (dialog && !dialog.open) dialog.showModal();
+  if (dialog && !dialog.open) {
+    triggerHaptic("selection");
+    dialog.showModal();
+  }
 }
 
 function bindDialogActions() {
   const saveBtn = document.getElementById("saveSpotBtn");
   const clientName = document.getElementById("clientName");
+  const clientPhone = document.getElementById("clientPhone");
+  const clientEmail = document.getElementById("clientEmail");
   const dialog = document.getElementById("slotDialog");
   const cancelEditBtn = document.getElementById("cancelEditBtn");
   const openRosterBtn = document.getElementById("openSlotRosterBtn");
@@ -883,8 +889,14 @@ function bindDialogActions() {
     });
   });
 
+  [clientName, clientPhone, clientEmail].forEach((input) => {
+    input?.addEventListener("input", () => {
+      input.removeAttribute("aria-invalid");
+      clearDialogMessage();
+    });
+  });
+
   if (clientName) {
-    clientName.addEventListener("input", clearDialogMessage);
     clientName.addEventListener("keydown", (event) => {
       if (event.key === "Enter") {
         event.preventDefault();
@@ -911,7 +923,7 @@ function bindDialogActions() {
 }
 
 async function saveSpot() {
-  if (!selectedSlot) return;
+  if (!selectedSlot || bookingSaveInProgress) return;
 
   const nameInput = document.getElementById("clientName");
   const phoneInput = document.getElementById("clientPhone");
@@ -926,66 +938,72 @@ async function saveSpot() {
   const recurringWeeks = getRecurringWeeks();
 
   if (!name) {
-    showDialogMessage(t("msg_enter_name"));
+    showInputError(nameInput, t("msg_enter_name"));
     return;
   }
 
   if (name.length < 2 || name.length > 80) {
-    showDialogMessage(t("msg_enter_valid_name"));
+    showInputError(nameInput, t("msg_enter_valid_name"));
     return;
   }
 
   if (phone && phone.length > 30) {
-    showDialogMessage(t("msg_phone_invalid"));
+    showInputError(phoneInput, t("msg_phone_invalid"));
     return;
   }
 
   if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    showDialogMessage(t("msg_email_invalid"));
+    showInputError(emailInput, t("msg_email_invalid"));
     return;
   }
 
-  const day = state.find((item) => item.key === selectedSlot.dayKey);
-  const slot = day?.slots.find((item) => item.time === selectedSlot.time);
-
-  if (!day || !slot || !slot.id) return;
-
-  const lockState = await getSlotLockState(slot.id);
-  if ((day.locked || lockState.dayLocked) && !editingBookingId) {
-    day.locked = true;
-    renderWeek();
-    showDialogMessage(t("msg_day_locked"));
-    return;
+  bookingSaveInProgress = true;
+  if (saveBtn) {
+    saveBtn.disabled = true;
+    setSaveButtonState(saveBtn, "loading");
   }
-
-  if ((slot.locked || lockState.slotLocked) && !editingBookingId) {
-    slot.locked = true;
-    renderWeek();
-    showDialogMessage(t("msg_slot_locked"));
-    return;
-  }
-
-  const duplicateBooking = slot.bookedUsers.find((b) => {
-    const sameName = (b.name || "").toLowerCase() === name.toLowerCase();
-    const sameRecord = b.id === editingBookingId;
-    return sameName && !sameRecord;
-  });
-
-  if (duplicateBooking) {
-    showDialogMessage(t("msg_duplicate"));
-    return;
-  }
-
-  if (!editingBookingId && slot.bookingCount >= slot.capacity && !isOwner) {
-    showDialogMessage(t("msg_full"));
-    return;
-  }
-
-  if (saveBtn) saveBtn.disabled = true;
+  triggerHaptic("selection");
 
   let newBookingId = null;
+  let keepSuccessState = false;
 
   try {
+    const day = state.find((item) => item.key === selectedSlot.dayKey);
+    const slot = day?.slots.find((item) => item.time === selectedSlot.time);
+
+    if (!day || !slot || !slot.id) return;
+
+    const lockState = await getSlotLockState(slot.id);
+    if ((day.locked || lockState.dayLocked) && !editingBookingId) {
+      day.locked = true;
+      renderWeek();
+      showDialogMessage(t("msg_day_locked"));
+      return;
+    }
+
+    if ((slot.locked || lockState.slotLocked) && !editingBookingId) {
+      slot.locked = true;
+      renderWeek();
+      showDialogMessage(t("msg_slot_locked"));
+      return;
+    }
+
+    const duplicateBooking = slot.bookedUsers.find((b) => {
+      const sameName = (b.name || "").toLowerCase() === name.toLowerCase();
+      const sameRecord = b.id === editingBookingId;
+      return sameName && !sameRecord;
+    });
+
+    if (duplicateBooking) {
+      showDialogMessage(t("msg_duplicate"));
+      return;
+    }
+
+    if (!editingBookingId && slot.bookingCount >= slot.capacity && !isOwner) {
+      showDialogMessage(t("msg_full"));
+      return;
+    }
+
     if (editingBookingId) {
       const { error } = await supabase
         .from("bookings")
@@ -1067,11 +1085,18 @@ async function saveSpot() {
     renderAdminActions();
     resetBookingForm();
     if (newBookingId) {
+      keepSuccessState = true;
       playBookingSuccess(saveBtn, dialogSpots);
       window.setTimeout(showBookingTicket, 520);
+    } else {
+      triggerHaptic("success");
     }
   } finally {
-    if (saveBtn) saveBtn.disabled = false;
+    bookingSaveInProgress = false;
+    if (saveBtn) {
+      saveBtn.disabled = false;
+      if (!keepSuccessState) setSaveButtonState(saveBtn, "idle");
+    }
   }
 }
 
@@ -1602,17 +1627,64 @@ function openSlotRoster() {
 function playBookingSuccess(button, spotsElement) {
   if (!button) return;
 
+  button.classList.remove("is-loading");
   button.classList.add("is-success");
+  button.removeAttribute("aria-busy");
   button.innerHTML = `<i class="fa-solid fa-check" aria-hidden="true"></i><span>${t(
     "msg_saved"
   )}</span>`;
   spotsElement?.classList.add("is-updated");
+  triggerHaptic("success");
 
   window.setTimeout(() => {
     button.classList.remove("is-success");
-    button.textContent = t("dialog_save");
+    setSaveButtonState(button, "idle");
     spotsElement?.classList.remove("is-updated");
   }, 1400);
+}
+
+function setSaveButtonState(button, state) {
+  if (!button) return;
+
+  button.classList.toggle("is-loading", state === "loading");
+  button.setAttribute("aria-busy", String(state === "loading"));
+
+  if (state === "loading") {
+    const label = editingBookingId ? t("dialog_updating") : t("dialog_saving");
+    button.innerHTML = `
+      <span class="save-gym-spinner" aria-hidden="true">
+        <span></span>
+        <i class="fa-solid fa-dumbbell"></i>
+      </span>
+      <span>${label}</span>`;
+    return;
+  }
+
+  button.textContent = editingBookingId ? t("dialog_update") : t("dialog_save");
+}
+
+function triggerHaptic(type) {
+  if (!("vibrate" in navigator) || !window.matchMedia("(pointer: coarse)").matches) {
+    return;
+  }
+
+  const patterns = {
+    selection: 10,
+    success: [18, 35, 28],
+    error: [35, 45, 35],
+  };
+  try {
+    navigator.vibrate(patterns[type] ?? 10);
+  } catch {
+    // Haptics are an optional enhancement and must never block booking.
+  }
+}
+
+function showInputError(input, message) {
+  input?.setAttribute("aria-invalid", "true");
+  input?.focus({ preventScroll: true });
+  input?.scrollIntoView({ behavior: "smooth", block: "center" });
+  showDialogMessage(message);
 }
 
 function handleEditBooking(currentUser) {
@@ -1626,7 +1698,7 @@ function handleEditBooking(currentUser) {
   if (nameEl) nameEl.value = currentUser.name || "";
   if (telEl) telEl.value = currentUser.phone || "";
 
-  if (saveBtn) saveBtn.textContent = t("dialog_update");
+  if (saveBtn) setSaveButtonState(saveBtn, "idle");
   if (cancelEditBtn) cancelEditBtn.classList.remove("hidden");
 
   clearDialogMessage();
@@ -1725,8 +1797,11 @@ function resetBookingForm() {
   if (telEl) telEl.value = "";
   if (emailEl) emailEl.value = "";
   if (recurringBooking) recurringBooking.checked = false;
+  [nameEl, telEl, emailEl].forEach((input) =>
+    input?.removeAttribute("aria-invalid")
+  );
 
-  if (saveBtn) saveBtn.textContent = t("dialog_save");
+  if (saveBtn) setSaveButtonState(saveBtn, "idle");
   if (cancelEditBtn) cancelEditBtn.classList.add("hidden");
 }
 
@@ -1736,6 +1811,7 @@ function showDialogMessage(text, type = "error") {
 
   message.textContent = text;
   message.className = `dialog-message ${type}`;
+  if (type === "error") triggerHaptic("error");
 }
 
 function clearDialogMessage() {
