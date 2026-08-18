@@ -28,6 +28,21 @@ export function findNextWorkout(items, now = new Date()) {
     )[0] ?? null;
 }
 
+export function getBookingReference(bookingId) {
+  const shortId = String(bookingId || "").replaceAll("-", "").slice(0, 8);
+  return shortId ? `EIM-${shortId.toUpperCase()}` : "EIM";
+}
+
+export function buildTicketPayload({ id, day_key: dayKey, time }) {
+  return JSON.stringify({
+    type: "emotion-in-motion-booking",
+    version: 1,
+    bookingId: id,
+    day: dayKey,
+    time,
+  });
+}
+
 function dedupeAccess(records) {
   const map = new Map();
   (Array.isArray(records) ? records : []).forEach((record) => {

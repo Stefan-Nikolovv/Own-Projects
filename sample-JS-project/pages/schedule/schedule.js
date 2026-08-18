@@ -2,6 +2,11 @@ import { supabase } from "../../js/supabase.js";
 import { t, getLocale, applyTranslations } from "../../js/i18n.js";
 import { config } from "../../js/config.js";
 import emailjs from "https://cdn.jsdelivr.net/npm/@emailjs/browser@4/+esm";
+import QRCode from "https://cdn.jsdelivr.net/npm/qrcode@1.5.4/+esm";
+import {
+  buildTicketPayload,
+  getBookingReference,
+} from "../../js/booking-access.js";
 import {
   CAPACITY,
   DAY_SLOT_MAP,
@@ -35,6 +40,7 @@ let selectedSlot = null;
 let isOwner = false;
 let visibleWeekStart = null;
 let weekChangeInProgress = false;
+let activeTicket = null;
 
 export async function init() {
   try {
@@ -825,6 +831,10 @@ function bindDialogActions() {
   const removeConfirmDialog = document.getElementById("removeConfirmDialog");
   const cancelRemoveBtn = document.getElementById("cancelRemoveBtn");
   const confirmRemoveBtn = document.getElementById("confirmRemoveBtn");
+  const closeTicketBtn = document.getElementById("closeBookingTicketBtn");
+  const ticketDialog = document.getElementById("bookingTicketDialog");
+  const ticketCalendarBtn = document.getElementById("ticketCalendarBtn");
+  const ticketShareBtn = document.getElementById("ticketShareBtn");
 
   if (saveBtn) {
     saveBtn.addEventListener("click", saveSpot);
@@ -841,6 +851,13 @@ function bindDialogActions() {
   if (confirmRemoveBtn) {
     confirmRemoveBtn.addEventListener("click", confirmRemoveBooking);
   }
+
+  closeTicketBtn?.addEventListener("click", closeBookingTicket);
+  ticketCalendarBtn?.addEventListener("click", downloadBookingTicketCalendar);
+  ticketShareBtn?.addEventListener("click", shareBookingTicket);
+  ticketDialog?.addEventListener("close", () => {
+    activeTicket = null;
+  });
 
   if (clientName) {
     clientName.addEventListener("input", clearDialogMessage);
@@ -992,6 +1009,15 @@ async function saveSpot() {
 
       slot.bookingCount = booking.booking_count ?? slot.bookedUsers.length;
       const createdCount = booking.booked_slots?.length ?? 1;
+      activeTicket = {
+        id: booking.id,
+        name: booking.name ?? name,
+        day_key: day.key,
+        dateLabel: day.dateLabel,
+        dayName: day.dayName,
+        time: slot.time,
+        createdCount,
+      };
       showDialogMessage(
         createdCount > 1
           ? t("recurring_saved", { count: createdCount })
@@ -1017,10 +1043,117 @@ async function saveSpot() {
     resetBookingForm();
     if (newBookingId) {
       playBookingSuccess(saveBtn, dialogSpots);
+      window.setTimeout(showBookingTicket, 520);
     }
   } finally {
     if (saveBtn) saveBtn.disabled = false;
   }
+}
+
+async function showBookingTicket() {
+  if (!activeTicket) return;
+
+  const sourceDialog = document.getElementById("slotDialog");
+  const ticketDialog = document.getElementById("bookingTicketDialog");
+  const dateTime = document.getElementById("ticketDateTime");
+  const name = document.getElementById("ticketName");
+  const reference = document.getElementById("ticketReference");
+  const recurring = document.getElementById("ticketRecurring");
+  const canvas = document.getElementById("ticketQrCanvas");
+  const shareStatus = document.getElementById("ticketShareStatus");
+  if (!ticketDialog || !dateTime || !name || !reference || !canvas) return;
+
+  dateTime.textContent = `${activeTicket.dayName} · ${activeTicket.dateLabel} · ${activeTicket.time}`;
+  name.textContent = activeTicket.name;
+  reference.textContent = getBookingReference(activeTicket.id);
+  recurring?.classList.toggle("hidden", activeTicket.createdCount <= 1);
+  if (recurring && activeTicket.createdCount > 1) {
+    recurring.textContent = t("ticket_recurring", {
+      count: activeTicket.createdCount,
+    });
+  }
+  shareStatus?.classList.add("hidden");
+
+  try {
+    await QRCode.toCanvas(canvas, buildTicketPayload(activeTicket), {
+      width: 148,
+      margin: 1,
+      errorCorrectionLevel: "M",
+      color: { dark: "#060810", light: "#ffffff" },
+    });
+  } catch (error) {
+    console.warn("Booking QR code could not be rendered:", error.message);
+  }
+
+  if (sourceDialog?.open) sourceDialog.close();
+  if (!ticketDialog.open) ticketDialog.showModal();
+}
+
+function closeBookingTicket() {
+  const dialog = document.getElementById("bookingTicketDialog");
+  if (dialog?.open) dialog.close();
+  activeTicket = null;
+}
+
+function downloadBookingTicketCalendar() {
+  if (!activeTicket) return;
+
+  downloadCalendarFile(activeTicket);
+}
+
+async function shareBookingTicket() {
+  if (!activeTicket) return;
+
+  const status = document.getElementById("ticketShareStatus");
+  const text = t("ticket_share_text", {
+    date: activeTicket.dateLabel,
+    time: activeTicket.time,
+    reference: getBookingReference(activeTicket.id),
+  });
+
+  try {
+    if (navigator.share) {
+      await navigator.share({
+        title: t("ticket_title"),
+        text,
+        url: `${window.location.origin}/#schedule`,
+      });
+      return;
+    }
+
+    await navigator.clipboard.writeText(
+      `${text}\n${window.location.origin}/#schedule`
+    );
+    if (status) {
+      status.textContent = t("ticket_copied");
+      status.classList.remove("hidden");
+    }
+  } catch (error) {
+    if (error.name !== "AbortError" && status) {
+      status.textContent = t("ticket_share_failed");
+      status.classList.remove("hidden");
+    }
+  }
+}
+
+function downloadCalendarFile(ticket) {
+  const calendar = buildCalendarFile({
+    dayKey: ticket.day_key,
+    time: ticket.time,
+    title: "Emotion in Motion Training",
+  });
+  const blob = new Blob([calendar], { type: "text/calendar;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `emotion-in-motion-${ticket.day_key}-${ticket.time.replace(":", "")}.ics`;
+  link.hidden = true;
+  document.body.appendChild(link);
+  link.click();
+  window.setTimeout(() => {
+    link.remove();
+    URL.revokeObjectURL(url);
+  }, 0);
 }
 
 async function sendConfirmationEmail(email, name, dayName, dateLabel, time) {

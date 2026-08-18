@@ -1,7 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { findNextWorkout } from "../js/booking-access.js";
+import {
+  buildTicketPayload,
+  findNextWorkout,
+  getBookingReference,
+} from "../js/booking-access.js";
 
 import {
   DAY_SLOT_MAP,
@@ -204,4 +208,18 @@ test("next workout selects the nearest future active booking", () => {
   ];
 
   assert.equal(findNextWorkout(items, now)?.day_key, "2026-08-19");
+});
+
+test("ticket QR payload excludes the private booking access token", () => {
+  const ticket = {
+    id: "53dc8e4e-c482-44c2-9f52-16cc7bc78066",
+    access_token: "private-token",
+    day_key: "2026-08-19",
+    time: "17:00",
+  };
+  const payload = buildTicketPayload(ticket);
+
+  assert.equal(getBookingReference(ticket.id), "EIM-53DC8E4E");
+  assert.match(payload, /53dc8e4e-c482-44c2-9f52-16cc7bc78066/);
+  assert.doesNotMatch(payload, /private-token/);
 });

@@ -111,6 +111,47 @@
         </form>
     </dialog>
 
+    <dialog id="bookingTicketDialog" class="booking-ticket-dialog">
+        <div class="booking-ticket-shell">
+            <button id="closeBookingTicketBtn" type="button" class="dialog-close" data-i18n-title="close">
+                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                <span class="sr-only" data-i18n="close">Close</span>
+            </button>
+
+            <div class="ticket-success-mark" aria-hidden="true">
+                <i class="fa-solid fa-check"></i>
+            </div>
+            <p class="ticket-eyebrow" data-i18n="ticket_confirmed">Booking confirmed</p>
+            <h2 data-i18n="ticket_title">Your training ticket</h2>
+            <p class="ticket-copy" data-i18n="ticket_hint">Keep this ticket for quick access to your booking.</p>
+
+            <div class="ticket-content">
+                <div class="ticket-details">
+                    <span data-i18n="ticket_training">Training</span>
+                    <strong id="ticketDateTime"></strong>
+                    <p id="ticketName"></p>
+                    <code id="ticketReference"></code>
+                    <small id="ticketRecurring" class="hidden"></small>
+                </div>
+                <div class="ticket-qr-wrap">
+                    <canvas id="ticketQrCanvas" width="148" height="148" aria-label="Booking QR code"></canvas>
+                </div>
+            </div>
+
+            <div class="ticket-actions">
+                <button id="ticketCalendarBtn" type="button" class="ticket-action ticket-calendar-action">
+                    <i class="fa-solid fa-calendar-plus" aria-hidden="true"></i>
+                    <span data-i18n="add_calendar">Add to calendar</span>
+                </button>
+                <button id="ticketShareBtn" type="button" class="ticket-action ticket-share-action">
+                    <i class="fa-solid fa-share-nodes" aria-hidden="true"></i>
+                    <span data-i18n="share_ticket">Share</span>
+                </button>
+            </div>
+            <p id="ticketShareStatus" class="ticket-share-status hidden" role="status" aria-live="polite"></p>
+        </div>
+    </dialog>
+
     <dialog id="myBookingsDialog" class="feature-dialog">
         <div class="feature-dialog-shell">
             <button id="closeMyBookingsBtn" type="button" class="dialog-close" aria-label="Close">
