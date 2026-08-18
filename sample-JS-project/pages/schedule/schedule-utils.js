@@ -103,6 +103,23 @@ export function getAvailabilityLevel(spotsLeft) {
   return "available";
 }
 
+export function findNextAvailableSlot(days, now = new Date()) {
+  return (days ?? [])
+    .flatMap((day) =>
+      (day.slots ?? []).map((slot) => ({ day, slot }))
+    )
+    .filter(({ day, slot }) =>
+      !day.locked &&
+      !slot.locked &&
+      Boolean(slot.id) &&
+      slot.bookingCount < slot.capacity &&
+      !isSlotInPast(day.key, slot.time, now)
+    )
+    .sort((a, b) =>
+      `${a.day.key}T${a.slot.time}`.localeCompare(`${b.day.key}T${b.slot.time}`)
+    )[0] ?? null;
+}
+
 export function buildCalendarFile({
   dayKey,
   time,

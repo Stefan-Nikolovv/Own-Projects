@@ -9,6 +9,7 @@ import {
   getStableDayKey,
   getStartOfWeek,
   getAvailabilityLevel,
+  findNextAvailableSlot,
   isDateInPast,
   isSlotInPast,
   isToday,
@@ -58,6 +59,7 @@ export async function init() {
     renderWeekNav();
     renderWeek({ animate: true });
     renderAdminActions();
+    bindNextAvailableAction();
     bindDialogActions();
     resetBookingForm();
     initScheduleFeatures({
@@ -354,7 +356,7 @@ async function changeWeek(direction) {
     button.disabled = true;
   });
 
-  if (!prefersReducedMotion() && weekGrid) {
+  if (!canUseViewTransitions() && !prefersReducedMotion() && weekGrid) {
     weekGrid.classList.add(exitClass);
     await wait(150);
   }
@@ -384,9 +386,17 @@ async function refreshScheduleView(direction = 0) {
 
   try {
     state = await loadSchedule();
-    renderWeekNav();
-    renderWeek({ animate: true, direction });
-    renderAdminActions();
+    const renderUpdatedWeek = () => {
+      renderWeekNav();
+      renderWeek({ animate: !canUseViewTransitions(), direction });
+      renderAdminActions();
+    };
+
+    if (canUseViewTransitions()) {
+      await document.startViewTransition(renderUpdatedWeek).finished;
+    } else {
+      renderUpdatedWeek();
+    }
     applyTranslations(document.getElementById("app"));
   } finally {
     setScheduleLoading(false);
@@ -555,6 +565,47 @@ function renderWeek({ animate = false, direction = 0 } = {}) {
     dayCard.append(header, slotList);
     weekGrid.appendChild(dayCard);
   });
+
+  updateNextAvailableAction();
+}
+
+function bindNextAvailableAction() {
+  const button = document.getElementById("nextAvailableBtn");
+  if (!button) return;
+
+  button.addEventListener("click", async () => {
+    const next = findNextAvailableSlot(state);
+    if (!next) return;
+
+    button.classList.add("is-opening");
+    try {
+      await openSlot(next.day.key, next.slot.time);
+    } finally {
+      button.classList.remove("is-opening");
+    }
+  });
+
+  updateNextAvailableAction();
+}
+
+function updateNextAvailableAction() {
+  const button = document.getElementById("nextAvailableBtn");
+  if (!button) return;
+
+  const label = button.querySelector("span");
+  const next = findNextAvailableSlot(state);
+  button.disabled = !next;
+  button.classList.toggle("is-empty", !next);
+
+  if (label) {
+    label.removeAttribute("data-i18n");
+    label.textContent = next
+      ? t("next_available_at", {
+          date: next.day.dateLabel,
+          time: next.slot.time,
+        })
+      : t("no_available_slots");
+  }
 }
 
 function createSlotLockButton(day, slot) {
@@ -1373,6 +1424,10 @@ function clearScheduleStatus() {
 
 function prefersReducedMotion() {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
+function canUseViewTransitions() {
+  return typeof document.startViewTransition === "function" && !prefersReducedMotion();
 }
 
 function wait(milliseconds) {

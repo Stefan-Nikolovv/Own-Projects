@@ -54,6 +54,9 @@ export const translations = {
     full: "Full",
     join_waitlist_short: "Join waitlist",
     booked_total: "{booked} booked / {capacity} total",
+    next_available: "Next available",
+    next_available_at: "Next: {date} at {time}",
+    no_available_slots: "No available slots this week",
 
     my_bookings: "My bookings",
     booking_tools: "Booking tools",
@@ -240,6 +243,9 @@ export const translations = {
     full: "Запълнено",
     join_waitlist_short: "Лист на чакащи",
     booked_total: "{booked} записани / {capacity} общо",
+    next_available: "Най-близък час",
+    next_available_at: "Най-близък: {date} от {time}",
+    no_available_slots: "Няма свободни часове тази седмица",
 
     my_bookings: "Моите записвания",
     booking_tools: "Управление на записвания",

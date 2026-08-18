@@ -5,6 +5,7 @@ import {
   DAY_SLOT_MAP,
   addDays,
   buildCalendarFile,
+  findNextAvailableSlot,
   getAvailabilityLevel,
   getManagedBookingStatus,
   getStartOfWeek,
@@ -99,6 +100,30 @@ test("availability signals full and nearly full sessions", () => {
   assert.equal(getAvailabilityLevel(8), "available");
   assert.equal(getAvailabilityLevel(3), "almost-full");
   assert.equal(getAvailabilityLevel(0), "full");
+});
+
+test("nearest available slot skips past, locked, and full sessions", () => {
+  const now = new Date(2026, 7, 18, 17, 30, 0);
+  const days = [
+    {
+      key: "2026-08-18",
+      locked: false,
+      slots: [
+        { id: 1, time: "17:00", locked: false, bookingCount: 1, capacity: 14 },
+        { id: 2, time: "18:00", locked: true, bookingCount: 1, capacity: 14 },
+      ],
+    },
+    {
+      key: "2026-08-19",
+      locked: false,
+      slots: [
+        { id: 3, time: "17:00", locked: false, bookingCount: 14, capacity: 14 },
+        { id: 4, time: "18:00", locked: false, bookingCount: 3, capacity: 14 },
+      ],
+    },
+  ];
+
+  assert.equal(findNextAvailableSlot(days, now)?.slot.id, 4);
 });
 
 test("calendar export creates a valid event shell", () => {

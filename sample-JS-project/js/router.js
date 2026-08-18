@@ -1,6 +1,6 @@
 import { applyTranslations, t } from "./i18n.js";
 
-const APP_VERSION = "20260804-39";
+const APP_VERSION = "20260804-40";
 
 const routes = {
   "#home": {
@@ -41,23 +41,39 @@ export async function router() {
   }
 
   try {
-    const response = await fetch(`${route.html}?v=${APP_VERSION}`, {
-      cache: "no-store",
-    });
+    const response = await fetch(`${route.html}?v=${APP_VERSION}`);
+    if (!response.ok) throw new Error(`Page request failed: ${response.status}`);
     const htmlText = await response.text();
 
     const parser = new DOMParser();
     const doc = parser.parseFromString(htmlText, "text/html");
 
-    app.replaceChildren(...doc.body.childNodes);
-
     const pageModule = await import(`${route.js}?v=${APP_VERSION}`);
+    const renderRoute = () => {
+      app.replaceChildren(...doc.body.childNodes);
+      applyTranslations(app);
+      setActiveLink(routeName);
+    };
+
+    if (
+      typeof document.startViewTransition === "function" &&
+      !window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      document.documentElement.classList.add("is-route-transitioning");
+      const transition = document.startViewTransition(renderRoute);
+      transition.finished.finally(() => {
+        document.documentElement.classList.remove("is-route-transitioning");
+      });
+      await transition.updateCallbackDone;
+    } else {
+      renderRoute();
+    }
+
     if (pageModule.init) {
       await pageModule.init();
     }
 
     applyTranslations(app);
-    setActiveLink(routeName);
   } catch (error) {
     console.error("Router error:", error);
     app.textContent = t("load_failed");

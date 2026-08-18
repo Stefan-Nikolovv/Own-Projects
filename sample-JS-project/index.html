@@ -13,7 +13,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" />
-    <link rel="stylesheet" href="css/style.css?v=20260804-39" />
+    <link rel="stylesheet" href="css/style.css?v=20260804-40" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
         integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -30,10 +30,25 @@
         </a>
 
         <div class="nav-links">
-            <a href="#home" data-i18n="nav_home">Home</a>
-            <a href="#schedule" data-i18n="nav_schedule">Schedule</a>
-            <a href="#contact" data-i18n="nav_contact">Contact</a>
-            <a href="#login" id="authNavLink" data-i18n="nav_login">Login</a>
+            <div class="nav-primary" aria-label="Primary navigation">
+                <a href="#home">
+                    <i class="fa-solid fa-house nav-icon" aria-hidden="true"></i>
+                    <span class="nav-label" data-i18n="nav_home">Home</span>
+                </a>
+                <a href="#schedule">
+                    <i class="fa-solid fa-calendar-days nav-icon" aria-hidden="true"></i>
+                    <span class="nav-label" data-i18n="nav_schedule">Schedule</span>
+                </a>
+                <a href="#contact">
+                    <i class="fa-solid fa-location-dot nav-icon" aria-hidden="true"></i>
+                    <span class="nav-label" data-i18n="nav_contact">Contact</span>
+                </a>
+                <a href="#login" id="authNavLink">
+                    <i class="fa-solid fa-user nav-icon" aria-hidden="true"></i>
+                    <span class="nav-label" data-i18n="nav_login">Login</span>
+                </a>
+            </div>
+            <div class="nav-controls">
             <div class="lang-switch">
                 <button type="button" class="lang-btn" data-lang="en">EN</button>
                 <button type="button" class="lang-btn" data-lang="bg">BG</button>
@@ -42,6 +57,7 @@
                 <i class="fa-solid fa-moon theme-icon-dark"></i>
                 <i class="fa-solid fa-sun theme-icon-light"></i>
             </button>
+            </div>
         </div>
 
     </nav>
@@ -96,7 +112,7 @@
         </div>
 
     </footer>
-    <script type="module" src="js/script.js?v=20260804-39" defer></script>
+    <script type="module" src="js/script.js?v=20260804-40" defer></script>
 </body>
 
 </html>

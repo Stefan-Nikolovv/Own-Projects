@@ -26,9 +26,19 @@ async function updateAuthNav() {
     data: { user },
   } = await supabase.auth.getUser();
 
+  const authLabel = authLink.querySelector(".nav-label");
+  const updateLabel = (translationKey) => {
+    if (authLabel) {
+      authLabel.dataset.i18n = translationKey;
+      authLabel.textContent = t(translationKey);
+      return;
+    }
+
+    authLink.textContent = t(translationKey);
+  };
+
   if (user) {
-    authLink.dataset.i18n = "nav_logout";
-    authLink.textContent = t("nav_logout");
+    updateLabel("nav_logout");
     authLink.href = "#";
     authLink.onclick = async (e) => {
       e.preventDefault();
@@ -36,8 +46,7 @@ async function updateAuthNav() {
       window.location.hash = "#home";
     };
   } else {
-    authLink.dataset.i18n = "nav_login";
-    authLink.textContent = t("nav_login");
+    updateLabel("nav_login");
     authLink.href = "#login";
     authLink.onclick = null;
   }
