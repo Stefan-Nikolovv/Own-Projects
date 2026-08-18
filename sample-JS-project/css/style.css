@@ -4339,7 +4339,7 @@ html.is-route-transitioning #app {
 
 @media (max-width: 768px), (hover: none) and (pointer: coarse) and (max-width: 1024px) {
   body {
-    padding-bottom: calc(68px + env(safe-area-inset-bottom));
+    padding-bottom: calc(76px + env(safe-area-inset-bottom));
   }
 
   .navbar {
@@ -4361,19 +4361,19 @@ html.is-route-transitioning #app {
   }
 
   .brand-logo {
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     border-radius: 10px;
     padding: 5px;
   }
 
   .brand-title {
-    font-size: 0.82rem;
+    font-size: 0.94rem;
     white-space: nowrap;
   }
 
   .brand-subtitle {
-    font-size: 0.56rem;
+    font-size: 0.62rem;
     letter-spacing: 0.08em;
     white-space: nowrap;
   }
@@ -4399,14 +4399,14 @@ html.is-route-transitioning #app {
   }
 
   .nav-controls .lang-btn {
-    min-width: 31px;
-    padding: 5px 7px;
-    font-size: 0.68rem;
+    min-width: 34px;
+    padding: 6px 8px;
+    font-size: 0.74rem;
   }
 
   .nav-controls .theme-toggle {
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
     margin: 0;
   }
 
@@ -4416,7 +4416,7 @@ html.is-route-transitioning #app {
     left: 0;
     right: 0;
     bottom: 0;
-    height: calc(64px + env(safe-area-inset-bottom));
+    height: calc(72px + env(safe-area-inset-bottom));
     padding: 6px 8px env(safe-area-inset-bottom);
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -4429,7 +4429,7 @@ html.is-route-transitioning #app {
 
   .nav-links .nav-primary a {
     min-width: 0;
-    min-height: 52px;
+    min-height: 60px;
     padding: 5px 3px;
     border: 0;
     border-radius: 8px;
@@ -4439,7 +4439,7 @@ html.is-route-transitioning #app {
     justify-content: center;
     gap: 4px;
     color: var(--text-muted);
-    font-size: 0.62rem;
+    font-size: 0.72rem;
     line-height: 1;
     overflow: visible;
   }
@@ -4459,7 +4459,7 @@ html.is-route-transitioning #app {
 
   .nav-icon {
     display: block;
-    font-size: 1rem;
+    font-size: 1.25rem;
   }
 
   .nav-links .nav-primary a.active .nav-icon {
@@ -4494,7 +4494,7 @@ html.is-route-transitioning #app {
 
   .schedule-page h1 {
     margin: 0;
-    font-size: 1.55rem;
+    font-size: 1.78rem;
   }
 
   .schedule-page .week-nav-controls {
@@ -4503,16 +4503,17 @@ html.is-route-transitioning #app {
   }
 
   .schedule-page .week-nav-btn {
-    width: 44px;
-    height: 42px;
+    width: 48px;
+    height: 48px;
     border-radius: 8px;
+    font-size: 1.12rem;
   }
 
   .schedule-page .week-range-label {
-    min-height: 42px;
+    min-height: 48px;
     padding-inline: 8px;
     border-radius: 8px;
-    font-size: 0.76rem;
+    font-size: 0.9rem;
   }
 
   .schedule-feature-bar {
@@ -4522,13 +4523,49 @@ html.is-route-transitioning #app {
 
   .schedule-page .next-available-btn {
     grid-column: 1 / -1;
-    min-height: 48px;
-    font-size: 0.83rem;
+    min-height: 54px;
+    font-size: 0.94rem;
+  }
+
+  .schedule-page .feature-action {
+    min-height: 52px;
+    font-size: 0.9rem;
+  }
+
+  .schedule-page .feature-action i,
+  .schedule-page .next-available-btn i {
+    font-size: 1.08rem;
   }
 
   .day-card {
-    padding: 16px;
+    padding: 18px;
     border-radius: 12px;
+  }
+
+  .day-name { font-size: 1.05rem; }
+  .day-date { font-size: 0.9rem; }
+  .today-badge { font-size: 0.7rem; }
+
+  .schedule-page .slot-btn {
+    padding: 16px;
+  }
+
+  .slot-time { font-size: 1.12rem; }
+  .slot-meta { font-size: 0.92rem; }
+  .slot-badge { font-size: 0.76rem; }
+  .day-locked-message { font-size: 0.94rem; }
+
+  .schedule-page .day-lock-btn {
+    width: 52px;
+    height: 52px;
+    font-size: 1.15rem;
+  }
+
+  .schedule-page .slot-lock-btn {
+    width: 36px;
+    height: 36px;
+    min-height: 36px;
+    font-size: 0.86rem;
   }
 
   .site-footer {
