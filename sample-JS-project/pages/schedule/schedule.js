@@ -1715,7 +1715,6 @@ function openSlotRoster() {
   if (search) search.value = "";
   updateSlotRoster(slot);
   if (!dialog.open) dialog.showModal();
-  window.setTimeout(() => search?.focus(), 80);
 }
 
 function playBookingSuccess(button, spotsElement) {

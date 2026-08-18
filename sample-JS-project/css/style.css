@@ -2523,7 +2523,8 @@ body.is-offline .schedule-page .booking-search-btn {
 .slot-roster-search {
   display: grid;
   gap: 7px;
-  margin-bottom: 14px;
+  width: min(100%, 520px);
+  margin: 0 auto 14px;
   color: var(--text-muted);
   font-size: 0.78rem;
   font-weight: 700;
@@ -2531,7 +2532,8 @@ body.is-offline .schedule-page .booking-search-btn {
 
 .slot-roster-search-control {
   position: relative;
-  display: block;
+  display: grid;
+  align-items: center;
 }
 
 .slot-roster-search-control > i {
@@ -2555,7 +2557,10 @@ body.is-offline .schedule-page .booking-search-btn {
   outline: none;
   background: #111521;
   color: var(--text);
-  font: 600 0.9rem 'Inter', sans-serif;
+  font: 600 16px 'Inter', sans-serif;
+  appearance: none;
+  -webkit-appearance: none;
+  touch-action: manipulation;
 }
 
 .schedule-page .slot-roster-search input:focus {
@@ -3274,7 +3279,8 @@ body.is-offline .schedule-page .booking-search-btn {
 }
 
 .booking-search-form {
-  margin-bottom: 12px;
+  width: min(100%, 520px);
+  margin: 0 auto 12px;
 }
 
 .booking-search-form > label {
@@ -3303,7 +3309,10 @@ body.is-offline .schedule-page .booking-search-btn {
   padding: 0 12px;
   background: #111521;
   color: var(--text);
-  font: 600 0.86rem 'Inter', sans-serif;
+  font: 600 16px 'Inter', sans-serif;
+  appearance: none;
+  -webkit-appearance: none;
+  touch-action: manipulation;
 }
 
 .schedule-page .booking-search-control input:focus {
@@ -3329,6 +3338,13 @@ body.is-offline .schedule-page .booking-search-btn {
   color: #06110e;
   font: 800 0.8rem/1 'Inter', sans-serif;
   cursor: pointer;
+  touch-action: manipulation;
+}
+
+.schedule-page .booking-search-icon {
+  display: block;
+  margin: 0;
+  line-height: 1;
 }
 
 .schedule-page .booking-search-btn:active:not(:disabled) { transform: scale(0.96); }
@@ -3715,8 +3731,24 @@ body.is-offline .schedule-page .booking-search-btn {
 
   .schedule-page .week-range-label { min-width: 0; font-size: 0.80rem; }
 
-  .booking-search-control { grid-template-columns: minmax(0, 1fr) 48px; }
-  .schedule-page .booking-search-btn { width: 48px; min-width: 48px; padding: 0; border-radius: 8px; }
+  .booking-search-control {
+    grid-template-columns: minmax(0, 1fr) 52px;
+    gap: 8px;
+  }
+  .schedule-page .booking-search-control input,
+  .schedule-page .booking-search-btn {
+    height: 52px;
+    min-height: 52px;
+  }
+  .schedule-page .booking-search-btn {
+    width: 52px;
+    min-width: 52px;
+    padding: 0;
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+  }
+  .schedule-page .booking-search-icon { font-size: 1.05rem; }
   .booking-search-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); }
 
   .week-grid { grid-template-columns: 1fr; gap: 12px; }
@@ -3810,9 +3842,20 @@ body.is-offline .schedule-page .booking-search-btn {
 
   .dialog-field input,
   .schedule-page .booking-search-control input,
+  .schedule-page .slot-roster-search input,
   .recurring-weeks-label select,
   .managed-move-select {
     font-size: 16px;
+  }
+
+  .schedule-page .slot-roster-search input {
+    height: 52px;
+    padding-left: 44px;
+  }
+
+  .slot-roster-search-control > i {
+    left: 15px;
+    font-size: 1.05rem;
   }
 
   .dialog-field input { height: 46px; }
