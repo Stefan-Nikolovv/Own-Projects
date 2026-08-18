@@ -120,6 +120,29 @@ export function findNextAvailableSlot(days, now = new Date()) {
     )[0] ?? null;
 }
 
+export function applySlotRealtimeUpdate(days, record) {
+  if (!record?.id || !record.day_key) return false;
+
+  const day = (days ?? []).find((item) => item.key === record.day_key);
+  const slot = day?.slots.find((item) => item.id === record.id);
+  if (!day || !slot) return false;
+
+  if (typeof record.is_day_locked === "boolean") {
+    day.locked = record.is_day_locked;
+  }
+  if (typeof record.is_slot_locked === "boolean") {
+    slot.locked = record.is_slot_locked;
+  }
+  if (Number.isFinite(Number(record.capacity))) {
+    slot.capacity = Number(record.capacity);
+  }
+  if (Number.isFinite(Number(record.booking_count))) {
+    slot.bookingCount = Number(record.booking_count);
+  }
+
+  return true;
+}
+
 export function buildCalendarFile({
   dayKey,
   time,

@@ -472,6 +472,8 @@ function bindRealtimeNotifications() {
       "postgres_changes",
       { event: "UPDATE", schema: "public", table: "slots" },
       async (payload) => {
+        featureContext?.applySlotChange?.(payload.new);
+
         if (
           payload.old?.is_day_locked !== true ||
           payload.new?.is_day_locked !== false ||

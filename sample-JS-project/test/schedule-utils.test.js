@@ -4,6 +4,7 @@ import assert from "node:assert/strict";
 import {
   DAY_SLOT_MAP,
   addDays,
+  applySlotRealtimeUpdate,
   buildCalendarFile,
   findNextAvailableSlot,
   getAvailabilityLevel,
@@ -124,6 +125,57 @@ test("nearest available slot skips past, locked, and full sessions", () => {
   ];
 
   assert.equal(findNextAvailableSlot(days, now)?.slot.id, 4);
+});
+
+test("realtime slot updates patch only the matching visible session", () => {
+  const days = [
+    {
+      key: "2026-08-19",
+      locked: false,
+      slots: [
+        {
+          id: "slot-a",
+          time: "17:00",
+          locked: false,
+          bookingCount: 2,
+          capacity: 14,
+        },
+      ],
+    },
+  ];
+
+  assert.equal(
+    applySlotRealtimeUpdate(days, {
+      id: "slot-a",
+      day_key: "2026-08-19",
+      booking_count: 5,
+      capacity: 12,
+      is_day_locked: true,
+      is_slot_locked: true,
+    }),
+    true
+  );
+  assert.deepEqual(days[0], {
+    key: "2026-08-19",
+    locked: true,
+    slots: [
+      {
+        id: "slot-a",
+        time: "17:00",
+        locked: true,
+        bookingCount: 5,
+        capacity: 12,
+      },
+    ],
+  });
+  assert.equal(
+    applySlotRealtimeUpdate(days, {
+      id: "other-slot",
+      day_key: "2026-08-19",
+      booking_count: 9,
+    }),
+    false
+  );
 });
 
 test("calendar export creates a valid event shell", () => {

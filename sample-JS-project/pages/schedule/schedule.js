@@ -6,6 +6,7 @@ import {
   CAPACITY,
   DAY_SLOT_MAP,
   addDays,
+  applySlotRealtimeUpdate,
   getStableDayKey,
   getStartOfWeek,
   getAvailabilityLevel,
@@ -69,6 +70,7 @@ export async function init() {
       refreshSchedule: () => refreshScheduleView(),
       showStatus: showScheduleStatus,
       verifyAdmin: isCurrentUserAdmin,
+      applySlotChange: applyRealtimeSlotChange,
     });
     setScheduleLoading(false);
   } catch (err) {
@@ -567,6 +569,33 @@ function renderWeek({ animate = false, direction = 0 } = {}) {
   });
 
   updateNextAvailableAction();
+}
+
+function applyRealtimeSlotChange(record) {
+  if (!applySlotRealtimeUpdate(state, record)) return false;
+
+  renderWeek();
+  renderAdminActions();
+
+  const selectedDay = selectedSlot
+    ? state.find((day) => day.key === selectedSlot.dayKey)
+    : null;
+  const selected = selectedDay?.slots.find(
+    (slot) => slot.time === selectedSlot?.time
+  );
+
+  if (selected?.id === record.id) {
+    setSelectedSlotContext({ day: selectedDay, slot: selected });
+    const spots = document.getElementById("dialogSpots");
+    if (spots) {
+      spots.textContent = `${selected.capacity - selected.bookingCount} / ${selected.capacity}`;
+    }
+    setBookingDialogAvailability(
+      selected.bookingCount >= selected.capacity && !isOwner
+    );
+  }
+
+  return true;
 }
 
 function bindNextAvailableAction() {
